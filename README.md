@@ -7,6 +7,9 @@ AI-Fab 프로젝트 전용 Claude Code 개발 워크플로우. Andrej Karpathy�
 ## 빠른 시작
 
 ```bash
+# 0. 기존 코드베이스 분석 (brownfield 시작 시)
+/aifab:map-codebase
+
 # 1. 새 프로젝트 시작
 /aifab:discover
 
@@ -16,8 +19,18 @@ AI-Fab 프로젝트 전용 Claude Code 개발 워크플로우. Andrej Karpathy�
 # 3. Wave 실행 (반복)
 /aifab:execute
 
+# 3-1. 병렬 진행 (선택)
+/aifab:worktree create wave-3
+/aifab:execute --parallel 3,4,5
+
+# 3-2. 디버깅 (필요 시)
+/aifab:debug "<증상 설명>"
+
 # 4. 보안 검토 (각 Wave 완료 후)
 /aifab:security
+
+# 4-1. 교차 AI 검증 (선택)
+/aifab:codex-review
 
 # 5. E2E 테스트 (전체 개발 완료 후)
 /aifab:playwright
@@ -34,14 +47,18 @@ AI-Fab 프로젝트 전용 Claude Code 개발 워크플로우. Andrej Karpathy�
 ## 워크플로우 개요
 
 ```
+[brownfield] /aifab:map-codebase  → 4-병렬 매퍼로 코드베이스 분석
+                ↓
 /aifab:discover
     ↓  개방형 질문 → 아키텍처 선택 (스택 제약 없음)
 /aifab:plan
     ↓  Advisor(Opus)가 Wave 분해 → PLAN.md 작성
-/aifab:execute  ← 반복 (Wave별)
+/aifab:execute  ← 반복 (Wave별, 워크트리로 병렬 가능)
     ↓  Advisor → Sonnet/Haiku 병렬 실행 → Advisor 검토
+    ↳ [버그 발생] /aifab:debug → 4단계 RCA
 /aifab:security  ← 각 Wave 완료 후
     ↓  OWASP / AI-LLM / API / 시크릿 4영역 자동 검토
+    ↳ [선택] /aifab:codex-review → OpenAI 교차 검증
 /aifab:playwright  ← 전체 개발 완료 후
     ↓  E2E 시나리오 자동 생성 및 실행
 /aifab:uat
@@ -142,6 +159,66 @@ Playwright 통과 후 실행. 사용자가 직접 테스트하고 결과를 입�
 
 ---
 
+### `/aifab:debug` — 체계적 디버깅 (4단계 RCA)
+
+추측 디버깅 금지. **가설 → 증거 → 검증 → 수정** 4단계 강제.
+
+```bash
+/aifab:debug "<증상 설명>"
+/aifab:debug session              # 진행 중인 세션 재개
+/aifab:debug history              # 과거 세션 목록
+```
+
+`DEBUG-SESSION.md`에 가설별 검증 결과 기록. 재발 방지 회고 포함.
+
+---
+
+### `/aifab:map-codebase` — 4-병렬 매퍼 분석
+
+기존 코드베이스에 진입할 때 4개 매퍼 에이전트(Sonnet)를 병렬 실행:
+
+| 매퍼 | 산출물 |
+|------|--------|
+| Tech Stack | `docs/codebase-map/01-TECH.md` |
+| Architecture | `docs/codebase-map/02-ARCH.md` |
+| Quality | `docs/codebase-map/03-QUALITY.md` |
+| Concerns | `docs/codebase-map/04-CONCERNS.md` |
+
+종합 SUMMARY와 권장 진입 전략 자동 생성.
+
+---
+
+### `/aifab:worktree` — 병렬 Wave 워크스페이스
+
+독립 Wave를 git worktree로 분리해 동시 진행:
+
+```bash
+/aifab:worktree list
+/aifab:worktree create wave-3
+/aifab:worktree merge wave-3
+/aifab:worktree status
+```
+
+`/aifab:execute --parallel 3,4,5`로 여러 Wave 동시 실행. 충돌 가능성 자동 검사.
+
+---
+
+### `/aifab:codex-review` — 교차 AI 검증
+
+OpenAI Codex CLI로 독립적 코드 리뷰. Karpathy 원칙 준수, 보안, 엣지케이스 등 검증:
+
+```bash
+/aifab:codex-review                # 마지막 commit
+/aifab:codex-review wave 3         # Wave 3 누적
+/aifab:codex-review file <path>    # 특정 파일
+```
+
+Verdict: APPROVE / APPROVE_WITH_NITS / REQUEST_CHANGES / REJECT
+
+Codex 미설치 시 사용자가 직접 ChatGPT 등에 복사하는 fallback 지원.
+
+---
+
 ## CLI 상태바
 
 Claude Code 세션 중 하단에 표시:
@@ -202,7 +279,11 @@ AIFAB-harness/
             ├── security.md      ← /aifab:security
             ├── playwright.md    ← /aifab:playwright
             ├── uat.md           ← /aifab:uat
-            └── worklog.md       ← /aifab:worklog
+            ├── worklog.md       ← /aifab:worklog
+            ├── debug.md         ← /aifab:debug
+            ├── map-codebase.md  ← /aifab:map-codebase
+            ├── worktree.md      ← /aifab:worktree
+            └── codex-review.md  ← /aifab:codex-review
 ```
 
 ---
@@ -217,3 +298,7 @@ AIFAB-harness/
 | `PLAN.md` | `/aifab:plan` 완료 | Wave별 작업 플랜 |
 | `WORKLOG.md` | `/aifab:discover` 완료 | 작업일지 |
 | `docs/UAT-REPORT.md` | `/aifab:uat` 완료 | UAT 결과 보고서 |
+| `DEBUG-SESSION.md` | `/aifab:debug` 진행 중 | 디버그 세션 가설/증거/결과 |
+| `docs/codebase-map/*.md` | `/aifab:map-codebase` 완료 | 4-매퍼 분석 보고서 |
+| `docs/codex-reviews/*.md` | `/aifab:codex-review` 실행 | Codex 교차 검증 결과 |
+| `.worktrees/wave-*/` | `/aifab:worktree create` | 병렬 Wave 작업 디렉토리 |

@@ -68,6 +68,10 @@
 | `/aifab:playwright` | Playwright E2E 테스트를 생성하고 실행한다 |
 | `/aifab:uat` | 사용자 인수 테스트(UAT) 시나리오를 준비하고 실행한다 |
 | `/aifab:worklog` | 완료된 작업, 결정 사항, 변경 이력을 기록한다 |
+| `/aifab:debug` | 4단계 RCA(가설→증거→검증→수정)로 체계적 디버깅을 수행한다 |
+| `/aifab:map-codebase` | 4-병렬 매퍼(tech/arch/quality/concerns)로 코드베이스를 분석한다 |
+| `/aifab:worktree` | git worktree로 병렬 Wave를 동시 진행할 수 있게 한다 |
+| `/aifab:codex-review` | OpenAI Codex CLI로 교차 AI 검증을 수행한다 |
 
 ---
 
@@ -84,3 +88,7 @@
 - **TDD를 항상 따른다**: Red → Green → Refactor 순서를 지킨다.
 - 각 기능 또는 웨이브 완료 후 git 커밋을 수행한다.
 - 각 웨이브 완료 후 `/aifab:security`를 실행하여 보안 검사를 수행한다.
+- 테스트 실패나 버그 발생 시 추측하지 말고 `/aifab:debug`로 4단계 RCA를 수행한다.
+- 기존 코드베이스 진입 시 `/aifab:map-codebase`로 먼저 분석한다.
+- 독립 가능한 Wave는 `/aifab:worktree`로 병렬 진행을 고려한다.
+- 중요 변경 후 `/aifab:codex-review`로 교차 AI 검증을 받을 수 있다.
