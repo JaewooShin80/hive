@@ -14,7 +14,7 @@ AI-Fab 프로젝트 전용 Claude Code 개발 워크플로우. Andrej Karpathy�
 
 ```bash
 # 1. AIFAB-harness 복제
-git clone <this-repo-url> my-new-project
+git clone https://github.com/JaewooShin80/aifab.git my-new-project
 cd my-new-project
 
 # 2. 기존 git 히스토리 제거 후 새로 시작
@@ -38,7 +38,7 @@ claude
 cd my-existing-project
 
 # AIFAB-harness 파일을 임시 디렉토리에 복제
-git clone <this-repo-url> /tmp/aifab
+git clone https://github.com/JaewooShin80/aifab.git /tmp/aifab
 
 # 필요 파일 복사 (기존 CLAUDE.md/settings.json 보존 주의)
 cp -r /tmp/aifab/.claude .
@@ -62,7 +62,7 @@ rm -rf /tmp/aifab
 
 ```bash
 # AIFAB-harness 복제
-git clone <this-repo-url> ~/.local/share/aifab-harness
+git clone https://github.com/JaewooShin80/aifab.git ~/.local/share/aifab-harness
 
 # 스킬을 Claude Code 전역 플러그인 디렉토리에 심볼릭 링크
 mkdir -p ~/.claude/plugins
