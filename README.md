@@ -167,6 +167,23 @@ claude
 
 # 작업 중단 후 재시작
 /aifab:worklog resume
+
+# === v2 추가 명령 ===
+
+# 결정 시점에 옵션 비교
+/aifab:compare "ORM 선택"
+
+# 큰 결정은 ADR로 기록
+/aifab:adr new "Pydantic v2 채택"
+
+# 동작 보존 리팩토링
+/aifab:refactor "<대상 모듈>"
+
+# 의존성 마이그레이션
+/aifab:migrate "Pydantic v1 -> v2"
+
+# Wave 단위 롤백
+/aifab:rollback wave 3
 ```
 
 ---
@@ -346,6 +363,83 @@ Codex 미설치 시 사용자가 직접 ChatGPT 등에 복사하는 fallback 지
 
 ---
 
+### `/aifab:refactor` — 동작 보존 리팩토링
+
+테스트로 회귀 방지하며 점진적으로 구조 개선.
+
+```bash
+/aifab:refactor <대상 모듈>
+```
+
+- 베이스라인 테스트 통과 확인 → 거부 시 회귀 테스트부터 추가
+- Strangler-fig / Branch-by-abstraction 패턴 자동 선택
+- 각 단계 5분 이내 (revertable commit)
+- `REFACTOR-LOG.md`에 단계별 동작 보존 증거 기록
+
+---
+
+### `/aifab:migrate` — 의존성/프레임워크 마이그레이션
+
+```bash
+/aifab:migrate "Pydantic v1 -> v2"
+/aifab:migrate "React 17 -> 18"
+```
+
+- WebSearch로 공식 마이그레이션 가이드 자동 참조
+- grep으로 영향 범위 스캔
+- Codemod 도구 자동 탐지 (jscodeshift, libcst, bump-pydantic 등)
+- Haiku(기계 변환) + Sonnet(의미 변환) 역할 분리
+- 의존성 commit과 코드 commit 분리
+
+---
+
+### `/aifab:rollback` — 안전한 롤백
+
+```bash
+/aifab:rollback wave 3        # Wave 3 직전으로
+/aifab:rollback commit abc123 # 특정 commit으로
+/aifab:rollback last          # 마지막 Wave 취소
+/aifab:rollback dry-run       # 영향 분석만
+```
+
+- 자동 백업 브랜치 생성 (`backup/pre-rollback-YYYYMMDD-HHMM`)
+- 영향 받는 후속 Wave 분석 + 사용자 확인
+- revert(권장) / reset / cherry-pick 보존 전략 선택
+- 보안 수정 commit 보존 가능
+
+---
+
+### `/aifab:compare` — N-옵션 비교
+
+```bash
+/aifab:compare "ORM 선택"
+/aifab:compare "API 스타일" --options "REST,GraphQL,tRPC"
+```
+
+- 옵션 2~5개 트레이드오프 매트릭스 작성
+- 평가 기준 정의 → 점수(1-5) + 가중치
+- Advisor 추천 + 차순위와의 결정적 차이
+- `docs/decisions/compare-<topic>.md` 보고서 저장
+- 큰 결정은 `/aifab:adr` 자동 호출 권장
+
+---
+
+### `/aifab:adr` — Architecture Decision Records
+
+Michael Nygard 형식 의사결정 기록.
+
+```bash
+/aifab:adr new "Pydantic v2 채택"
+/aifab:adr list
+/aifab:adr show 0003
+/aifab:adr supersede 0003 0007
+```
+
+각 ADR: Status / Context / Decision / Consequences / Alternatives.
+`docs/adr/NNNN-<slug>.md` + 자동 인덱스 갱신.
+
+---
+
 ## CLI 상태바
 
 Claude Code 세션 중 하단에 2줄 표시. 터미널/폰트 환경에 따라 3가지 스타일 선택 가능.
@@ -426,18 +520,30 @@ AIFAB-harness/
 │   └── aifab-status.sh         ← CLI 상태바 스크립트
 └── .claude/
     └── plugins/aifab/
+        ├── SKILLS.md             ← 16 스킬 인덱스 + 의존성 그래프
+        ├── _shared/              ← 공통 표준 프로토콜
+        │   ├── prerequisites.md      (사전조건 매트릭스)
+        │   ├── output-format.md      (Verdict/Severity/에러코드)
+        │   ├── worklog-update.md     (WORKLOG 갱신 절차)
+        │   ├── agent-dispatch.md     (Sub-agent 프롬프트)
+        │   └── git-commit.md         (Conventional Commits)
         └── skills/
-            ├── discover.md      ← /aifab:discover
-            ├── plan.md          ← /aifab:plan
-            ├── execute.md       ← /aifab:execute
-            ├── security.md      ← /aifab:security
-            ├── playwright.md    ← /aifab:playwright
-            ├── uat.md           ← /aifab:uat
-            ├── worklog.md       ← /aifab:worklog
-            ├── debug.md         ← /aifab:debug
-            ├── map-codebase.md  ← /aifab:map-codebase
-            ├── worktree.md      ← /aifab:worktree
-            └── codex-review.md  ← /aifab:codex-review
+            ├── discover.md       ← /aifab:discover
+            ├── plan.md           ← /aifab:plan
+            ├── execute.md        ← /aifab:execute
+            ├── security.md       ← /aifab:security
+            ├── playwright.md     ← /aifab:playwright
+            ├── uat.md            ← /aifab:uat
+            ├── worklog.md        ← /aifab:worklog
+            ├── debug.md          ← /aifab:debug
+            ├── map-codebase.md   ← /aifab:map-codebase
+            ├── worktree.md       ← /aifab:worktree
+            ├── codex-review.md   ← /aifab:codex-review
+            ├── refactor.md       ← /aifab:refactor       (v2)
+            ├── migrate.md        ← /aifab:migrate        (v2)
+            ├── rollback.md       ← /aifab:rollback       (v2)
+            ├── compare.md        ← /aifab:compare        (v2)
+            └── adr.md            ← /aifab:adr            (v2)
 ```
 
 ---
@@ -456,3 +562,8 @@ AIFAB-harness/
 | `docs/codebase-map/*.md` | `/aifab:map-codebase` 완료 | 4-매퍼 분석 보고서 |
 | `docs/codex-reviews/*.md` | `/aifab:codex-review` 실행 | Codex 교차 검증 결과 |
 | `.worktrees/wave-*/` | `/aifab:worktree create` | 병렬 Wave 작업 디렉토리 |
+| `REFACTOR-LOG.md` | `/aifab:refactor` 진행 중 | 리팩토링 단계별 동작 보존 기록 |
+| `MIGRATION-PLAN.md`, `MIGRATION-REPORT.md` | `/aifab:migrate` | 마이그레이션 영향 분석 + 결과 |
+| `ROLLBACK-LOG.md` | `/aifab:rollback` 실행 | 롤백 시점/사유/영향 |
+| `docs/decisions/compare-*.md` | `/aifab:compare` 실행 | 옵션 비교 매트릭스 |
+| `docs/adr/NNNN-*.md` | `/aifab:adr new` | Architecture Decision Records |
