@@ -4,6 +4,133 @@ AI-Fab 프로젝트 전용 Claude Code 개발 워크플로우. Andrej Karpathy�
 
 ---
 
+## 설치
+
+사용 패턴에 따라 3가지 방법 중 선택.
+
+### 방법 A: 새 프로젝트 템플릿으로 사용 (권장)
+
+새 AI-Fab 프로젝트를 시작할 때:
+
+```bash
+# 1. AIFAB-harness 복제
+git clone <this-repo-url> my-new-project
+cd my-new-project
+
+# 2. 기존 git 히스토리 제거 후 새로 시작
+rm -rf .git
+git init
+git add .
+git commit -m "chore: initial AI-Fab setup"
+
+# 3. Claude Code 실행
+claude
+```
+
+`/aifab:discover` 명령으로 바로 시작.
+
+### 방법 B: 기존 프로젝트에 적용
+
+이미 존재하는 프로젝트에 AI-Fab 워크플로우를 추가:
+
+```bash
+# 기존 프로젝트 디렉토리에서
+cd my-existing-project
+
+# AIFAB-harness 파일을 임시 디렉토리에 복제
+git clone <this-repo-url> /tmp/aifab
+
+# 필요 파일 복사 (기존 CLAUDE.md/settings.json 보존 주의)
+cp -r /tmp/aifab/.claude .
+cp -r /tmp/aifab/scripts .
+chmod +x scripts/aifab-status.sh
+
+# CLAUDE.md가 이미 있으면 머지, 없으면 복사
+[ -f CLAUDE.md ] || cp /tmp/aifab/CLAUDE.md .
+
+# settings.json도 같은 방식 (기존 설정과 머지 필요할 수 있음)
+[ -f settings.json ] || cp /tmp/aifab/settings.json .
+
+rm -rf /tmp/aifab
+```
+
+기존 `CLAUDE.md`/`settings.json`이 있으면 수동 머지 필요.
+
+### 방법 C: 전역 스킬로 설치 (모든 프로젝트에서 사용)
+
+`/aifab:*` 명령어를 모든 프로젝트에서 사용하려면:
+
+```bash
+# AIFAB-harness 복제
+git clone <this-repo-url> ~/.local/share/aifab-harness
+
+# 스킬을 Claude Code 전역 플러그인 디렉토리에 심볼릭 링크
+mkdir -p ~/.claude/plugins
+ln -s ~/.local/share/aifab-harness/.claude/plugins/aifab ~/.claude/plugins/aifab
+
+# 상태바 스크립트도 전역에서 접근 가능하게
+chmod +x ~/.local/share/aifab-harness/scripts/aifab-status.sh
+```
+
+각 프로젝트마다 `CLAUDE.md`만 복사하거나, 전역 `~/.claude/CLAUDE.md`에 AI-Fab 규칙 추가.
+
+---
+
+## 사전 요구사항
+
+| 도구 | 용도 | 필수/선택 |
+|------|------|----------|
+| Claude Code CLI | 모든 명령 실행 | 필수 |
+| `git` | 버전 관리 / 워크트리 | 필수 |
+| `bash` | 상태바 스크립트 | 필수 |
+| `python3` | 사용량 통계 파싱 | 선택 (없으면 사용량 바차트만 비활성) |
+| `node` / `npm` | Playwright (E2E 테스트) | 선택 (E2E 사용 시) |
+| `@openai/codex` CLI | 교차 AI 검증 | 선택 (codex-review 사용 시) |
+
+### Claude Code 인증
+
+```bash
+# Claude Pro/Team 구독자
+claude login
+
+# 또는 API 키 사용
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+### 선택 도구 설치
+
+```bash
+# Playwright (방법 A에서 자동 설치되지만 미리 설치 가능)
+npm install -D @playwright/test
+npx playwright install chromium
+
+# OpenAI Codex CLI (codex-review 사용 시)
+npm install -g @openai/codex
+codex login
+```
+
+---
+
+## 설치 확인
+
+설치 후 다음 명령으로 정상 동작 확인:
+
+```bash
+# 1. 상태바 스크립트 동작 확인
+bash scripts/aifab-status.sh
+# 기대 출력: [AI-Fab] | model: opus-4-7 | wave: -/- | ctx --
+#           5h   [----------] 0%  |  7day [----------] --%
+
+# 2. Claude Code에서 스킬 인식 확인
+claude
+> /aifab:
+# 자동완성 목록에 11개 스킬이 보여야 함:
+# discover, plan, execute, security, playwright, uat, worklog,
+# debug, map-codebase, worktree, codex-review
+```
+
+---
+
 ## 빠른 시작
 
 ```bash
