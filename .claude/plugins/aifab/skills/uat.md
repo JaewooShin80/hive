@@ -217,3 +217,21 @@ Advisor로서 PLAN.md의 모든 기능에 대한 UAT 시나리오를 생성하�
 - **피드백 보존:** 사용자의 피드백은 수정 Wave 작성 시 정확히 반영한다. 요약하거나 생략하지 않는다.
 - **Wave 크기 판단:** 수정 Wave의 크기는 실패 시나리오의 수와 복잡도를 함께 고려하여 결정한다 (1~2개 단순 수정 = Small, 3개 이상 또는 복잡한 수정 = Medium).
 - **Git 태그 조건:** `v1.0.0` 태그는 초기 전체 통과 시에만 생성한다. 재테스트 통과 시에는 태그를 생성하지 않는다.
+
+---
+
+<!-- AIFAB_V2_STANDARDS -->
+
+## 표준 참조 (AIFAB v2)
+
+이 스킬은 다음 공통 표준을 따른다. 상세 규칙은 각 문서 참조.
+
+| 표준 | 문서 | 역할 |
+|------|------|------|
+| 사전조건 체크 | [`_shared/prerequisites.md`](../_shared/prerequisites.md) | 스킬 시작 시 git/ARCH/PLAN/WORKLOG/ctx 등 검증 |
+| 출력 형식 | [`_shared/output-format.md`](../_shared/output-format.md) | Verdict(✅/⚠/❌) · Severity · 에러 코드 통일 |
+| WORKLOG 갱신 | [`_shared/worklog-update.md`](../_shared/worklog-update.md) | 시작/종료/결정사항 기록 표준 절차 |
+| 서브 에이전트 호출 | [`_shared/agent-dispatch.md`](../_shared/agent-dispatch.md) | Sonnet/Haiku 디스패치 프롬프트 템플릿 |
+| Git 커밋 메시지 | [`_shared/git-commit.md`](../_shared/git-commit.md) | Conventional Commits + 스킬별 자동 메시지 |
+
+스킬 인덱스: [`SKILLS.md`](../SKILLS.md)

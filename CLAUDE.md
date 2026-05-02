@@ -72,6 +72,14 @@
 | `/aifab:map-codebase` | 4-병렬 매퍼(tech/arch/quality/concerns)로 코드베이스를 분석한다 |
 | `/aifab:worktree` | git worktree로 병렬 Wave를 동시 진행할 수 있게 한다 |
 | `/aifab:codex-review` | OpenAI Codex CLI로 교차 AI 검증을 수행한다 |
+| `/aifab:refactor` | 동작 보존 점진 리팩토링 (REFACTOR-LOG.md 작성, 단계별 commit) |
+| `/aifab:migrate` | 의존성/프레임워크 마이그레이션 (codemod 활용, Wave 단위 적용) |
+| `/aifab:rollback` | Wave 단위 안전한 롤백 (백업 브랜치 자동 생성) |
+| `/aifab:compare` | N개 옵션 비교 (트레이드오프 매트릭스 + 추천) |
+| `/aifab:adr` | Architecture Decision Records 관리 (Michael Nygard 형식) |
+
+**전체 16 스킬.** 카테고리/의존성 그래프: [`SKILLS.md`](.claude/plugins/aifab/SKILLS.md)
+**공통 표준:** [`_shared/`](.claude/plugins/aifab/_shared/) (prerequisites, output-format, worklog-update, agent-dispatch, git-commit)
 
 ---
 
@@ -92,3 +100,7 @@
 - 기존 코드베이스 진입 시 `/aifab:map-codebase`로 먼저 분석한다.
 - 독립 가능한 Wave는 `/aifab:worktree`로 병렬 진행을 고려한다.
 - 중요 변경 후 `/aifab:codex-review`로 교차 AI 검증을 받을 수 있다.
+- 동작 보존 변경은 `/aifab:refactor`로 점진 적용한다 (테스트 없는 코드 리팩토링 금지).
+- 의존성/프레임워크 변경은 `/aifab:migrate`로 Wave 단위 적용한다.
+- 롤백 필요 시 `/aifab:rollback`을 사용 (force-push 금지, 백업 브랜치 자동 보존).
+- 결정 시점에 `/aifab:compare`로 옵션을 비교하고, 큰 결정은 `/aifab:adr`로 기록한다.

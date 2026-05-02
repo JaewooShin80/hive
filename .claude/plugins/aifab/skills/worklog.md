@@ -127,3 +127,21 @@
 - `update` 시 날짜를 누락하지 않는다 — 항상 오늘 날짜로 갱신한다
 - Wave 완료 체크박스(`[ ]` → `[x]`)를 빠뜨리지 않는다
 - 완료된 Wave의 Git 커밋 해시를 반드시 기록한다
+
+---
+
+<!-- AIFAB_V2_STANDARDS -->
+
+## 표준 참조 (AIFAB v2)
+
+이 스킬은 다음 공통 표준을 따른다. 상세 규칙은 각 문서 참조.
+
+| 표준 | 문서 | 역할 |
+|------|------|------|
+| 사전조건 체크 | [`_shared/prerequisites.md`](../_shared/prerequisites.md) | 스킬 시작 시 git/ARCH/PLAN/WORKLOG/ctx 등 검증 |
+| 출력 형식 | [`_shared/output-format.md`](../_shared/output-format.md) | Verdict(✅/⚠/❌) · Severity · 에러 코드 통일 |
+| WORKLOG 갱신 | [`_shared/worklog-update.md`](../_shared/worklog-update.md) | 시작/종료/결정사항 기록 표준 절차 |
+| 서브 에이전트 호출 | [`_shared/agent-dispatch.md`](../_shared/agent-dispatch.md) | Sonnet/Haiku 디스패치 프롬프트 템플릿 |
+| Git 커밋 메시지 | [`_shared/git-commit.md`](../_shared/git-commit.md) | Conventional Commits + 스킬별 자동 메시지 |
+
+스킬 인덱스: [`SKILLS.md`](../SKILLS.md)

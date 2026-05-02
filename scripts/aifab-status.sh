@@ -1,160 +1,187 @@
 #!/usr/bin/env bash
 # aifab-status.sh — AI-Fab statusCommand for Claude Code
-# Outputs 2-line status bar: model, wave progress, context, and usage.
 #
-# Encoding strategy:
-#   - Default: ASCII-only (works on any terminal/font)
-#   - Set AIFAB_STATUS_STYLE=emoji to enable emoji + box-drawing characters
-#   - Set AIFAB_STATUS_STYLE=unicode for box chars only (no emoji)
+# Design principles:
+#   1. Single line output (statusCommand expects 1 line; multi-line clobbers terminal)
+#   2. Pure ASCII by default (Korean/CJK rendering safe across all terminals)
+#   3. Fixed-ish width (avoids terminal re-layout when content changes)
+#   4. UTF-8 locale forced (prevents byte-level mangling of any Korean output elsewhere)
+#   5. Defensive: every variable sanitized; no control chars can leak through
+#
+# Style options (env var AIFAB_STATUS_STYLE):
+#   ascii   — default, pure ASCII (safest)
+#   unicode — box chars (█░) but no emoji (mid-safety)
+#   emoji   — full emoji (requires modern terminal + font)
 
-# Force UTF-8 locale so multi-byte chars don't get mangled
-export LC_ALL="${LC_ALL:-${LANG:-C.UTF-8}}"
+# ── locale guard ─────────────────────────────────────────────────────────────
+# Force UTF-8 so any multi-byte chars in upstream/downstream output render correctly.
+# Try en_US.UTF-8 first (macOS default), fall back to C.UTF-8 (Linux), then existing.
+if locale -a 2>/dev/null | grep -qi 'en_US\.utf-?8'; then
+  export LC_ALL='en_US.UTF-8' LANG='en_US.UTF-8'
+elif locale -a 2>/dev/null | grep -qi 'C\.utf-?8'; then
+  export LC_ALL='C.UTF-8' LANG='C.UTF-8'
+fi
+
+# ── strict mode ──────────────────────────────────────────────────────────────
+set -u  # error on unset vars (safer)
 
 STYLE="${AIFAB_STATUS_STYLE:-ascii}"
 
-# ── style-dependent glyphs ──────────────────────────────────────────────────
+# ── sanitizer: strip any control chars, newlines, ANSI escapes from a string ─
+# Returns max 40 chars to bound width.
+sanitize() {
+  local s="${1:-}"
+  # Remove ANSI escapes, control chars (incl. \r \n \t), keep printable ASCII + UTF-8
+  s=$(printf '%s' "$s" | tr -d '\000-\037\177' | tr -d '\033')
+  # Cap length to prevent overflow
+  printf '%.40s' "$s"
+}
 
+# ── style glyphs ─────────────────────────────────────────────────────────────
 case "$STYLE" in
   emoji)
-    G_NAME="🏭 AI-Fab"
-    G_MODEL_PREFIX="🤖"
-    G_WAVE_PREFIX="📊"
-    G_FILLED="█" G_EMPTY="░"
-    G_WARN="⚠" G_DANGER="🔴"
+    G_NAME="AI-Fab"; G_ICON_NAME="🏭"; G_ICON_MODEL="🤖"; G_ICON_WAVE="📊"
+    G_FILLED="█"; G_EMPTY="░"
+    G_WARN="⚠"; G_DANGER="🔴"
     ;;
   unicode)
-    G_NAME="[AI-Fab]"
-    G_MODEL_PREFIX="model:"
-    G_WAVE_PREFIX="wave:"
-    G_FILLED="█" G_EMPTY="░"
-    G_WARN="!" G_DANGER="!!"
+    G_NAME="AI-Fab"; G_ICON_NAME=""; G_ICON_MODEL=""; G_ICON_WAVE=""
+    G_FILLED="█"; G_EMPTY="░"
+    G_WARN="!"; G_DANGER="!!"
     ;;
-  *)  # ascii (default)
-    G_NAME="[AI-Fab]"
-    G_MODEL_PREFIX="model:"
-    G_WAVE_PREFIX="wave:"
-    G_FILLED="#" G_EMPTY="-"
-    G_WARN="!" G_DANGER="!!"
+  *)
+    STYLE="ascii"
+    G_NAME="AI-Fab"; G_ICON_NAME=""; G_ICON_MODEL=""; G_ICON_WAVE=""
+    G_FILLED="#"; G_EMPTY="-"
+    G_WARN="!"; G_DANGER="!!"
     ;;
 esac
 
-# ── helpers ─────────────────────────────────────────────────────────────────
-
-# Build a bar of given width using filled/empty chars
+# ── helpers ──────────────────────────────────────────────────────────────────
 make_bar() {
   local pct=$1 width=$2
   local n_filled=$(( pct * width / 100 ))
-  local bar=""
+  (( n_filled < 0 )) && n_filled=0
+  (( n_filled > width )) && n_filled=width
+  local i bar=""
   for (( i=0; i<width; i++ )); do
     if (( i < n_filled )); then bar+="$G_FILLED"; else bar+="$G_EMPTY"; fi
   done
   printf '%s' "$bar"
 }
 
-make_bbar() {
-  local pct=$1 width=$2
-  printf '[%s]' "$(make_bar "$pct" "$width")"
-}
-
-# ── line 1: model ────────────────────────────────────────────────────────────
-
+# ── name + model ─────────────────────────────────────────────────────────────
 model_raw="${AIFAB_ADVISOR_MODEL:-opus-4-7}"
-model="${model_raw#claude-}"   # strip "claude-" prefix
+model="${model_raw#claude-}"
+model=$(sanitize "$model")
 
-# ── line 1: wave progress ────────────────────────────────────────────────────
+if [[ -n "$G_ICON_NAME" ]]; then
+  name_part="${G_ICON_NAME} ${G_NAME}"
+else
+  name_part="[${G_NAME}]"
+fi
 
-wave_str="${G_WAVE_PREFIX} -/-"
+if [[ -n "$G_ICON_MODEL" ]]; then
+  model_part="${G_ICON_MODEL} ${model}"
+else
+  model_part="model:${model}"
+fi
+
+# ── wave progress ────────────────────────────────────────────────────────────
+wave_done=0
+wave_total=0
 if [[ -f "WORKLOG.md" ]]; then
-  total=$(grep -c -i '\- \[.\] wave' WORKLOG.md 2>/dev/null || echo 0)
-  done=$(grep -c -i '\- \[x\] wave' WORKLOG.md 2>/dev/null || echo 0)
-  if (( total > 0 )); then
-    pct=$(( done * 100 / total ))
-    wave_str="${G_WAVE_PREFIX} ${done}/${total} (${pct}%)"
+  wave_total=$(grep -c -i '^[ -]*\[.\] wave' WORKLOG.md 2>/dev/null || true)
+  wave_done=$(grep -c -i '^[ -]*\[x\] wave' WORKLOG.md 2>/dev/null || true)
+  # Sanitize: must be plain integer
+  [[ "$wave_total" =~ ^[0-9]+$ ]] || wave_total=0
+  [[ "$wave_done" =~ ^[0-9]+$ ]] || wave_done=0
+fi
+
+if (( wave_total > 0 )); then
+  wave_pct=$(( wave_done * 100 / wave_total ))
+  if [[ -n "$G_ICON_WAVE" ]]; then
+    wave_part=$(printf '%s %d/%d (%d%%)' "$G_ICON_WAVE" "$wave_done" "$wave_total" "$wave_pct")
   else
-    wave_str="${G_WAVE_PREFIX} 0/0 (0%)"
+    wave_part=$(printf 'wave:%d/%d(%d%%)' "$wave_done" "$wave_total" "$wave_pct")
+  fi
+else
+  if [[ -n "$G_ICON_WAVE" ]]; then
+    wave_part="${G_ICON_WAVE} -/-"
+  else
+    wave_part="wave:-/-"
   fi
 fi
 
-# ── line 1: context window ───────────────────────────────────────────────────
-
-ctx_str="ctx --"
+# ── context window ───────────────────────────────────────────────────────────
 ctx_pct=""
 for var in CLAUDE_CONTEXT_PERCENT CONTEXT_PERCENT CLAUDE_CTX_PERCENT; do
   val="${!var:-}"
-  if [[ -n "$val" && "$val" =~ ^[0-9]+$ ]]; then
+  if [[ "$val" =~ ^[0-9]+$ ]] && (( val >= 0 && val <= 100 )); then
     ctx_pct="$val"
     break
   fi
 done
 
 if [[ -n "$ctx_pct" ]]; then
-  bar=$(make_bar "$ctx_pct" 8)
+  ctx_bar=$(make_bar "$ctx_pct" 8)
   if (( ctx_pct >= 50 )); then
-    icon=" $G_DANGER"
+    ctx_icon=" ${G_DANGER}"
   elif (( ctx_pct >= 35 )); then
-    icon=" $G_WARN"
+    ctx_icon=" ${G_WARN}"
   else
-    icon=""
+    ctx_icon=""
   fi
-  ctx_str="ctx ${bar} ${ctx_pct}%${icon}"
+  ctx_part=$(printf 'ctx %s %d%%%s' "$ctx_bar" "$ctx_pct" "$ctx_icon")
+else
+  ctx_part="ctx --"
 fi
 
-# ── line 2: usage stats (5h and 7day) ────────────────────────────────────────
-
+# ── usage stats (compact: just percent) ──────────────────────────────────────
 STATS_FILE="$HOME/.claude/stats-cache.json"
-
-fh_str="5h   [----------] --%"
-day7_str="7day [----------] --%"
+fh_pct="--"
+day7_pct="--"
 
 if [[ -f "$STATS_FILE" ]] && command -v python3 &>/dev/null; then
-  read -r fh_pct day7_pct < <(python3 - "$STATS_FILE" <<'PYEOF'
+  read -r _fh _day7 < <(python3 - "$STATS_FILE" 2>/dev/null <<'PYEOF'
 import json, sys
 from datetime import datetime, timedelta, timezone
-
 try:
     with open(sys.argv[1]) as f:
         d = json.load(f)
+    daily = d.get("dailyActivity", [])
+    if not daily:
+        print("- -"); sys.exit(0)
+    now = datetime.now(timezone.utc)
+    today = now.strftime("%Y-%m-%d")
+    by_date = {e["date"]: e for e in daily}
+    FH_LIMIT, DAY7_LIMIT = 500, 3500
+    fh = min(int(by_date.get(today, {}).get("messageCount", 0) * 100 / FH_LIMIT), 100)
+    cutoff = (now - timedelta(days=7)).strftime("%Y-%m-%d")
+    d7 = sum(e.get("messageCount", 0) for e in daily if e["date"] >= cutoff)
+    d7 = min(int(d7 * 100 / DAY7_LIMIT), 100)
+    print(f"{fh} {d7}")
 except Exception:
     print("- -")
-    sys.exit(0)
-
-daily = d.get("dailyActivity", [])
-if not daily:
-    print("- -")
-    sys.exit(0)
-
-now = datetime.now(timezone.utc)
-today_str = now.strftime("%Y-%m-%d")
-by_date = {e["date"]: e for e in daily}
-
-FH_LIMIT = 500
-DAY7_LIMIT = 3500
-
-today_entry = by_date.get(today_str, {})
-fh_msgs = today_entry.get("messageCount", 0)
-fh_pct = min(int(fh_msgs * 100 / FH_LIMIT), 100)
-
-cutoff = (now - timedelta(days=7)).strftime("%Y-%m-%d")
-day7_msgs = sum(
-    e.get("messageCount", 0)
-    for e in daily
-    if e["date"] >= cutoff
-)
-day7_pct = min(int(day7_msgs * 100 / DAY7_LIMIT), 100)
-
-print(f"{fh_pct} {day7_pct}")
 PYEOF
-  )
-
-  if [[ "$fh_pct" =~ ^[0-9]+$ && "$day7_pct" =~ ^[0-9]+$ ]]; then
-    fh_bar=$(make_bbar "$fh_pct" 10)
-    day7_bar=$(make_bbar "$day7_pct" 10)
-    fh_str="5h   ${fh_bar} ${fh_pct}%"
-    day7_str="7day ${day7_bar} ${day7_pct}%"
-  fi
+)
+  [[ "${_fh:-}" =~ ^[0-9]+$ ]] && fh_pct="$_fh"
+  [[ "${_day7:-}" =~ ^[0-9]+$ ]] && day7_pct="$_day7"
 fi
 
-# ── output ───────────────────────────────────────────────────────────────────
+if [[ "$fh_pct" == "--" ]]; then
+  usage_part="5h:--% 7d:--%"
+else
+  usage_part=$(printf '5h:%s%% 7d:%s%%' "$fh_pct" "$day7_pct")
+fi
 
-printf '%s | %s %s | %s | %s\n' "$G_NAME" "$G_MODEL_PREFIX" "$model" "$wave_str" "$ctx_str"
-printf '%s  |  %s\n' "$fh_str" "$day7_str"
+# ── final output (single line, sanitized, no trailing whitespace) ────────────
+# Use printf with explicit format to prevent any variable injection.
+output=$(printf '%s | %s | %s | %s | %s' \
+  "$name_part" "$model_part" "$wave_part" "$ctx_part" "$usage_part")
+
+# Strip any stray control chars one more time as final guard
+output=$(printf '%s' "$output" | tr -d '\000-\037\177')
+
+# Output with single trailing newline (no \r, no extra padding)
+printf '%s\n' "$output"
