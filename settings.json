@@ -1,0 +1,42 @@
+{
+  "model": "claude-opus-4-7",
+  "env": {
+    "AIFAB_MODEL": "claude-opus-4-7",
+    "AIFAB_ADVISOR_MODEL": "claude-opus-4-7",
+    "AIFAB_WORKER_MODEL": "claude-sonnet-4-6",
+    "AIFAB_BOILERPLATE_MODEL": "claude-haiku-4-5",
+    "AIFAB_STATUS_STYLE": "ascii",
+    "LC_ALL": "en_US.UTF-8"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(pip *)",
+      "Bash(python *)",
+      "Bash(pytest *)",
+      "Bash(node *)",
+      "Bash(npx *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(chmod *)",
+      "Bash(touch *)",
+      "Read",
+      "Write",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "deny": []
+  },
+  "statusCommand": "scripts/aifab-status.sh",
+  "plugins": {
+    "aifab": {
+      "path": ".claude/plugins/aifab"
+    }
+  }
+}
