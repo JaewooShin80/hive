@@ -154,7 +154,13 @@ PYEOF
   fi
 fi
 
-# ── output ───────────────────────────────────────────────────────────────────
+# ── output (single line — Claude Code statusCommand expects 1 line) ─────────
 
-printf '%s | %s %s | %s | %s\n' "$G_NAME" "$G_MODEL_PREFIX" "$model" "$wave_str" "$ctx_str"
-printf '%s  |  %s\n' "$fh_str" "$day7_str"
+# Compact 5h/7day usage to inline form: "5h:78% 7d:41%"
+fh_compact=$(echo "$fh_str" | grep -oE '[0-9]+%|--%' | head -1)
+day7_compact=$(echo "$day7_str" | grep -oE '[0-9]+%|--%' | head -1)
+[[ -z "$fh_compact" ]] && fh_compact="--%"
+[[ -z "$day7_compact" ]] && day7_compact="--%"
+
+printf '%s | %s %s | %s | %s | 5h:%s 7d:%s\n' \
+  "$G_NAME" "$G_MODEL_PREFIX" "$model" "$wave_str" "$ctx_str" "$fh_compact" "$day7_compact"
