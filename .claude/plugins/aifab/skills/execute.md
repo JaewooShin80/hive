@@ -1,3 +1,17 @@
+---
+name: aifab:execute
+description: Multi-agent Wave execution (Opus + Sonnet/Haiku)
+argument-hint: [--parallel <wave-ids>]
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:execute` — Wave 멀티에이전트 실행
 
 **담당 모델:** Advisor (claude-opus-4-7) — 전체 오케스트레이션 및 검토  

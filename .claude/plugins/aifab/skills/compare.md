@@ -1,5 +1,5 @@
 ---
-name: aifab-compare
+name: aifab:compare
 description: Use when facing a multi-option technical decision and needing a structured trade-off analysis. Triggers on /aifab:compare command. Use when selecting libraries, architecture patterns, frameworks, design patterns, or algorithms and wanting a weighted decision matrix with recommendation.
 ---
 

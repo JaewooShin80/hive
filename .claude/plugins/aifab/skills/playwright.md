@@ -1,3 +1,16 @@
+---
+name: aifab:playwright
+description: E2E UI test generation with Playwright
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:playwright` — Playwright E2E 테스트 생성 및 실행
 
 **담당 모델:** Sonnet (구현) + Haiku (스텁 생성)

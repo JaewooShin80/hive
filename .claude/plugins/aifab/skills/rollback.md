@@ -1,3 +1,17 @@
+---
+name: aifab:rollback
+description: Safe Wave-level rollback with backup
+argument-hint: wave <N>|commit <hash>|last|dry-run
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:rollback` — 안전 롤백 (Wave 또는 Commit)
 
 **담당 모델:** Advisor (Opus) — 영향 분석 + Sonnet — 적용

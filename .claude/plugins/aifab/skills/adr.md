@@ -1,3 +1,17 @@
+---
+name: aifab:adr
+description: Manage Architecture Decision Records (Michael Nygard format)
+argument-hint: <new|list|show|supersede|accept> [args]
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # /aifab:adr — Architecture Decision Records 관리 스킬
 
 **담당 모델:** Advisor (Opus) — 의사결정 문서화

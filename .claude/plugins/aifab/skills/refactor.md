@@ -1,3 +1,17 @@
+---
+name: aifab:refactor
+description: Behavior-preserving incremental refactoring
+argument-hint: <target>
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # /aifab:refactor
 
 **담당 모델:** Advisor (Opus) + Sonnet (구현)

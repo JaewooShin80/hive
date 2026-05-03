@@ -1,3 +1,17 @@
+---
+name: aifab:codex-review
+description: Cross-AI verification via OpenAI Codex CLI
+argument-hint: [wave <N>|file <path>|diff <ref>]
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:codex-review` — 교차 AI 검증 (OpenAI Codex)
 
 **담당 모델:** Advisor (claude-opus-4-7) — 검토 요청 작성 및 결과 종합
