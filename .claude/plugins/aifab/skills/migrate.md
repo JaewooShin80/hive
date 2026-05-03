@@ -1,3 +1,17 @@
+---
+name: aifab:migrate
+description: Dependency/framework migration
+argument-hint: <from -> to>
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:migrate` — 의존성 및 프레임워크 마이그레이션
 
 **담당 모델:** Advisor (Opus) + Sonnet (구현) + Haiku (codemod 적용)

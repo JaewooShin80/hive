@@ -1,3 +1,17 @@
+---
+name: aifab:worktree
+description: Parallel Wave via git worktrees
+argument-hint: list|create|switch|merge|remove|status
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:worktree` — 병렬 Wave 워크트리 관리
 
 **담당 모델:** Sonnet (구현) — 단순 git 작업

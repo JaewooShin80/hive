@@ -1,3 +1,16 @@
+---
+name: aifab:uat
+description: UAT scenarios + result collection
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:uat` — 사용자 인수 테스트 (UAT) 가이드 및 결과 수집
 
 **담당 모델:** Advisor (claude-opus-4-7) — 사용자와의 인터랙티브 진행이 필요한 작업

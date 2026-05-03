@@ -1,3 +1,17 @@
+---
+name: aifab:worklog
+description: Work log for resumable sessions
+argument-hint: [init|update|resume]
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # /aifab:worklog — 작업일지 관리 스킬
 
 ## 개요

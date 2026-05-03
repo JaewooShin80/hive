@@ -1,5 +1,5 @@
 ---
-name: aifab-discover
+name: aifab:discover
 description: Use when starting a new project or feature and needing to select the right architecture. Triggers on /aifab:discover command. Use when the user has not yet chosen a tech stack, wants to explore options, or needs a structured discovery session before planning.
 ---
 

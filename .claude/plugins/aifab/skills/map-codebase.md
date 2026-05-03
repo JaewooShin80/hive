@@ -1,3 +1,17 @@
+---
+name: aifab:map-codebase
+description: 4-parallel mappers for codebase analysis
+argument-hint: [<path>] [--focus <area>]
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:map-codebase` — 4-병렬 매퍼 코드베이스 분석
 
 **담당 모델:** Advisor (claude-opus-4-7) — 매퍼 조정 및 종합

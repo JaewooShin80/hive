@@ -1,3 +1,17 @@
+---
+name: aifab:debug
+description: Systematic 4-stage RCA debugging
+argument-hint: <symptom>|session|history
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+  - Task
+---
+
 # `/aifab:debug` — 체계적 디버깅 (4단계 RCA)
 
 **담당 모델:** Advisor (claude-opus-4-7) — 가설 수립 및 분석
