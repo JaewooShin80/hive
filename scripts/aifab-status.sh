@@ -1,91 +1,104 @@
 #!/usr/bin/env bash
 # aifab-status.sh — AI-Fab statusCommand for Claude Code
 #
-# Design principles:
-#   1. Single line output (statusCommand expects 1 line; multi-line clobbers terminal)
-#   2. Pure ASCII by default (Korean/CJK rendering safe across all terminals)
-#   3. Fixed-ish width (avoids terminal re-layout when content changes)
-#   4. UTF-8 locale forced (prevents byte-level mangling of any Korean output elsewhere)
-#   5. Defensive: every variable sanitized; no control chars can leak through
+# Design:
+#   1. Single line, compact, color-coded progress bars
+#   2. 4-tier traffic light: 0-40% green, 40-60% yellow, 60-80% orange, 80%+ red
+#   3. Pure ANSI escapes (works in any modern terminal)
+#   4. UTF-8 locale forced + sanitization
 #
 # Style options (env var AIFAB_STATUS_STYLE):
-#   ascii   — default, pure ASCII (safest)
-#   unicode — box chars (█░) but no emoji (mid-safety)
-#   emoji   — full emoji (requires modern terminal + font)
+#   color   — default, ANSI 256-color + unicode bars
+#   plain   — no colors, ASCII bars (for log capture / unsupported terminals)
 
 # ── locale guard ─────────────────────────────────────────────────────────────
-# Force UTF-8 so any multi-byte chars in upstream/downstream output render correctly.
-# Try en_US.UTF-8 first (macOS default), fall back to C.UTF-8 (Linux), then existing.
 if locale -a 2>/dev/null | grep -qi 'en_US\.utf-?8'; then
   export LC_ALL='en_US.UTF-8' LANG='en_US.UTF-8'
 elif locale -a 2>/dev/null | grep -qi 'C\.utf-?8'; then
   export LC_ALL='C.UTF-8' LANG='C.UTF-8'
 fi
 
-# ── strict mode ──────────────────────────────────────────────────────────────
-set -u  # error on unset vars (safer)
+set -u
 
-STYLE="${AIFAB_STATUS_STYLE:-ascii}"
+STYLE="${AIFAB_STATUS_STYLE:-color}"
 
-# ── sanitizer: strip any control chars, newlines, ANSI escapes from a string ─
-# Returns max 40 chars to bound width.
-sanitize() {
-  local s="${1:-}"
-  # Remove ANSI escapes, control chars (incl. \r \n \t), keep printable ASCII + UTF-8
-  s=$(printf '%s' "$s" | tr -d '\000-\037\177' | tr -d '\033')
-  # Cap length to prevent overflow
-  printf '%.40s' "$s"
+# ── ANSI color codes ─────────────────────────────────────────────────────────
+if [[ "$STYLE" == "color" ]]; then
+  C_GREEN=$'\033[38;5;46m'      # bright green (≤40%)
+  C_YELLOW=$'\033[38;5;226m'    # yellow (40-60%)
+  C_ORANGE=$'\033[38;5;208m'    # orange (60-80%)
+  C_RED=$'\033[38;5;196m'       # bright red (>80%)
+  C_DIM=$'\033[38;5;240m'       # dark grey for empty bar
+  C_LABEL=$'\033[38;5;111m'     # light blue for labels
+  C_NAME=$'\033[1;38;5;213m'    # bold pink for name
+  C_MODEL=$'\033[38;5;156m'     # light green for model
+  C_RESET=$'\033[0m'
+  C_BOLD=$'\033[1m'
+  FILLED='█'
+  EMPTY='░'
+  SEP=$'\033[38;5;240m │\033[0m'
+else
+  C_GREEN='' C_YELLOW='' C_ORANGE='' C_RED='' C_DIM=''
+  C_LABEL='' C_NAME='' C_MODEL='' C_RESET='' C_BOLD=''
+  FILLED='#'
+  EMPTY='-'
+  SEP=' | '
+fi
+
+# ── color picker by percentage ───────────────────────────────────────────────
+color_for_pct() {
+  local pct=$1
+  if (( pct > 80 )); then
+    printf '%s' "$C_RED"
+  elif (( pct > 60 )); then
+    printf '%s' "$C_ORANGE"
+  elif (( pct > 40 )); then
+    printf '%s' "$C_YELLOW"
+  else
+    printf '%s' "$C_GREEN"
+  fi
 }
 
-# ── style glyphs ─────────────────────────────────────────────────────────────
-case "$STYLE" in
-  emoji)
-    G_NAME="AI-Fab"; G_ICON_NAME="🏭"; G_ICON_MODEL="🤖"; G_ICON_WAVE="📊"
-    G_FILLED="█"; G_EMPTY="░"
-    G_WARN="⚠"; G_DANGER="🔴"
-    ;;
-  unicode)
-    G_NAME="AI-Fab"; G_ICON_NAME=""; G_ICON_MODEL=""; G_ICON_WAVE=""
-    G_FILLED="█"; G_EMPTY="░"
-    G_WARN="!"; G_DANGER="!!"
-    ;;
-  *)
-    STYLE="ascii"
-    G_NAME="AI-Fab"; G_ICON_NAME=""; G_ICON_MODEL=""; G_ICON_WAVE=""
-    G_FILLED="#"; G_EMPTY="-"
-    G_WARN="!"; G_DANGER="!!"
-    ;;
-esac
-
-# ── helpers ──────────────────────────────────────────────────────────────────
-make_bar() {
+# ── colored bar generator ────────────────────────────────────────────────────
+# Args: pct width
+# Output: [<filled-color>███<dim>░░░<reset>]
+make_cbar() {
   local pct=$1 width=$2
+  (( pct < 0 )) && pct=0
+  (( pct > 100 )) && pct=100
   local n_filled=$(( pct * width / 100 ))
-  (( n_filled < 0 )) && n_filled=0
-  (( n_filled > width )) && n_filled=width
+  local color=$(color_for_pct "$pct")
   local i bar=""
-  for (( i=0; i<width; i++ )); do
-    if (( i < n_filled )); then bar+="$G_FILLED"; else bar+="$G_EMPTY"; fi
-  done
-  printf '%s' "$bar"
+
+  # filled portion
+  if (( n_filled > 0 )); then
+    bar+="$color"
+    for (( i=0; i<n_filled; i++ )); do bar+="$FILLED"; done
+  fi
+  # empty portion
+  if (( n_filled < width )); then
+    bar+="$C_DIM"
+    for (( i=n_filled; i<width; i++ )); do bar+="$EMPTY"; done
+  fi
+  bar+="$C_RESET"
+  printf '[%s]' "$bar"
+}
+
+# ── colored percent label ────────────────────────────────────────────────────
+make_pct_label() {
+  local pct=$1
+  local color=$(color_for_pct "$pct")
+  printf '%s%3d%%%s' "$color" "$pct" "$C_RESET"
 }
 
 # ── name + model ─────────────────────────────────────────────────────────────
 model_raw="${AIFAB_ADVISOR_MODEL:-opus-4-7}"
 model="${model_raw#claude-}"
-model=$(sanitize "$model")
+# sanitize: strip control chars
+model=$(printf '%s' "$model" | tr -d '\000-\037\177' | head -c 20)
 
-if [[ -n "$G_ICON_NAME" ]]; then
-  name_part="${G_ICON_NAME} ${G_NAME}"
-else
-  name_part="[${G_NAME}]"
-fi
-
-if [[ -n "$G_ICON_MODEL" ]]; then
-  model_part="${G_ICON_MODEL} ${model}"
-else
-  model_part="model:${model}"
-fi
+name_part="${C_NAME}AI-Fab${C_RESET}"
+model_part="${C_MODEL}${model}${C_RESET}"
 
 # ── wave progress ────────────────────────────────────────────────────────────
 wave_done=0
@@ -93,24 +106,17 @@ wave_total=0
 if [[ -f "WORKLOG.md" ]]; then
   wave_total=$(grep -c -i '^[ -]*\[.\] wave' WORKLOG.md 2>/dev/null || true)
   wave_done=$(grep -c -i '^[ -]*\[x\] wave' WORKLOG.md 2>/dev/null || true)
-  # Sanitize: must be plain integer
   [[ "$wave_total" =~ ^[0-9]+$ ]] || wave_total=0
   [[ "$wave_done" =~ ^[0-9]+$ ]] || wave_done=0
 fi
 
 if (( wave_total > 0 )); then
   wave_pct=$(( wave_done * 100 / wave_total ))
-  if [[ -n "$G_ICON_WAVE" ]]; then
-    wave_part=$(printf '%s %d/%d (%d%%)' "$G_ICON_WAVE" "$wave_done" "$wave_total" "$wave_pct")
-  else
-    wave_part=$(printf 'wave:%d/%d(%d%%)' "$wave_done" "$wave_total" "$wave_pct")
-  fi
+  wave_bar=$(make_cbar "$wave_pct" 8)
+  wave_part="${C_LABEL}wave${C_RESET} ${wave_bar} ${wave_done}/${wave_total}"
 else
-  if [[ -n "$G_ICON_WAVE" ]]; then
-    wave_part="${G_ICON_WAVE} -/-"
-  else
-    wave_part="wave:-/-"
-  fi
+  wave_bar=$(make_cbar 0 8)
+  wave_part="${C_LABEL}wave${C_RESET} ${wave_bar} -/-"
 fi
 
 # ── context window ───────────────────────────────────────────────────────────
@@ -124,23 +130,20 @@ for var in CLAUDE_CONTEXT_PERCENT CONTEXT_PERCENT CLAUDE_CTX_PERCENT; do
 done
 
 if [[ -n "$ctx_pct" ]]; then
-  ctx_bar=$(make_bar "$ctx_pct" 8)
-  if (( ctx_pct >= 50 )); then
-    ctx_icon=" ${G_DANGER}"
-  elif (( ctx_pct >= 35 )); then
-    ctx_icon=" ${G_WARN}"
-  else
-    ctx_icon=""
-  fi
-  ctx_part=$(printf 'ctx %s %d%%%s' "$ctx_bar" "$ctx_pct" "$ctx_icon")
+  ctx_bar=$(make_cbar "$ctx_pct" 8)
+  ctx_pct_label=$(make_pct_label "$ctx_pct")
+  ctx_part="${C_LABEL}ctx${C_RESET}  ${ctx_bar} ${ctx_pct_label}"
 else
-  ctx_part="ctx --"
+  ctx_bar="[${C_DIM}--------${C_RESET}]"
+  ctx_part="${C_LABEL}ctx${C_RESET}  ${ctx_bar}  --"
 fi
 
-# ── usage stats (compact: just percent) ──────────────────────────────────────
+# ── usage stats ──────────────────────────────────────────────────────────────
 STATS_FILE="$HOME/.claude/stats-cache.json"
-fh_pct="--"
-day7_pct="--"
+fh_pct=0
+day7_pct=0
+fh_known=0
+day7_known=0
 
 if [[ -f "$STATS_FILE" ]] && command -v python3 &>/dev/null; then
   read -r _fh _day7 < <(python3 - "$STATS_FILE" 2>/dev/null <<'PYEOF'
@@ -165,23 +168,33 @@ except Exception:
     print("- -")
 PYEOF
 )
-  [[ "${_fh:-}" =~ ^[0-9]+$ ]] && fh_pct="$_fh"
-  [[ "${_day7:-}" =~ ^[0-9]+$ ]] && day7_pct="$_day7"
+  if [[ "${_fh:-}" =~ ^[0-9]+$ ]]; then fh_pct=$_fh; fh_known=1; fi
+  if [[ "${_day7:-}" =~ ^[0-9]+$ ]]; then day7_pct=$_day7; day7_known=1; fi
 fi
 
-if [[ "$fh_pct" == "--" ]]; then
-  usage_part="5h:--% 7d:--%"
+if (( fh_known )); then
+  fh_bar=$(make_cbar "$fh_pct" 8)
+  fh_label=$(make_pct_label "$fh_pct")
+  fh_part="${C_LABEL}5h${C_RESET}   ${fh_bar} ${fh_label}"
 else
-  usage_part=$(printf '5h:%s%% 7d:%s%%' "$fh_pct" "$day7_pct")
+  fh_bar="[${C_DIM}--------${C_RESET}]"
+  fh_part="${C_LABEL}5h${C_RESET}   ${fh_bar}  --"
 fi
 
-# ── final output (single line, sanitized, no trailing whitespace) ────────────
-# Use printf with explicit format to prevent any variable injection.
-output=$(printf '%s | %s | %s | %s | %s' \
-  "$name_part" "$model_part" "$wave_part" "$ctx_part" "$usage_part")
+if (( day7_known )); then
+  day7_bar=$(make_cbar "$day7_pct" 8)
+  day7_label=$(make_pct_label "$day7_pct")
+  day7_part="${C_LABEL}7d${C_RESET}   ${day7_bar} ${day7_label}"
+else
+  day7_bar="[${C_DIM}--------${C_RESET}]"
+  day7_part="${C_LABEL}7d${C_RESET}   ${day7_bar}  --"
+fi
 
-# Strip any stray control chars one more time as final guard
-output=$(printf '%s' "$output" | tr -d '\000-\037\177')
-
-# Output with single trailing newline (no \r, no extra padding)
-printf '%s\n' "$output"
+# ── final output (single line) ───────────────────────────────────────────────
+printf '%s %s%s%s%s%s%s%s%s\n' \
+  "$name_part" \
+  "$model_part" \
+  "$SEP" "$wave_part" \
+  "$SEP" "$ctx_part" \
+  "$SEP" "$fh_part" \
+  "$SEP$day7_part"
