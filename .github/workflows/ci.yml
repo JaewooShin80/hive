@@ -30,5 +30,8 @@ jobs:
       - name: Verify SKILLS.md auto-index is in sync
         run: python3 scripts/gen_skills_index.py --check .claude/plugins/aifab/SKILLS.md
 
+      - name: Verify CLAUDE.md auto-index is in sync
+        run: python3 scripts/gen_skills_index.py --check CLAUDE.md
+
       - name: Run unit tests
         run: python3 -m unittest discover -s scripts/tests -v

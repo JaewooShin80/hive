@@ -59,24 +59,31 @@
 
 ## AI-Fab Workflow Commands (워크플로우 명령어)
 
-| 명령어 | 설명 |
-|---|---|
-| `/aifab:discover` | 프로젝트 구조 및 기존 코드베이스를 분석하여 컨텍스트를 수집한다 |
-| `/aifab:plan` | 요구사항을 파악하고 구현 웨이브(wave)로 분해한 실행 계획을 생성한다 |
-| `/aifab:execute` | 계획된 웨이브를 순서대로 실행하며 기능을 구현한다 |
-| `/aifab:security` | 하드코딩된 시크릿, 취약한 의존성, 보안 결함을 스캔한다 |
-| `/aifab:playwright` | Playwright E2E 테스트를 생성하고 실행한다 |
-| `/aifab:uat` | 사용자 인수 테스트(UAT) 시나리오를 준비하고 실행한다 |
-| `/aifab:worklog` | 완료된 작업, 결정 사항, 변경 이력을 기록한다 |
-| `/aifab:debug` | 4단계 RCA(가설→증거→검증→수정)로 체계적 디버깅을 수행한다 |
-| `/aifab:map-codebase` | 4-병렬 매퍼(tech/arch/quality/concerns)로 코드베이스를 분석한다 |
-| `/aifab:worktree` | git worktree로 병렬 Wave를 동시 진행할 수 있게 한다 |
-| `/aifab:codex-review` | OpenAI Codex CLI로 교차 AI 검증을 수행한다 |
-| `/aifab:refactor` | 동작 보존 점진 리팩토링 (REFACTOR-LOG.md 작성, 단계별 commit) |
-| `/aifab:migrate` | 의존성/프레임워크 마이그레이션 (codemod 활용, Wave 단위 적용) |
-| `/aifab:rollback` | Wave 단위 안전한 롤백 (백업 브랜치 자동 생성) |
-| `/aifab:compare` | N개 옵션 비교 (트레이드오프 매트릭스 + 추천) |
-| `/aifab:adr` | Architecture Decision Records 관리 (Michael Nygard 형식) |
+> 아래 표는 `scripts/gen_skills_index.py`가 각 스킬 frontmatter `description`에서
+> 자동 생성한다. 직접 편집하지 말 것 — 새 스킬 추가/변경 후
+> `python3 scripts/gen_skills_index.py --write CLAUDE.md`로 갱신한다.
+> CI가 `--check`로 stale 여부를 검증한다.
+
+<!-- AUTO-INDEX:start -->
+| Command | Description |
+| --- | --- |
+| `/aifab:adr` | Manage Architecture Decision Records (Michael Nygard format) |
+| `/aifab:codex-review` | Cross-AI verification via OpenAI Codex CLI |
+| `/aifab:compare` | Use when facing a multi-option technical decision and needing a structured trade-off analysis. Triggers on /aifab:compare command. Use when selecting libraries, architecture patterns, frameworks, design patterns, or algorithms and wanting a weighted decision matrix with recommendation. |
+| `/aifab:debug` | Systematic 4-stage RCA debugging |
+| `/aifab:discover` | Use when starting a new project or feature and needing to select the right architecture. Triggers on /aifab:discover command. Use when the user has not yet chosen a tech stack, wants to explore options, or needs a structured discovery session before planning. |
+| `/aifab:execute` | Multi-agent Wave execution (Opus + Sonnet/Haiku) |
+| `/aifab:map-codebase` | 4-parallel mappers for codebase analysis |
+| `/aifab:migrate` | Dependency/framework migration |
+| `/aifab:plan` | Wave-based implementation plan creation |
+| `/aifab:playwright` | E2E UI test generation with Playwright |
+| `/aifab:refactor` | Behavior-preserving incremental refactoring |
+| `/aifab:rollback` | Safe Wave-level rollback with backup |
+| `/aifab:security` | 4-domain security review (OWASP/AI-LLM/API/secrets) |
+| `/aifab:uat` | UAT scenarios + result collection |
+| `/aifab:worklog` | Work log for resumable sessions |
+| `/aifab:worktree` | Parallel Wave via git worktrees |
+<!-- AUTO-INDEX:end -->
 
 **전체 16 스킬.** 카테고리/의존성 그래프: [`SKILLS.md`](.claude/plugins/aifab/SKILLS.md)
 **공통 표준:** [`_shared/`](.claude/plugins/aifab/_shared/) (prerequisites, output-format, worklog-update, agent-dispatch, git-commit)

@@ -7,6 +7,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.3.1] — 2026-05-05
+
+### Changed
+- `CLAUDE.md` workflow-commands table is now auto-generated from skill
+  frontmatter (same `<!-- AUTO-INDEX -->` marker pattern as `SKILLS.md`).
+  CI's `gen_skills_index.py --check` now covers both files, eliminating
+  the previous risk of drift between the two views.
+- The hand-written Korean one-line descriptions in the old `CLAUDE.md`
+  table are replaced by the English `description` field in each skill's
+  frontmatter (single source of truth). Korean prose around the table is
+  unchanged.
+
+### Added
+- `scripts/tests/test_claude_md_index.py` — 4 tests covering marker
+  presence, marker order, generator stale detection on `CLAUDE.md`,
+  and a multi-file smoke test.
+
 ## [2.3.0] — 2026-05-05
 
 ### Added
