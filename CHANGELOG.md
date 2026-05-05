@@ -7,10 +7,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.0] — 2026-05-05
+
 ### Added
 - `install.sh` single-entry installer (target/global/copy/dry-run modes)
 - `VERSION` file + `CHANGELOG.md`
-- (planned) `scripts/gen_skills_index.py` — auto-regenerate `SKILLS.md` from frontmatter
+- `scripts/gen_skills_index.py` — auto-regenerate `SKILLS.md` AUTO-INDEX
+  marker section from each skill's frontmatter
+- `docs/WALKTHROUGH.md` — 5-minute end-to-end guide for new users
+- Prompt-injection hardening section in `_shared/agent-dispatch.md`
+  (USER_INPUT / EXTERNAL_CONTENT isolation markers, secret-handling rules,
+  data-vs-instruction rule, BLOCKED-on-suspicion rule)
+- +32 tests across install / version / gen_skills_index / settings /
+  injection_guard / walkthrough — total 71
+
+### Security
+- `settings.json` deny rules for 8 high-impact patterns:
+  `rm -rf *`, `git push --force *`, `git push -f *`, `git reset --hard *`,
+  `curl * | bash`, `curl * | sh`, `wget * | bash`, `wget * | sh`
 
 ## [2.1.0] — 2026-05-05
 
