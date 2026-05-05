@@ -7,6 +7,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.3.0] — 2026-05-05
+
+### Added
+- `CONTRIBUTING.md` — dev setup, test commands, skill addition workflow,
+  commit style, PR checklist (Karpathy 4 principles enforced)
+- `.github/pull_request_template.md` — Summary / Test plan / Security
+  review / high-level files / Karpathy checkbox sections
+- `docs/adr/` directory with retrospective ADRs:
+  - `0001-stdlib-only-policy.md` — rationale for zero external deps
+  - `0002-skill-categorization.md` — four-category taxonomy decision
+  - `README.md` — index + ADR addition workflow
+- `scripts/metric_log.py` — opt-in JSONL event logger
+  (off by default; enabled by `AIFAB_METRICS=1`)
+- `scripts/metric_summary.py` — read JSONL and emit per-event/per-skill
+  counts (text or `--json`)
+- +23 tests across contributing / adr / metrics — total 94
+
 ## [2.2.0] — 2026-05-05
 
 ### Added
