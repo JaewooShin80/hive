@@ -158,3 +158,33 @@ AI-Fab 워크플로우의 모든 스킬과 의존성 그래프.
 | **총계** | **16+5** | - | **~28,700** |
 
 CLAUDE.md(1,100) + 스킬 1개 평균 사용 시: ~2,700 토큰 (Context의 1.4%).
+
+---
+
+## 자동 인덱스 (전체 스킬)
+
+> 아래 표는 `scripts/gen_skills_index.py`가 각 스킬 frontmatter의 `description`에서
+> 자동 생성한다. 직접 편집하지 말 것 — `python3 scripts/gen_skills_index.py --write SKILLS.md`로 갱신.
+> CI는 `--check`로 stale 여부를 검증한다.
+
+<!-- AUTO-INDEX:start -->
+| Command | Description |
+| --- | --- |
+| `/aifab:adr` | Manage Architecture Decision Records (Michael Nygard format) |
+| `/aifab:codex-review` | Cross-AI verification via OpenAI Codex CLI |
+| `/aifab:compare` | Use when facing a multi-option technical decision and needing a structured trade-off analysis. Triggers on /aifab:compare command. Use when selecting libraries, architecture patterns, frameworks, design patterns, or algorithms and wanting a weighted decision matrix with recommendation. |
+| `/aifab:debug` | Systematic 4-stage RCA debugging |
+| `/aifab:discover` | Use when starting a new project or feature and needing to select the right architecture. Triggers on /aifab:discover command. Use when the user has not yet chosen a tech stack, wants to explore options, or needs a structured discovery session before planning. |
+| `/aifab:execute` | Multi-agent Wave execution (Opus + Sonnet/Haiku) |
+| `/aifab:map-codebase` | 4-parallel mappers for codebase analysis |
+| `/aifab:migrate` | Dependency/framework migration |
+| `/aifab:plan` | Wave-based implementation plan creation |
+| `/aifab:playwright` | E2E UI test generation with Playwright |
+| `/aifab:refactor` | Behavior-preserving incremental refactoring |
+| `/aifab:rollback` | Safe Wave-level rollback with backup |
+| `/aifab:security` | 4-domain security review (OWASP/AI-LLM/API/secrets) |
+| `/aifab:uat` | UAT scenarios + result collection |
+| `/aifab:worklog` | Work log for resumable sessions |
+| `/aifab:worktree` | Parallel Wave via git worktrees |
+<!-- AUTO-INDEX:end -->
+

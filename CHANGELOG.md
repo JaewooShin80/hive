@@ -1,0 +1,104 @@
+# Changelog
+
+All notable changes to the AI-Fab harness are documented here.
+
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [2.3.1] — 2026-05-05
+
+### Changed
+- `CLAUDE.md` workflow-commands table is now auto-generated from skill
+  frontmatter (same `<!-- AUTO-INDEX -->` marker pattern as `SKILLS.md`).
+  CI's `gen_skills_index.py --check` now covers both files, eliminating
+  the previous risk of drift between the two views.
+- The hand-written Korean one-line descriptions in the old `CLAUDE.md`
+  table are replaced by the English `description` field in each skill's
+  frontmatter (single source of truth). Korean prose around the table is
+  unchanged.
+
+### Added
+- `scripts/tests/test_claude_md_index.py` — 4 tests covering marker
+  presence, marker order, generator stale detection on `CLAUDE.md`,
+  and a multi-file smoke test.
+
+## [2.3.0] — 2026-05-05
+
+### Added
+- `CONTRIBUTING.md` — dev setup, test commands, skill addition workflow,
+  commit style, PR checklist (Karpathy 4 principles enforced)
+- `.github/pull_request_template.md` — Summary / Test plan / Security
+  review / high-level files / Karpathy checkbox sections
+- `docs/adr/` directory with retrospective ADRs:
+  - `0001-stdlib-only-policy.md` — rationale for zero external deps
+  - `0002-skill-categorization.md` — four-category taxonomy decision
+  - `README.md` — index + ADR addition workflow
+- `scripts/metric_log.py` — opt-in JSONL event logger
+  (off by default; enabled by `AIFAB_METRICS=1`)
+- `scripts/metric_summary.py` — read JSONL and emit per-event/per-skill
+  counts (text or `--json`)
+- +23 tests across contributing / adr / metrics — total 94
+
+## [2.2.0] — 2026-05-05
+
+### Added
+- `install.sh` single-entry installer (target/global/copy/dry-run modes)
+- `VERSION` file + `CHANGELOG.md`
+- `scripts/gen_skills_index.py` — auto-regenerate `SKILLS.md` AUTO-INDEX
+  marker section from each skill's frontmatter
+- `docs/WALKTHROUGH.md` — 5-minute end-to-end guide for new users
+- Prompt-injection hardening section in `_shared/agent-dispatch.md`
+  (USER_INPUT / EXTERNAL_CONTENT isolation markers, secret-handling rules,
+  data-vs-instruction rule, BLOCKED-on-suspicion rule)
+- +32 tests across install / version / gen_skills_index / settings /
+  injection_guard / walkthrough — total 71
+
+### Security
+- `settings.json` deny rules for 8 high-impact patterns:
+  `rm -rf *`, `git push --force *`, `git push -f *`, `git reset --hard *`,
+  `curl * | bash`, `curl * | sh`, `wget * | bash`, `wget * | sh`
+
+## [2.1.0] — 2026-05-05
+
+### Added
+- `scripts/skill_lint.py` — markdown integrity validator
+  - Frontmatter required-field check (`name`, `description`)
+  - `_shared/*.md` link resolution
+  - `SKILLS.md` orphan-skill detection
+- `scripts/tests/test_skill_lint.py` (12 tests)
+- `scripts/tests/test_aifab_status.py` (27 tests covering bar/color_for/parsers/normalization)
+- `.github/workflows/ci.yml` — GitHub Actions CI on Python 3.9/3.11/3.13
+
+### Notes
+- All tests use stdlib only (no external dependencies).
+
+## [2.0.0] — 2026-05 (pre-tag)
+
+### Added
+- 5 v2 skills: `refactor`, `migrate`, `rollback`, `compare`, `adr` (total 16)
+- `_shared/` standard protocols (5 files): prerequisites, output-format,
+  worklog-update, agent-dispatch, git-commit
+- YAML frontmatter on every skill for global registration
+- Colored progress bars in CLI status bar (4-tier threshold)
+- Real-time context/rate-limit tracking via stdin JSON
+
+### Changed
+- Status bar rewritten in Python 3 for Korean/CJK safety
+- Status bar collapsed to single line to avoid overdraw
+
+## [1.1.0] — earlier
+
+### Added
+- 4 enhancement skills: `debug`, `map-codebase`, `worktree`, `codex-review`
+
+## [1.0.0] — initial
+
+### Added
+- 7 core skills: `discover`, `plan`, `execute`, `security`, `playwright`,
+  `uat`, `worklog`
+- `CLAUDE.md` with Karpathy 4 principles + Context 50% rule
+- `settings.json` with multi-agent model assignment
+- `scripts/aifab-status.sh` CLI status bar
+- `README.md` installation guide (3 methods)

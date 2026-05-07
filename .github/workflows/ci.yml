@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: skill-lint + statusline tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run skill_lint CLI on real plugin
+        run: python3 scripts/skill_lint.py .claude/plugins/aifab
+
+      - name: Verify SKILLS.md auto-index is in sync
+        run: python3 scripts/gen_skills_index.py --check .claude/plugins/aifab/SKILLS.md
+
+      - name: Verify CLAUDE.md auto-index is in sync
+        run: python3 scripts/gen_skills_index.py --check CLAUDE.md
+
+      - name: Run unit tests
+        run: python3 -m unittest discover -s scripts/tests -v
