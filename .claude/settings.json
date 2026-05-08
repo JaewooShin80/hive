@@ -5,7 +5,7 @@
     "AIFAB_ADVISOR_MODEL": "claude-opus-4-7",
     "AIFAB_WORKER_MODEL": "claude-sonnet-4-6",
     "AIFAB_BOILERPLATE_MODEL": "claude-haiku-4-5",
-    "AIFAB_STATUS_STYLE": "ascii",
+    "AIFAB_STATUS_STYLE": "color",
     "LC_ALL": "en_US.UTF-8"
   },
   "statusLine": {
