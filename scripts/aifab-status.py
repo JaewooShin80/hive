@@ -22,12 +22,19 @@ Style options (env var AIFAB_STATUS_STYLE):
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
 import sys
 from pathlib import Path
 from typing import Optional, Tuple
+
+# Force UTF-8 on Windows (cp949 can't encode Unicode bar characters like ░ █)
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+if sys.stdin.encoding and sys.stdin.encoding.lower() != "utf-8":
+    sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8", errors="replace")
 
 # ── style ────────────────────────────────────────────────────────────────────
 STYLE = os.environ.get("AIFAB_STATUS_STYLE", "color")

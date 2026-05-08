@@ -1,0 +1,54 @@
+{
+  "model": "claude-opus-4-7",
+  "env": {
+    "AIFAB_MODEL": "claude-opus-4-7",
+    "AIFAB_ADVISOR_MODEL": "claude-opus-4-7",
+    "AIFAB_WORKER_MODEL": "claude-sonnet-4-6",
+    "AIFAB_BOILERPLATE_MODEL": "claude-haiku-4-5",
+    "AIFAB_STATUS_STYLE": "ascii",
+    "LC_ALL": "en_US.UTF-8"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "scripts/aifab-status.sh"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(pip *)",
+      "Bash(python *)",
+      "Bash(pytest *)",
+      "Bash(node *)",
+      "Bash(npx *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(chmod *)",
+      "Bash(touch *)",
+      "Read",
+      "Write",
+      "WebSearch",
+      "WebFetch"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); cmd=$(echo \"$input\" | python3 -c \"import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('command',''))\"); if echo \"$cmd\" | grep -qiE 'git commit'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"[자동알림] git commit 감지됨. CLAUDE.md 개발 기본값 규칙: Wave 완료 후 /aifab:security 실행이 필요합니다. 보안 검토를 지금 수행하세요.\"}}'; fi",
+            "timeout": 10,
+            "statusMessage": "Wave 커밋 감지 확인 중..."
+          }
+        ]
+      }
+    ]
+  }
+}

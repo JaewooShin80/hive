@@ -61,15 +61,38 @@ rm -rf /tmp/aifab
 `/aifab:*` 명령어를 모든 프로젝트에서 사용하려면:
 
 ```bash
-# AIFAB-harness 복제
-git clone https://github.com/JaewooShin80/aifab.git ~/.local/share/aifab-harness
+# 1. AIFAB-harness 복제
+git clone https://github.com/JaewooShin80/aifab.git /tmp/aifab
 
-# 스킬을 Claude Code 전역 플러그인 디렉토리에 심볼릭 링크
-mkdir -p ~/.claude/plugins
-ln -s ~/.local/share/aifab-harness/.claude/plugins/aifab ~/.claude/plugins/aifab
+# 2. 스킬을 전역 commands 디렉토리에 복사
+mkdir -p ~/.claude/commands/aifab
+cp /tmp/aifab/.claude/plugins/aifab/skills/*.md ~/.claude/commands/aifab/
+cp -r /tmp/aifab/.claude/plugins/aifab/_shared ~/.claude/commands/aifab/_shared
+cp /tmp/aifab/.claude/plugins/aifab/SKILLS.md ~/.claude/commands/aifab/
 
-# 상태바 스크립트도 전역에서 접근 가능하게
-chmod +x ~/.local/share/aifab-harness/scripts/aifab-status.sh
+# 3. 상태바 스크립트를 전역에 복사
+mkdir -p ~/.claude/scripts/aifab
+cp /tmp/aifab/scripts/aifab-status.py ~/.claude/scripts/aifab/
+cp /tmp/aifab/scripts/aifab-status.sh ~/.claude/scripts/aifab/
+chmod +x ~/.claude/scripts/aifab/aifab-status.sh
+
+# 4. 전역 settings.json에 환경변수 + 상태바 설정 추가
+# ~/.claude/settings.json의 "env"에 아래 항목 추가:
+#   "AIFAB_MODEL": "claude-opus-4-7",
+#   "AIFAB_ADVISOR_MODEL": "claude-opus-4-7",
+#   "AIFAB_WORKER_MODEL": "claude-sonnet-4-6",
+#   "AIFAB_BOILERPLATE_MODEL": "claude-haiku-4-5",
+#   "AIFAB_STATUS_STYLE": "color",
+#   "LC_ALL": "en_US.UTF-8"
+#
+# "statusLine"을 아래로 변경:
+#   "statusLine": {
+#     "type": "command",
+#     "command": "bash $HOME/.claude/scripts/aifab/aifab-status.sh"
+#   }
+
+# 5. 임시 디렉토리 정리
+rm -rf /tmp/aifab
 ```
 
 각 프로젝트마다 `CLAUDE.md`만 복사하거나, 전역 `~/.claude/CLAUDE.md`에 AI-Fab 규칙 추가.
@@ -483,6 +506,19 @@ Claude Code 세션 중 하단에 2줄 표시. 터미널/폰트 환경에 따라 
    }
    ```
 3. **터미널 폰트 확인**: 한글/이모지 미지원 폰트일 경우 D2Coding, Sarasa Mono K, JetBrains Mono 등으로 변경
+
+#### Windows cp949 인코딩 오류
+
+Windows 한국어 환경에서 상태바에 `'cp949' codec can't encode character '\u2591'` 오류가 발생할 수 있다. 이는 Python의 기본 stdout 인코딩이 `cp949`로 설정되어 유니코드 바 문자(`░`, `█`)를 처리하지 못하기 때문이다.
+
+**해결:** `aifab-status.py`에 UTF-8 강제 인코딩이 내장되어 있으므로 최신 버전을 사용하면 자동 해결된다. 수동 해결이 필요한 경우:
+
+```bash
+# 환경변수로 Python UTF-8 모드 강제
+export PYTHONIOENCODING=utf-8
+# 또는 settings.json env에 추가:
+# "PYTHONIOENCODING": "utf-8"
+```
 
 ---
 
