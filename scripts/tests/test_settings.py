@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SETTINGS_FILE = REPO_ROOT / "settings.json"
+SETTINGS_FILE = REPO_ROOT / ".claude" / "settings.json"
 
 DANGEROUS_PATTERNS_THAT_MUST_BE_DENIED = [
     "Bash(rm -rf *)",

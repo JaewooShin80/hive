@@ -110,16 +110,20 @@ for f in aifab-status.sh aifab-status.py; do
   fi
 done
 
-for f in CLAUDE.md settings.json; do
-  src="$SCRIPT_DIR/$f"
-  dst="$TARGET/$f"
-  if [[ -e "$dst" ]]; then
-    note "  $f already present — preserved (no overwrite)"
-  else
-    run cp "$src" "$dst"
-    note "  installed $f"
-  fi
-done
+if [[ -e "$TARGET/CLAUDE.md" ]]; then
+  note "  CLAUDE.md already present — preserved (no overwrite)"
+else
+  run cp "$SCRIPT_DIR/CLAUDE.md" "$TARGET/CLAUDE.md"
+  note "  installed CLAUDE.md"
+fi
+
+run mkdir -p "$TARGET/.claude"
+if [[ -e "$TARGET/.claude/settings.json" ]]; then
+  note "  .claude/settings.json already present — preserved (no overwrite)"
+else
+  run cp "$SCRIPT_DIR/.claude/settings.json" "$TARGET/.claude/settings.json"
+  note "  installed .claude/settings.json"
+fi
 
 if [[ $GLOBAL -eq 1 ]]; then
   GLOBAL_DIR="$HOME/.claude/plugins/aifab"
