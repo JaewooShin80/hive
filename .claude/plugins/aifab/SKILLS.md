@@ -190,11 +190,15 @@ CLAUDE.md(1,100) + 스킬 1개 평균 사용 시: ~2,700 토큰 (Context의 1.4%
 | Command | Description |
 | --- | --- |
 | `/aifab:adr` | Manage Architecture Decision Records (Michael Nygard format) |
+| `/aifab:caveman` | Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Activated by /aifab:caveman, "caveman mode", "talk like caveman", "less tokens", "be brief". Stays active until user says "stop caveman" or "normal mode". |
 | `/aifab:codex-review` | Cross-AI verification via OpenAI Codex CLI |
 | `/aifab:compare` | Use when facing a multi-option technical decision and needing a structured trade-off analysis. Triggers on /aifab:compare command. Use when selecting libraries, architecture patterns, frameworks, design patterns, or algorithms and wanting a weighted decision matrix with recommendation. |
 | `/aifab:debug` | Systematic 4-stage RCA debugging |
+| `/aifab:diagnose` | Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when bug is reproducible. For hard-to-reproduce bugs with unclear cause, use /aifab:debug instead. |
 | `/aifab:discover` | Use when starting a new project or feature and needing to select the right architecture. Triggers on /aifab:discover command. Use when the user has not yet chosen a tech stack, wants to explore options, or needs a structured discovery session before planning. |
 | `/aifab:execute` | Multi-agent Wave execution (Opus + Sonnet/Haiku) |
+| `/aifab:grill` | Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates CONTEXT.md and ADRs inline as decisions crystallise. Use before /aifab:discover when requirements are fuzzy or when the user wants to stress-test a plan. |
+| `/aifab:grill-me` | Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test an idea or plan without codebase context. For code-aware sessions with CONTEXT.md updates, use /aifab:grill instead. |
 | `/aifab:map-codebase` | 4-parallel mappers for codebase analysis |
 | `/aifab:migrate` | Dependency/framework migration |
 | `/aifab:plan` | Wave-based implementation plan creation |

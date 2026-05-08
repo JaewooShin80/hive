@@ -1,10 +1,6 @@
 ---
 name: aifab:caveman
-description: >
-  Ultra-compressed communication mode. Cuts token usage ~75% by dropping
-  filler, articles, and pleasantries while keeping full technical accuracy.
-  Activated by /aifab:caveman, "caveman mode", "talk like caveman", "less tokens", "be brief".
-  Stays active until user says "stop caveman" or "normal mode".
+description: Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Activated by /aifab:caveman, "caveman mode", "talk like caveman", "less tokens", "be brief". Stays active until user says "stop caveman" or "normal mode".
 allowed-tools: []
 ---
 
