@@ -1,8 +1,8 @@
 # AIFAB 하네스 워크플로우 가이드
 
 > **기준일**: 2026-05-08
-> **버전**: 1.0
-> **하네스**: AI-Fab v2 — 16 스킬 + 보안 감사 스킬 + 자동 Hook
+> **버전**: 2.0
+> **하네스**: AI-Fab v2 — 20 스킬 (16 AIFAB + 4 mattpocock 통합) + 보안 감사 스킬 + 자동 Hook
 
 ---
 
@@ -14,12 +14,24 @@
 4. [시나리오 2: 기존 프로젝트 리팩토링](#시나리오-2-기존-프로젝트-리팩토링)
 5. [두 시나리오 공통 패턴](#두-시나리오-공통-패턴)
 6. [보안 스킬 상세 비교](#보안-스킬-상세-비교)
+7. [빠른 참조 — 상황별 첫 명령어](#빠른-참조--상황별-첫-명령어)
 
 ---
 
 ## 스킬 전체 목록
 
-### AI-Fab 워크플로우 스킬 (16개)
+### AI-Fab 워크플로우 스킬 (20개)
+
+#### 정렬/언어 (4개) — mattpocock 통합
+
+| 명령어 | 설명 |
+|---|---|
+| `/aifab:grill` | 구현 전 1:1 인터뷰로 요구사항 정렬 + CONTEXT.md / ADR 실시간 업데이트 |
+| `/aifab:grill-me` | 코드 무관 아이디어/플랜 인터뷰로 공유된 이해 도달 |
+| `/aifab:caveman` | 토큰 75% 절감 초압축 모드 (세션 내 지속, "stop caveman"으로 해제) |
+| `/aifab:diagnose` | 재현 우선 디버깅 루프 (재현→최소화→가설→계측→수정→회귀테스트) |
+
+#### 핵심 워크플로우 + 보조 도구 + 코드 조작 + 결정 (16개)
 
 | 명령어 | 설명 |
 |---|---|
@@ -77,12 +89,31 @@ Bash 도구로 git commit 실행
 ### 전체 흐름
 
 ```
-plan → [execute → (auto)security] × N → playwright → uat → security-audit
+grill-me → grill → compare/adr → plan → [execute → (auto)security] × N
+  → playwright → uat → security-audit
 ```
 
 ### 단계별 상세
 
-#### Phase 0: 방향 설정
+#### Phase 0a: 아이디어 정렬 (선택)
+
+```
+/aifab:grill-me
+```
+- 코드와 무관한 아이디어·플랜 단계에서 호출
+- AI가 의사결정 트리의 모든 가지를 인터뷰로 해소
+- 산출물 없음 (대화 기반)
+
+```
+/aifab:grill
+```
+- 구현 직전 도메인 언어와 요구사항을 정렬
+- `CONTEXT.md`를 실시간 갱신 (도메인 전문가 공유 언어)
+- 중요한 결정은 `docs/adr/`에 자동 기록
+
+---
+
+#### Phase 0b: 방향 설정
 
 ```
 /aifab:compare
@@ -128,10 +159,14 @@ plan → [execute → (auto)security] × N → playwright → uat → security-a
 /aifab:worktree         ← git worktree로 병렬 Wave 동시 진행
 ```
 
-**문제 발생 시**:
+**문제 발생 시 (둘 중 선택)**:
 
 ```
-/aifab:debug            ← 4단계 RCA (가설 → 증거 → 검증 → 수정)
+/aifab:diagnose         ← 재현 가능한 버그
+                           재현 루프 → 최소화 → 가설 → 계측 → 수정 → 회귀테스트
+
+/aifab:debug            ← 재현 어려움 / 원인 불명
+                           가설 → 증거 → 검증 → 수정 (4단계 RCA)
 ```
 
 ---
@@ -172,7 +207,7 @@ plan → [execute → (auto)security] × N → playwright → uat → security-a
 ### 전체 흐름
 
 ```
-discover → map-codebase → security-audit(before)
+discover → map-codebase → grill → security-audit(before)
   → [refactor → (auto)security] × N
     → playwright → security-audit(after)
 ```
@@ -196,6 +231,13 @@ discover → map-codebase → security-audit(before)
   - `quality` — 코드 품질, 테스트 커버리지
   - `concerns` — 잠재적 문제, 기술 부채
 - 변경 전 스냅샷 확보 (리팩토링 후 비교 기준)
+
+```
+/aifab:grill
+```
+- map-codebase 결과를 바탕으로 기존 도메인 언어를 학습하고, 리팩토링 의도를 정렬
+- `CONTEXT.md` 신규 생성 또는 갱신 (기존 코드 용어와 충돌 시 즉시 표면화)
+- 리팩토링 범위·경계 결정을 ADR로 기록
 
 ---
 
@@ -246,7 +288,10 @@ discover → map-codebase → security-audit(before)
 **문제 발생 시**:
 
 ```
-/aifab:debug            ← 4단계 RCA (가설 → 증거 → 검증 → 수정)
+/aifab:diagnose         ← 재현 가능한 동작 변경
+                           재현 루프 구축 → 최소화 → 계측 → 수정 → 회귀테스트
+/aifab:debug            ← 재현 어려움 / 원인 불명
+                           가설 → 증거 → 검증 → 수정 (4단계 RCA)
 /aifab:rollback         ← Wave 단위 안전한 롤백 (백업 브랜치 자동 보존)
                            ※ force-push 금지, 백업 브랜치로 항상 복구 가능
 ```
@@ -272,14 +317,16 @@ discover → map-codebase → security-audit(before)
 
 | 단계 | 새 프로젝트 | 리팩토링 |
 |---|---|---|
+| **정렬** | `grill-me` (선택) → `grill` | `grill` (map-codebase 후) |
 | **진입** | `plan` | `discover` + `map-codebase` |
 | **베이스라인** | 없음 | `security-audit` (before) |
-| **Wave 실행** | `execute` | `refactor` |
+| **Wave 실행** | `execute` | `refactor` (또는 `migrate`) |
 | **Wave 후 보안** | Hook 자동 → `security` | Hook 자동 → `security` |
-| **문제 발생** | `debug` | `debug` + `rollback` |
+| **문제 발생** | `diagnose` (재현 가능) / `debug` (재현 불가) | `diagnose` / `debug` + `rollback` |
 | **교차 검증** | `codex-review` (선택) | `codex-review` (선택) |
 | **최종 감사** | `security-audit` 1회 | `security-audit` before/after 비교 |
-| **기록** | `worklog` | `worklog` + REFACTOR-LOG.md |
+| **기록** | `worklog` + `CONTEXT.md` | `worklog` + REFACTOR-LOG.md + `CONTEXT.md` |
+| **상시** | `caveman` (토큰 압박 시) | `caveman` (토큰 압박 시) |
 
 ### Wave 루프 — 두 시나리오 공통
 
@@ -311,6 +358,33 @@ discover → map-codebase → security-audit(before)
 | **자동 수정** | ❌ 치명적 이슈는 자동 수정 | 수동 수정 (Phase별 우선순위 제시) |
 | **용도** | 개발 중 CI 역할 (회귀 방지) | 납품·감사·컴플라이언스 증적 |
 | **소요 시간** | 빠름 (변경 파일 위주) | 느림 (전체 코드베이스 전수 점검) |
+
+---
+
+## 빠른 참조 — 상황별 첫 명령어
+
+| 상황 | 명령어 |
+|------|--------|
+| 뭘 만들지 모르겠다 | `/aifab:grill-me` |
+| 요구사항이 모호하다 | `/aifab:grill` |
+| 새 프로젝트 출발 (구조 결정) | `/aifab:discover` |
+| 처음 보는 코드베이스 | `/aifab:map-codebase` |
+| 두 옵션 사이 결정 | `/aifab:compare` |
+| 큰 결정 영구 기록 | `/aifab:adr new` |
+| 재현되는 버그/회귀 | `/aifab:diagnose` |
+| 가끔 나는 / 원인 불명 버그 | `/aifab:debug` |
+| 컨텍스트 50% 도달, 토큰 압박 | `/aifab:caveman` |
+| 작업 재개 | `/aifab:worklog resume` |
+| 동작 보존 점진 개선 | `/aifab:refactor` |
+| 의존성/프레임워크 교체 | `/aifab:migrate` |
+| 문제 시 안전한 되돌리기 | `/aifab:rollback` |
+
+---
+
+## 변경 이력
+
+- **v2.0 (2026-05-08)**: mattpocock/skills 4개 통합 (grill, grill-me, caveman, diagnose). 정렬 단계와 재현 우선 디버깅 옵션 추가.
+- **v1.0 (2026-05-08)**: 초기 버전 (16 AIFAB 스킬 + security-audit + Hook).
 
 ---
 
