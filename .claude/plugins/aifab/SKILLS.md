@@ -4,6 +4,16 @@ AI-Fab 워크플로우의 모든 스킬과 의존성 그래프.
 
 ## 스킬 카테고리
 
+### 🗣️ 정렬/언어 (4) — mattpocock 통합
+구현 전 요구사항 정렬, 도메인 언어 확립, 토큰 효율화.
+
+| 명령어 | 역할 |
+|--------|------|
+| `/aifab:grill` | 구현 전 인터뷰 + CONTEXT.md / ADR 실시간 업데이트 |
+| `/aifab:grill-me` | 코드 무관 아이디어/플랜 인터뷰 |
+| `/aifab:caveman` | 토큰 75% 절감 초압축 모드 |
+| `/aifab:diagnose` | 재현→최소화→가설→계측→수정→회귀테스트 디버깅 루프 |
+
 ### 🎯 핵심 워크플로우 (7)
 프로젝트 시작부터 완료까지의 표준 흐름.
 
@@ -44,13 +54,16 @@ AI-Fab 워크플로우의 모든 스킬과 의존성 그래프.
 | `/aifab:compare` | 옵션 N개 비교 + 추천 |
 | `/aifab:adr` | Architecture Decision Records |
 
-**총 16 스킬.**
+**총 20 스킬.**
 
 ---
 
 ## 의존성 그래프
 
 ```
+/aifab:grill  →  /aifab:discover  →  /aifab:plan  →  /aifab:execute
+(선택적 전처리)
+
                 ┌──────────────────────────┐
                 │    /aifab:map-codebase   │ (brownfield 시작)
                 └──────────────┬───────────┘
@@ -102,6 +115,8 @@ AI-Fab 워크플로우의 모든 스킬과 의존성 그래프.
 | `migrate` | `plan` | 마이그레이션 Wave 분해 |
 | `rollback` | `worklog update` | 상태 복원 |
 | 모든 스킬 | `worklog update` | 시작/종료 시 |
+| `grill` | `worklog init` | 프로젝트 시작 시 선택적 |
+| `diagnose` | `refactor` | 아키텍처 문제 발견 시 |
 
 ---
 
@@ -125,6 +140,10 @@ AI-Fab 워크플로우의 모든 스킬과 의존성 그래프.
 | rollback | ●● | ● | - |
 | compare | ●●● | ● | - |
 | adr | ●● | ● | - |
+| grill | ●●● | - | - |
+| grill-me | ●●● | - | - |
+| caveman | - | - | - |
+| diagnose | - | ●●● | - |
 
 `●●●` 주력 / `●●` 보조 / `●` 가벼운 사용 / `○` 거의 안 씀 / `-` 미사용
 

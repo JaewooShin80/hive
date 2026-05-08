@@ -14,7 +14,7 @@ AI-Fab 프로젝트 전용 Claude Code 개발 워크플로우. Andrej Karpathy�
 
 ```bash
 # 1. AIFAB-harness 복제
-git clone https://github.com/JaewooShin80/aifab.git my-new-project
+git clone <YOUR_GITLAB_REPO_URL> my-new-project
 cd my-new-project
 
 # 2. 기존 git 히스토리 제거 후 새로 시작
