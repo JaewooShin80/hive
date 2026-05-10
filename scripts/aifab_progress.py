@@ -126,9 +126,76 @@ def compute_progress(roadmap: Roadmap, plan: Plan) -> Progress:
     )
 
 
-if __name__ == "__main__":
+def format_short(roadmap: Roadmap, plan: Plan, progress: Progress) -> str:
+    """One-line representation for status bar: 'P2/3 W7/12 (58%)'"""
+    total_phases = len(roadmap.phases)
+    current_n = progress.current_phase.number if progress.current_phase else 0
+    return f"P{current_n}/{total_phases} W{progress.completed_waves}/{progress.total_waves} ({progress.overall_pct}%)"
+
+
+def format_dashboard(roadmap: Roadmap, plan: Plan, progress: Progress) -> str:
+    """Multi-line human-readable dashboard."""
+    lines = []
+    lines.append("━" * 41)
+    if roadmap.milestone:
+        days = f"{progress.days_elapsed}일 경과" if progress.days_elapsed else "오늘 시작"
+        lines.append(f"🏷  마일스톤: {roadmap.milestone}  (시작 {roadmap.start_date}, {days})")
+    lines.append("")
+    lines.append(f"📊 전체 진척: {progress.completed_waves}/{progress.total_waves} Wave ({progress.overall_pct}%)")
+    lines.append("")
+    for p in roadmap.phases:
+        wave_count = p.wave_range[1] - p.wave_range[0] + 1
+        done_in_phase = sum(
+            1 for w in plan.completed_waves if p.wave_range[0] <= w <= p.wave_range[1]
+        )
+        bar_w = 12
+        filled = int(bar_w * done_in_phase / wave_count) if wave_count else 0
+        bar = "█" * filled + "░" * (bar_w - filled)
+        emoji = {"complete": "✅", "in_progress": "🟡", "pending": "⬜"}[p.status]
+        cursor = " ← 현재" if p.status == "in_progress" else ""
+        lines.append(f"Phase {p.number}: {p.name:<16}  {bar}  {done_in_phase}/{wave_count}   {emoji}{cursor}")
+    lines.append("")
+    if progress.current_phase:
+        lines.append(f"📍 현재 위치: Phase {progress.current_phase.number} ({progress.current_phase.name})")
+    lines.append("━" * 41)
+    return "\n".join(lines)
+
+
+def _load_files() -> Tuple[Optional[Roadmap], Optional[Plan]]:
+    roadmap_path = Path("ROADMAP.md")
+    plan_path = Path("PLAN.md")
+    rm = parse_roadmap(roadmap_path.read_text(encoding="utf-8")) if roadmap_path.exists() else None
+    plan = parse_plan(plan_path.read_text(encoding="utf-8")) if plan_path.exists() else None
+    return rm, plan
+
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--short", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    sys.exit(0)
+
+    rm, plan = _load_files()
+    if rm is None or plan is None:
+        print("ROADMAP.md 또는 PLAN.md 없음. /aifab:roadmap init 먼저 실행하세요.", file=sys.stderr)
+        sys.exit(2)
+
+    prog = compute_progress(rm, plan)
+
+    if args.short:
+        print(format_short(rm, plan, prog))
+    elif args.json:
+        print(json.dumps({
+            "milestone": rm.milestone,
+            "completed_waves": prog.completed_waves,
+            "total_waves": prog.total_waves,
+            "overall_pct": prog.overall_pct,
+            "current_phase": prog.current_phase.number if prog.current_phase else None,
+            "total_phases": len(rm.phases),
+        }))
+    else:
+        print(format_dashboard(rm, plan, prog))
+
+
+if __name__ == "__main__":
+    main()

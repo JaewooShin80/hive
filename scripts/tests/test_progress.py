@@ -104,5 +104,49 @@ class TestComputeProgress(unittest.TestCase):
         self.assertEqual(prog.current_phase.number, 2)
 
 
+class TestFormatters(unittest.TestCase):
+    def _make_progress(self):
+        rm = parse_roadmap(dedent("""\
+            > **마일스톤:** v1.0.0
+            > **시작일:** 2026-05-08
+
+            ## Phase 1: A (Wave 1-2) ✅ complete
+            - [x] Wave 1
+            - [x] Wave 2
+
+            ## Phase 2: B (Wave 3-4) 🟡 in_progress
+            - [x] Wave 3
+            - [ ] Wave 4
+        """))
+        plan = parse_plan(dedent("""\
+            ## Wave 1
+            - [x] done
+            ## Wave 2
+            - [x] done
+            ## Wave 3
+            - [x] done
+            ## Wave 4
+            - [ ] todo
+        """))
+        return rm, plan, compute_progress(rm, plan)
+
+    def test_format_short_one_liner(self):
+        from aifab_progress import format_short
+        rm, plan, prog = self._make_progress()
+        out = format_short(rm, plan, prog)
+        self.assertIn("P2/2", out)
+        self.assertIn("W3/4", out)
+        self.assertIn("75%", out)
+
+    def test_format_dashboard_contains_milestone_and_phases(self):
+        from aifab_progress import format_dashboard
+        rm, plan, prog = self._make_progress()
+        out = format_dashboard(rm, plan, prog)
+        self.assertIn("v1.0.0", out)
+        self.assertIn("Phase 1: A", out)
+        self.assertIn("Phase 2: B", out)
+        self.assertIn("75%", out)
+
+
 if __name__ == "__main__":
     unittest.main()
