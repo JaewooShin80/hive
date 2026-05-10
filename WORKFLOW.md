@@ -1,8 +1,8 @@
 # AIFAB 하네스 워크플로우 가이드
 
 > **기준일**: 2026-05-08
-> **버전**: 2.0
-> **하네스**: AI-Fab v2 — 20 스킬 (16 AIFAB + 4 mattpocock 통합) + 보안 감사 스킬 + 자동 Hook
+> **버전**: 2.1
+> **하네스**: AI-Fab v2 — 23 스킬 (16 AIFAB + 4 mattpocock + 3 매니지먼트) + 보안 감사 스킬 + 자동 Hook
 
 ---
 
@@ -89,8 +89,8 @@ Bash 도구로 git commit 실행
 ### 전체 흐름
 
 ```
-grill-me → grill → compare/adr → plan → [execute → (auto)security] × N
-  → playwright → uat → security-audit
+milestone new → roadmap init → grill → discover → plan(phase) → [execute → (auto)security] × N
+  → roadmap update → milestone audit → milestone complete (git tag) → playwright → uat
 ```
 
 ### 단계별 상세
@@ -378,11 +378,15 @@ discover → map-codebase → grill → security-audit(before)
 | 동작 보존 점진 개선 | `/aifab:refactor` |
 | 의존성/프레임워크 교체 | `/aifab:migrate` |
 | 문제 시 안전한 되돌리기 | `/aifab:rollback` |
+| Phase 단위 로드맵 만들기 | `/aifab:roadmap init <semver>` |
+| 프로젝트 진행률 확인 | `/aifab:progress` |
+| 마일스톤 시작/완료 | `/aifab:milestone new` / `/aifab:milestone complete` |
 
 ---
 
 ## 변경 이력
 
+- **v2.1 (2026-05-08)**: Phase·로드맵·진척률·마일스톤 매니지먼트 추가 (`/aifab:roadmap`, `/aifab:progress`, `/aifab:milestone`).
 - **v2.0 (2026-05-08)**: mattpocock/skills 4개 통합 (grill, grill-me, caveman, diagnose). 정렬 단계와 재현 우선 디버깅 옵션 추가.
 - **v1.0 (2026-05-08)**: 초기 버전 (16 AIFAB 스킬 + security-audit + Hook).
 
