@@ -79,9 +79,12 @@
 | `/aifab:grill-me` | Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test an idea or plan without codebase context. For code-aware sessions with CONTEXT.md updates, use /aifab:grill instead. |
 | `/aifab:map-codebase` | 4-parallel mappers for codebase analysis |
 | `/aifab:migrate` | Dependency/framework migration |
+| `/aifab:milestone` | Manage project milestones (semver tags). Subcommands new/complete/audit handle milestone lifecycle from start to git tag. Use new at project start, audit before declaring done, complete to tag. |
 | `/aifab:plan` | Wave-based implementation plan creation |
 | `/aifab:playwright` | E2E UI test generation with Playwright |
+| `/aifab:progress` | Display project progress dashboard — milestone, phase progression, wave completion percentages, current position, and next recommended command. Reads ROADMAP.md and PLAN.md. |
 | `/aifab:refactor` | Behavior-preserving incremental refactoring |
+| `/aifab:roadmap` | Manage project roadmap (Phase-level grouping of Waves) and milestone metadata. Subcommands init/add-phase/update. Generates ROADMAP.md as the index above PLAN.md. |
 | `/aifab:rollback` | Safe Wave-level rollback with backup |
 | `/aifab:security` | 4-domain security review (OWASP/AI-LLM/API/secrets) |
 | `/aifab:uat` | UAT scenarios + result collection |
