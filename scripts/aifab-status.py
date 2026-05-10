@@ -175,13 +175,39 @@ def main() -> None:
     name_part = f"{C_NAME}AI-Fab{C_RESET}"
     model_part = f"{C_MODEL}{model}{C_RESET}"
 
-    # wave progress
-    wave_done, wave_total = get_wave_progress()
-    if wave_total > 0:
-        wave_pct = wave_done * 100 / wave_total
-        wave_part = f"{C_LABEL}wave{C_RESET} {bar(wave_pct)} {wave_done}/{wave_total}"
+    # wave progress (with optional ROADMAP.md awareness)
+    roadmap_path = Path("ROADMAP.md")
+    if roadmap_path.exists():
+        # use aifab-progress.py --short for unified format
+        try:
+            import subprocess
+            r = subprocess.run(
+                ["python3", str(Path(__file__).parent / "aifab_progress.py"), "--short"],
+                capture_output=True, text=True, timeout=2,
+            )
+            if r.returncode == 0 and r.stdout.strip():
+                wave_part = f"{C_LABEL}{r.stdout.strip()}{C_RESET}"
+            else:
+                wave_done, wave_total = get_wave_progress()
+                if wave_total > 0:
+                    wave_pct = wave_done * 100 / wave_total
+                    wave_part = f"{C_LABEL}wave{C_RESET} {bar(wave_pct)} {wave_done}/{wave_total}"
+                else:
+                    wave_part = f"{C_LABEL}wave{C_RESET} {bar(0)} -/-"
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            wave_done, wave_total = get_wave_progress()
+            if wave_total > 0:
+                wave_pct = wave_done * 100 / wave_total
+                wave_part = f"{C_LABEL}wave{C_RESET} {bar(wave_pct)} {wave_done}/{wave_total}"
+            else:
+                wave_part = f"{C_LABEL}wave{C_RESET} {bar(0)} -/-"
     else:
-        wave_part = f"{C_LABEL}wave{C_RESET} {bar(0)} -/-"
+        wave_done, wave_total = get_wave_progress()
+        if wave_total > 0:
+            wave_pct = wave_done * 100 / wave_total
+            wave_part = f"{C_LABEL}wave{C_RESET} {bar(wave_pct)} {wave_done}/{wave_total}"
+        else:
+            wave_part = f"{C_LABEL}wave{C_RESET} {bar(0)} -/-"
 
     # context window
     ctx_pct = get_context_pct(data)

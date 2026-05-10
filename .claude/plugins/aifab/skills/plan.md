@@ -31,6 +31,19 @@ Advisor로서 프로젝트의 기능 목록을 분석하고, 복잡도에 따라
 2. `ARCHITECTURE.md`를 읽어 기술 스택, 아키텍처 결정사항, 프로젝트 구조를 파악한다.
 3. `WORKLOG.md`가 존재하면 읽어 현재 진행 맥락을 파악한다.
 
+3. `ROADMAP.md` 존재 여부 확인 (선택적):
+   - **있으면:**
+     - 인자에 `phase N`이 있으면 해당 Phase의 Wave 범위만 분해 대상으로 한다.
+     - 인자가 없으면 첫 `🟡 in_progress` 또는 `⬜ pending` Phase의 Wave 범위만 분해.
+     - PLAN.md 헤더에 다음 메타를 추가한다:
+       ```markdown
+       > **Phase:** N (이름)
+       > **Wave 범위:** a-b
+       ```
+   - **없으면:** 기존 동작 (전체 기능을 단일 Phase로 분해, 메타 추가 없음). 역호환 유지.
+
+4. ROADMAP.md를 갱신해야 하는 경우 (Phase 1 완료 후 Phase 2 plan 호출 등) 마지막 단계에서 사용자에게 `/aifab:roadmap update` 실행을 안내한다.
+
 ---
 
 ## 2단계: 기능 목록 수집

@@ -58,7 +58,7 @@ class TestInstallScript(unittest.TestCase):
             result = self._run("--target", str(target))
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             self.assertTrue((target / "CLAUDE.md").exists(), "CLAUDE.md not installed")
-            self.assertTrue((target / "settings.json").exists(), "settings.json not installed")
+            self.assertTrue((target / ".claude" / "settings.json").exists(), ".claude/settings.json not installed")
             self.assertTrue((target / "scripts" / "aifab-status.sh").exists())
             self.assertTrue((target / "scripts" / "aifab-status.py").exists())
             # plugin should be linked or copied under .claude/plugins/aifab
@@ -82,7 +82,8 @@ class TestInstallScript(unittest.TestCase):
     def test_install_protects_existing_settings_json(self):
         with tempfile.TemporaryDirectory() as d:
             target = Path(d)
-            existing = target / "settings.json"
+            (target / ".claude").mkdir()
+            existing = target / ".claude" / "settings.json"
             existing.write_text('{"custom": true}', encoding="utf-8")
             result = self._run("--target", str(target))
             self.assertEqual(result.returncode, 0, msg=result.stderr)
