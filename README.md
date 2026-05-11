@@ -147,9 +147,11 @@ bash scripts/aifab-status.sh
 # 2. Claude Code에서 스킬 인식 확인
 claude
 > /aifab:
-# 자동완성 목록에 11개 스킬이 보여야 함:
+# 자동완성 목록에 23개 스킬이 보여야 함:
 # discover, plan, execute, security, playwright, uat, worklog,
-# debug, map-codebase, worktree, codex-review
+# debug, diagnose, map-codebase, worktree, codex-review,
+# refactor, migrate, rollback, compare, adr,
+# grill, grill-me, caveman, roadmap, progress, milestone
 ```
 
 ---
@@ -175,6 +177,9 @@ claude
 
 # 3-2. 디버깅 (필요 시)
 /aifab:debug "<증상 설명>"
+
+# 3-3. 진척 확인 (수시)
+/aifab:progress
 
 # 4. 보안 검토 (각 Wave 완료 후)
 /aifab:security
@@ -207,6 +212,30 @@ claude
 
 # Wave 단위 롤백
 /aifab:rollback wave 3
+
+# === v2.1 추가 명령 (Roadmap/Milestone 레이어) ===
+
+# 프로젝트 시작 시 로드맵 초기화
+/aifab:roadmap init v1.0.0
+
+# 마일스톤 신규/완료/감사
+/aifab:milestone new v1.0.0
+/aifab:milestone audit
+/aifab:milestone complete
+
+# === mattpocock 통합 명령 ===
+
+# 코드베이스 인식 plan 인터뷰 (CONTEXT.md/ADR 갱신)
+/aifab:grill
+
+# 코드 없이 아이디어/플랜 스트레스 테스트
+/aifab:grill-me
+
+# 재현 가능한 버그 진단 루프
+/aifab:diagnose "<증상>"
+
+# 토큰 ~75% 절감 압축 응답 모드
+/aifab:caveman
 ```
 
 ---
@@ -447,6 +476,90 @@ Codex 미설치 시 사용자가 직접 ChatGPT 등에 복사하는 fallback 지
 
 ---
 
+### `/aifab:roadmap` — Phase 인덱스 + 마일스톤 메타 (v2.1)
+
+`ROADMAP.md`를 생성·갱신하여 `PLAN.md`의 Wave를 Phase 단위로 그룹핑한다.
+
+```bash
+/aifab:roadmap                       # 현재 ROADMAP.md 표시
+/aifab:roadmap init v1.0.0           # 신규 생성
+/aifab:roadmap add-phase "<이름>"
+/aifab:roadmap update                # PLAN.md 변경 반영
+```
+
+`ROADMAP.md`가 있으면 `/aifab:plan`과 상태바가 Phase/Wave 포맷으로 동작한다 (하위호환).
+
+---
+
+### `/aifab:progress` — 진척률 대시보드 (v2.1)
+
+`ROADMAP.md` + `PLAN.md`를 읽어 마일스톤·Phase·Wave 진행률과 다음 추천 명령어를 표시한다.
+
+```bash
+/aifab:progress
+```
+
+Python 헬퍼 `scripts/aifab_progress.py`가 파싱·계산을 담당하므로 추가 모델 호출 없음.
+
+---
+
+### `/aifab:milestone` — 마일스톤 라이프사이클 (v2.1)
+
+semver 마일스톤을 생성·감사·완료하고 git tag를 생성한다.
+
+```bash
+/aifab:milestone                # 현재 상태
+/aifab:milestone new v1.0.0     # 시작
+/aifab:milestone audit          # 완료 직전 점검
+/aifab:milestone complete       # git tag + MILESTONE-LOG.md 회고
+```
+
+---
+
+### `/aifab:grill` — 코드베이스 인식 인터뷰 (mattpocock)
+
+구현 시작 전, 도메인 모델 대비 플랜의 모든 측면을 인터뷰로 검증한다. 용어 확정 시 `CONTEXT.md`를 즉시 갱신하고 중요한 결정은 ADR로 기록한다.
+
+```bash
+/aifab:grill              # 현재 컨텍스트 기반
+/aifab:grill <topic>      # 특정 주제 집중
+```
+
+`/aifab:discover` 이전 또는 플랜이 모호할 때 사용.
+
+---
+
+### `/aifab:grill-me` — 코드 없는 아이디어 인터뷰 (mattpocock)
+
+코드베이스 참조 없이 아이디어/플랜만 스트레스 테스트. `CONTEXT.md`/ADR 갱신 없음. 기술 결정 전 검증에 적합.
+
+---
+
+### `/aifab:diagnose` — 재현 우선 디버깅 루프 (mattpocock)
+
+재현 가능한 버그 또는 성능 회귀 전용. `재현 → 최소화 → 가설 → 계측 → 수정 → 회귀 테스트`.
+
+```bash
+/aifab:diagnose "<증상>"
+```
+
+| 선택 기준 | `/aifab:diagnose` | `/aifab:debug` |
+|---|---|---|
+| 재현 가능 | O | △ |
+| 원인 불명/재현 어려움 | △ | O |
+
+---
+
+### `/aifab:caveman` — 초압축 응답 모드 (mattpocock)
+
+관사·인사말·헤징 제거로 토큰 사용량 약 75% 절감. 기술 정확도 유지. `stop caveman` / `normal mode` 발화 시 해제.
+
+```bash
+/aifab:caveman
+```
+
+---
+
 ### `/aifab:adr` — Architecture Decision Records
 
 Michael Nygard 형식 의사결정 기록.
@@ -556,7 +669,7 @@ AIFAB-harness/
 │   └── aifab-status.sh         ← CLI 상태바 스크립트
 └── .claude/
     └── plugins/aifab/
-        ├── SKILLS.md             ← 16 스킬 인덱스 + 의존성 그래프
+        ├── SKILLS.md             ← 23 스킬 인덱스 + 의존성 그래프
         ├── _shared/              ← 공통 표준 프로토콜
         │   ├── prerequisites.md      (사전조건 매트릭스)
         │   ├── output-format.md      (Verdict/Severity/에러코드)
@@ -579,7 +692,14 @@ AIFAB-harness/
             ├── migrate.md        ← /aifab:migrate        (v2)
             ├── rollback.md       ← /aifab:rollback       (v2)
             ├── compare.md        ← /aifab:compare        (v2)
-            └── adr.md            ← /aifab:adr            (v2)
+            ├── adr.md            ← /aifab:adr            (v2)
+            ├── roadmap.md        ← /aifab:roadmap        (v2.1)
+            ├── progress.md       ← /aifab:progress       (v2.1)
+            ├── milestone.md      ← /aifab:milestone      (v2.1)
+            ├── grill.md          ← /aifab:grill          (mattpocock)
+            ├── grill-me.md       ← /aifab:grill-me       (mattpocock)
+            ├── diagnose.md       ← /aifab:diagnose       (mattpocock)
+            └── caveman.md        ← /aifab:caveman        (mattpocock)
 ```
 
 ---
@@ -591,7 +711,10 @@ AIFAB-harness/
 | 파일 | 생성 시점 | 내용 |
 |------|----------|------|
 | `ARCHITECTURE.md` | `/aifab:discover` 완료 | 선택된 아키텍처 상세 |
+| `ROADMAP.md` | `/aifab:roadmap init` | Phase 인덱스 + 마일스톤 메타 |
 | `PLAN.md` | `/aifab:plan` 완료 | Wave별 작업 플랜 |
+| `CONTEXT.md` | `/aifab:grill` 실행 | 도메인 용어/제약 정렬 기록 |
+| `MILESTONE-LOG.md` | `/aifab:milestone complete` | 마일스톤 완료 회고 + git tag 기록 |
 | `WORKLOG.md` | `/aifab:discover` 완료 | 작업일지 |
 | `docs/UAT-REPORT.md` | `/aifab:uat` 완료 | UAT 결과 보고서 |
 | `DEBUG-SESSION.md` | `/aifab:debug` 진행 중 | 디버그 세션 가설/증거/결과 |
