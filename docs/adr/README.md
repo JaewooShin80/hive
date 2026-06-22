@@ -14,6 +14,7 @@ Status / Context / Decision / Consequences.
 |---|---|---|
 | [0001](0001-stdlib-only-policy.md) | Stdlib-only policy for harness scripts and tests | Accepted |
 | [0002](0002-skill-categorization.md) | Four-category skill taxonomy | Accepted |
+| [0003](0003-karpathy-hook-enforcement.md) | Karpathy 4 principles enforced by Claude Code hooks | Proposed |
 
 ## Adding an ADR
 
