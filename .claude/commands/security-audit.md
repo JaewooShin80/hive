@@ -1,13 +1,13 @@
 ---
-description: 웹개발보안 + AI/LLM + 인프라 보안 가이드 기반 코드 점검 및 조치 (63개 항목)
+description: 웹개발보안 + AI/LLM + 인프라 보안 가이드 기반 코드 점검 및 조치 (68개 항목)
 allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Agent]
 ---
 
 # Security Audit Skill — 웹/API + AI/LLM + 인프라 보안 점검
 
-프로젝트 코드를 대상으로 **웹/API 보안 가이드 43개 항목** + **AI/LLM 보안 가이드 20개 항목**을 점검하고, 결과 보고서를 생성합니다.
+프로젝트 코드를 대상으로 **웹/API 보안 가이드 45개 항목** + **AI/LLM 보안 가이드 23개 항목**을 점검하고, 결과 보고서를 생성합니다.
 
-> **기준 문서**: 정부 소프트웨어 개발보안 가이드(행정안전부) + AI/LLM 개발보안 가이드라인 v1.1.0 + CLOUD_DOCKER 보안 규격
+> **기준 문서**: 정부 소프트웨어 개발보안 가이드(행정안전부) + AI/LLM 개발보안 가이드라인 v1.1.0 + CLOUD_DOCKER 보안 규격 + 개인정보보호법 고시 + OWASP Top 10 최신 트렌드
 
 ---
 
@@ -18,14 +18,18 @@ allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Agent]
 프로젝트의 기술 스택과 구조를 먼저 파악합니다.
 
 - `package.json` (프론트엔드/백엔드) → 프레임워크, 보안 패키지 확인
+- [추가] `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml` → 알려진 라이브러리 취약점(CVE) 및 공급망 위험 확인
 - 서버 진입점 → 미들웨어 구성 확인
 - 라우트 파일 → 인증/인가 적용 확인
 - `.env`, `.env.example` → 시크릿 관리 확인
 - `.gitignore` → 민감 파일 제외 확인
 - `Dockerfile`, `docker-compose*.yml` → 컨테이너 보안 확인
 - `nginx/nginx.conf` 또는 웹서버 설정 → 프록시 보안 확인
+- [추가] `*.tf`, `*.yaml` (IaC/K8s 매니페스트) → 코드형 인프라 및 오케스트레이션 보안 설정 확인
 
-### Step 2: 웹/API 보안 점검 (43개 항목)
+---
+
+### Step 2: 웹/API 보안 점검 (45개 항목)
 
 아래 체크리스트를 코드 기반으로 점검합니다. 각 항목에 대해 **양호/미흡/해당없음** 판정과 근거를 기록합니다.
 
@@ -33,30 +37,34 @@ allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Agent]
 
 | # | 점검 항목 | 중요도 | 정부 매핑 | 점검 방법 |
 |---|----------|--------|----------|----------|
-| 1-1 | XSS/CSRF 공격 가능성 | 중요 | SR1-5, SR1-6 | localStorage에 토큰 저장 여부, httpOnly 쿠키 사용 여부, CSRF 토큰/헤더 검증 미들웨어 존재 여부, CSP 헤더 설정 확인 |
-| 1-2 | SQL/Command Injection | 중요 | SR1-1 | parameterized query 사용 여부 (문자열 결합 SQL 검색), eval()/exec() 사용 여부, ORM 사용 시 raw query 검색 |
-| 1-3 | 파라미터/히든필드 조작 | 중요 | SR1-9, SR1-8 | 입력값 검증 미들웨어 존재 여부, enum/whitelist 검증 (특히 role, status 등), URL 파라미터 타입 검증 |
+| 1-1 [보완] | XSS/CSRF 공격 가능성 | 중요 | SR1-5, SR1-6 | localStorage에 토큰 저장 여부, httpOnly 쿠키 사용 여부, CSRF 토큰/헤더 검증 미들웨어 존재 여부, CSP 헤더 및 CORS 와일드카드(*) 설정 확인 |
+| 1-2 [보완] | SQL/Command Injection | 중요 | SR1-1 | parameterized query 사용 여부 (문자열 및 백틱 템플릿 결합 SQL 검색), eval()/exec() 사용 여부, ORM 사용 시 raw query 검색 |
+| 1-3 [보완] | 파라미터/히든필드 조작 | 중요 | SR1-9, SR1-8 | 입력값 검증 미들웨어 존재 여부, enum/whitelist 검증 (특히 role, status 등), URL 파라미터 타입 및 데이터 바인딩(Mass Assignment) 검증 |
 | 1-4 | XXE/File Inclusion | 중요 | SR1-2 | XML 파서 사용 여부, 외부 엔티티 비활성화 설정 확인 |
 | 1-5 | 미검증 리다이렉트/포워드 | 일반 | SR1-7 | 사용자 입력 기반 redirect/forward 코드 검색 |
+| 1-6 [추가] | 경로 조작 및 자원 주입 | 중요 | 구현단계-경로 조작 및 자원 삽입 | 외부 입력값이 파일 생성/인출 함수(path.join, fs.readFile 등)에 직접 결합되는지 검증, 상위 이동 문자(.., /) 필터링 여부 확인 |
+| 1-7 [추가] | 서버 측 요청 위조 (SSRF) | 중요 | 구현단계-서버사이드 요청 위조 | Agent가 외부 URL을 인자로 받아 내부 사설 IP(10.x, 192.168.x 등)나 클라우드 메타데이터 주소(169.254.169.254)로 요청하는 것을 막는 Whitelist가 있는지 확인 |
 
 #### 카테고리 2: 취약한 파일처리
 
 | # | 점검 항목 | 중요도 | 정부 매핑 | 점검 방법 |
 |---|----------|--------|----------|----------|
-| 2-1 | 악성코드파일 업로드 | 중요 | SR1-10 | 확장자 whitelist, MIME 타입 검증, magic bytes 검증, 파일 크기 제한, 업로드 경로 격리, 바이러스 스캔 |
-| 2-2 | 중요 정보 파일 다운로드 | 중요 | SR1-10 | 경로 조작(path traversal) 방어, 다운로드 권한 확인 |
+| 2-1 [보완] | 악성코드파일 업로드 | 중요 | SR1-10 | 확장자 whitelist, MIME 타입 검증, magic bytes 검증, 파일 크기 제한, 업로드 경로 격리, 바이러스 스캔 및 클라우드 스토리지(S3 등) ACL/공개여부 설정 확인 |
+| 2-2 [보완] | 중요 정보 파일 다운로드 | 중요 | SR1-10 | 경로 조작(path traversal) 방어, 다운로드 권한 확인 및 클라우드 Signed URL 만료 정책 확인 |
 
 #### 카테고리 3: 취약한 접근통제 관리
 
 | # | 점검 항목 | 중요도 | 정부 매핑 | 점검 방법 |
 |---|----------|--------|----------|----------|
 | 3-1 | 패스워드 정책 | 중요 | SR2-3 | 최소 길이(8+), 복잡도(대/소/숫자/특수), 이력 관리, 만료 정책, 흔한 비밀번호 사전 체크 |
-| 3-2 | 인증 실패 횟수 제한 | 일반 | SR2-2 | 계정 잠금 구현 여부, 잠금이 로그인 플로우에 실제 연동되었는지 확인 |
+| 3-2 [보완] | 인증 실패 횟수 제한 | 일반 | SR2-2 | 계정 잠금 구현 여부, 잠금이 로그인 플로우에 실제 연동되었는지 및 API 레벨 Rate Limiting 적용 여부 확인 |
 | 3-3 | 계정 정보 파악 가능성 | 일반 | SR2-1 | 에러 메시지로 사용자 존재 여부 노출 (예: "User not found" vs "Invalid credentials") |
 | 3-4 | 관리자 페이지 분리 | 중요 | SR2-4 | 관리자 전용 라우트에 인증+인가 미들웨어 적용 확인 |
 | 3-5 | 검색엔진 정보 노출 | 일반 | - | robots.txt 존재 여부, meta noindex 설정 |
 | 3-6 | 백업/테스트 파일 존재 | 일반 | SR1-10 | *.backup, test_*.json, *.bak, *.sql 등 민감 파일 검색 |
 | 3-7 | 하드코딩 기본 계정 | 중요 | SR2-3 | DB 또는 코드에 사전 생성된 테스트/기본 계정(admin/test 등) 존재 여부, 마이그레이션으로 제거 여부 확인 |
+| 3-8 [추가] | 개인정보 다운로드 사유 확인 | 중요 | 개인정보보호법 고시 | 개인정보 대량 조회 또는 다운로드 API 호출 시, 사유(목적)를 명시적으로 입력받아 감사 로그에 함께 기록하는 로직 존재 여부 |
+| 3-9 [추가] | 객체 수준 접근 제어 (IDOR) | 중요 | 구현단계-부적절한 인가 | 특정 리소스(예: /api/posts/:id) 수정/삭제 시, 토큰의 사용자 ID와 리소스 소유자 ID를 상호 대조하는 검증 로직 확인 |
 
 #### 카테고리 4: 취약한 인증 및 세션 관리
 
@@ -64,8 +72,8 @@ allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Agent]
 |---|----------|--------|----------|----------|
 | 4-1 | 쿠키 조작 가능성 | 일반 | SR4-1 | httpOnly, secure, sameSite 설정 확인 |
 | 4-2 | 세션 재사용/타임아웃 | 일반 | SR4-1 | 로그아웃 시 토큰 무효화, 세션 타임아웃, 토큰 블랙리스트 |
-| 4-3 | 접근제어 우회 | 일반 | SR2-4 | JWT 클레임만 신뢰하지 않고 DB 기반 역할 검증 여부 |
-| 4-4 | 비인증 중요페이지 접근 | 일반 | SR2-4 | 모든 API에 인증 미들웨어 적용 여부 |
+| 4-3 [보완] | 접근제어 우회 | 일반 | SR2-4 | JWT 클레임만 신뢰하지 않고 DB 기반 역할 검증 여부, JWT 서명 알고리즘 검증(alg: none 차단) 및 Refresh Token 안전 저장 확인 |
+| 4-4 [보완] | 비인증 중요페이지 접근 | 일반 | SR2-4 | 모든 API에 인증 미들웨어 적용 여부 및 Next.js/Nuxt.js 등 라우트 보호 파일 누락 여부 확인 |
 | 4-5 | 일반계정 권한 상승 | 일반 | SR2-4 | RBAC 구현 여부, 역할별 접근 제어 |
 | 4-6 | 자기 계정 조작 방지 | 일반 | SR2-4 | 사용자가 자신의 역할 변경·삭제 가능 여부 방어 (자기보호 로직 존재 여부) |
 
@@ -73,14 +81,15 @@ allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Agent]
 
 | # | 점검 항목 | 중요도 | 정부 매핑 | 점검 방법 |
 |---|----------|--------|----------|----------|
-| 5-1 | 소스코드 내 주요정보 노출 | 일반 | SR2-7 | 하드코딩된 시크릿, API 키, 비밀번호 검색, .env.example 기본값 점검 |
+| 5-1 [보완] | 소스코드 내 주요정보 노출 | 일반 | SR2-7 | 하드코딩된 시크릿, API 키, 비밀번호 검색, .env.example 기본값 점검, **클라우드 시크릿 매니저 활용 여부** |
 | 5-2 | 요청/응답 내 주요정보 | 중요 | SR2-8 | 응답 body에 토큰/비밀번호 포함 여부, HTTPS 강제 여부 |
+| 5-3 [추가] | 개인정보 암호화 저장 | 중요 | 개인정보보호법 고시 | 비밀번호(단방향 SHA-256+Salt), 민감정보(양방향 AES-256 등)의 안전한 암호화 알고리즘 적용 및 소스코드 내 복호화 키 하드코딩 여부 확인 |
 
 #### 카테고리 6: 부적절한 오류 처리
 
 | # | 점검 항목 | 중요도 | 정부 매핑 | 점검 방법 |
 |---|----------|--------|----------|----------|
-| 6-1 | 오류 정보 노출 | 일반 | SR3-1 | 스택트레이스 노출, 내부 경로 노출, DB 에러 원본 노출 |
+| 6-1 [보완] | 오류 정보 노출 | 일반 | SR3-1 | 스택트레이스, 내부 경로, DB 에러 및 AI API 통신 에러 원본 노출 여부 |
 | 6-2 | 일괄 오류 처리 페이지 | 일반 | SR3-1 | 글로벌 에러 핸들러 존재 여부 |
 
 #### 카테고리 7: 취약한 컴포넌트 구성요소
@@ -90,7 +99,7 @@ allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Agent]
 | 7-1 | 서버 정보 노출 | 일반 | SR3-1 | Health 엔드포인트 정보, X-Powered-By 헤더 |
 | 7-2 | 파일 목록화 가능성 | 일반 | - | 디렉토리 리스팅 활성화 여부 |
 | 7-3 | 보안 헤더 설정 | 일반 | - | Helmet.js 등 보안 헤더 미들웨어, HSTS, CSP 설정 |
-| 7-4 | 취약한 보안설정 | 일반 | SR2-6 | JSON body limit, CORS 설정, 프로덕션 환경 분리 |
+| 7-4 [보완] | 취약한 보안설정 | 일반 | SR2-6 | JSON body limit, multipart 파일 업로드 용량 제한, CORS 설정, 프로덕션 환경 분리 |
 | 7-5 | 응답 상태코드 정규화 | 일반 | SR3-1 | 에러 HTTP 상태코드로 내부 정보 유출 방지 (NGINX/앱 레벨에서 에러 응답 일반화 여부), ETag 비활성화 여부 |
 
 #### 카테고리 8: 기타
@@ -105,8 +114,8 @@ allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Agent]
 
 | # | 점검 항목 | 중요도 | 기준 | 점검 방법 |
 |---|----------|--------|------|----------|
-| 9-1 | 컨테이너 비루트 실행 | 중요 | CLOUD_DOCKER | Dockerfile에 비루트 사용자(USER appuser) 생성 및 전환 여부 |
-| 9-2 | 다단계 빌드 적용 | 일반 | CLOUD_DOCKER | deps→builder→runner 다단계 빌드로 소스코드·빌드 도구 최종 이미지 미포함 여부 |
+| 9-1 [보완] | 컨테이너 비루트 실행 | 중요 | CLOUD_DOCKER | Dockerfile에 비루트 사용자(USER appuser) 생성/전환 및 호스트 도커 소켓(docker.sock) 무단 볼륨 마운트 여부 확인 |
+| 9-2 [보완] | 다단계 빌드 적용 | 일반 | CLOUD_DOCKER | deps→builder→runner 다단계 빌드로 소스코드·빌드 도구 최종 이미지 미포함 여부 및 alpine/distroless 등 최소 베이스 이미지 사용 확인 |
 | 9-3 | 컨테이너 리소스 제한 | 일반 | CLOUD_DOCKER | docker-compose에서 pids_limit, mem_limit 설정 여부 (DoS 방지) |
 | 9-4 | 이미지 서명 검증 | 일반 | CLOUD_DOCKER-26 | DOCKER_CONTENT_TRUST=1 환경변수 설정으로 서명된 이미지만 허용 여부 |
 | 9-5 | Docker 데몬 감사(auditd) | 일반 | CLOUD_DOCKER-03~08 | auditd 규칙으로 /usr/bin/docker, /var/lib/docker, /etc/docker, docker.service 변조 감지 여부 |
@@ -122,32 +131,35 @@ allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Agent]
 | 10-4 | 연결 타임아웃 설정 | 일반 | - | `proxy_read_timeout`, `proxy_connect_timeout` 설정으로 SlowLoris/느린 HTTP DoS 방지 여부 |
 | 10-5 | 응답 압축 설정 | 일반 | - | gzip 압축 설정 여부 (트래픽 효율화), 민감 응답(Authorization 헤더 포함 시) 압축 제외 여부 |
 
-### Step 3: AI/LLM 보안 점검 (20개 항목)
+### Step 3: AI/LLM 보안 점검 (23개 항목)
 
 > AI/LLM 기능이 없는 프로젝트는 이 섹션을 "해당없음"으로 기록하고 건너뜁니다.
 
 | # | 점검 항목 | 중요도 | 점검 방법 |
 |---|----------|--------|----------|
 | LLM-01 | 클라이언트 내 프롬프트 생성 | 중요 | 시스템 프롬프트가 서버에서 조립되는지, 클라이언트가 system 메시지를 직접 구성하는지 확인 |
-| LLM-02 | 프롬프트 인젝션 | 중요 | 특수 토큰 필터링(`<\|endoftext\|>`, `[INST]` 등), 인젝션 패턴 탐지("ignore previous instructions" 등), 입력 새니타이징 |
-| LLM-03 | 민감 정보 노출 | 중요 | LLM에 전송되는 데이터에 PII 포함 여부, LLM 응답 필터링 존재 여부, SELECT * 쿼리 |
+| LLM-02 [보완] | 프롬프트 인젝션 | 중요 | 특수 토큰 필터링(`<\|endoftext\|>`, `[INST]` 등), 인젝션 패턴 탐지("ignore previous instructions" 등), 입력 새니타이징 및 시스템-사용자 입력 구조화 기호(Delimiters) 적용 확인 |
+| LLM-03 [보완] | 민감 정보 노출 | 중요 | LLM에 전송되는 데이터에 PII 포함 여부, LLM 호출 전 마스킹 처리 유무, LLM 응답 필터링 및 SELECT * 쿼리 점검 |
 | LLM-04 | 오류 메시지 출력 | 일반 | AI API 에러가 클라이언트에 원본 노출되는지, 에러 새니타이징 적용 여부 |
 | LLM-05 | 모델 서비스 거부 (DoS) | 중요 | AI 엔드포인트 Rate Limiting, 요청 타임아웃, 페이로드 크기 제한, 사용자별 일일 한도 |
 | LLM-06 | 취약한 서드파티 소프트웨어 | 중요 | 보안 패키지(helmet, rate-limit 등) 설치 여부, npm audit 결과 |
-| LLM-07 | RAG 데이터 오염 | 중요 | RAG/벡터DB 사용 시 데이터 무결성 검증, 입력 새니타이징 |
+| LLM-07 [보완] | RAG 데이터 오염 | 중요 | RAG/벡터DB 사용 시 데이터 무결성 검증, 입력 새니타이징 및 외부 크롤링 문서 기반 간접 인젝션(Indirect Injection) 방어 확인 |
 | LLM-08 | 시크릿 키 노출 | 중요 | API 키 암호화 저장, 환경변수 관리, 기본값(fallback) 제거, Git에 시크릿 포함 여부 |
 | LLM-09 | API 매개변수 변조 | 중요 | AI 라우트 입력 검증, 배열/객체 구조 검증, URL 파라미터 타입 검증 |
 | LLM-10 | 부적절한 권한 | 중요 | AI 기능 접근 권한, RBAC, DB 기반 권한 확인 (JWT 클레임만 신뢰하지 않는지) |
 | LLM-11 | 사용자 동의 절차 누락 | 일반 | 외부 API로 데이터 전송 시 동의, 파괴적 작업 확인 대화상자 |
-| LLM-12 | 샌드박스 미적용 | 중요 | eval(), Function(), vm 등 동적 코드 실행 여부, AI 응답 실행 여부 |
-| LLM-13 | 모델 내부 악성 페이로드 | 중요 | 로컬 모델 파일 사용 여부, 모델 파일 무결성 검증 |
+| LLM-12 [보완] | 샌드박스 미적용 | 중요 | eval(), Function() 등 동적 코드 실행 여부, AI 응답(생성 코드) 실행 시 격리된 독립 샌드박스 환경 적용 확인 |
+| LLM-13 [보완] | 모델 내부 악성 페이로드 | 중요 | 로컬 모델 파일 사용 여부, 모델 파일 무결성 및 파이썬 모델 로드 시 안전한 포맷(safetensors 등) 사용 여부 검증 |
 | LLM-14 | 모델 내 민감 정보 | 일반 | 파인튜닝/자체 학습 시 민감 데이터 포함 여부 |
 | LLM-15 | 학습 데이터 오염 | 일반 | 자체 학습 수행 여부, 학습 데이터 검증 |
 | LLM-16 | 통신 데이터 무결성/기밀성 | 중요 | HTTPS 사용, CORS 제한, 보안 헤더 |
 | LLM-17 | 접근 제어 및 인증 | 중요 | AI 엔드포인트 인증, Rate Limiting, API 키 관리 |
 | LLM-18 | 입력 유효성 검증/출력 필터링 | 중요 | 입력 스키마 검증, 출력 새니타이징, 에러 메시지 일반화 |
-| LLM-19 | 로그 및 모니터링 | 일반 | AI 요청 로깅, 토큰/비용 추적, 감사 로그, HMAC-SHA256 로그 무결성 서명 여부 |
+| LLM-19 [보완] | 로그 및 모니터링 | 일반 | AI 요청 로깅, 토큰/비용 추적, 감사 로그, HMAC-SHA256 로그 무결성 서명 및 로그 내 민감정보 마스킹 여부 |
 | LLM-20 | 미정의 취약점 | 일반 | 위 항목 외 추가 발견사항 |
+| LLM-21 [추가] | 과도한 에이전시 및 자율성 통제 (Excessive Agency) | 중요 | Agent가 외부 툴(API, DB, Shell)을 호출할 때 파괴적인 작업에 대해 '사람의 승인(Human-in-the-Loop)' 가드레일 코드 구현 확인 |
+| LLM-22 [추가] | 멀티모달 프롬프트 인젝션 | 일반 | 이미지, PDF 등 멀티모달 파일 입력 시 파일 메타데이터나 내부 텍스트 스크래핑 과정의 인젝션 유도 문구 전처리 필터링 확인 |
+| LLM-23 [추가] | AI 소프트웨어 공급망 보안 (AI-BOM) | 일반 | 외부 허브에서 모델 다운로드 시 해시(SHA-256) 검증 여부 및 AI 오픈소스 프레임워크(LangChain 등) 고정 버전 사용 확인 |
 
 ### Step 4: 코드 점검 실행
 
@@ -165,6 +177,9 @@ grep -rn "eval(\|Function(\|exec(\|execSync(" --include="*.js" --include="*.ts" 
 
 # 4. SQL 문자열 결합 검색
 grep -rn "SELECT\|INSERT\|UPDATE\|DELETE" --include="*.js" --include="*.ts" | grep -v node_modules | grep "+"
+
+# 4-1. [추가] 백틱 템플릿 SQL 결합 검색 (Injection)
+grep -rn "SELECT.*\${.*}\|INSERT.*\${.*}\|UPDATE.*\${.*}" --include="*.js" --include="*.ts" | grep -v node_modules
 
 # 5. 에러 원본 노출 검색
 grep -rn "error\.message\|err\.message\|error\.stack" --include="*.js" --include="*.ts" | grep -v node_modules | grep "res\."
@@ -204,6 +219,15 @@ grep -rn "HMAC\|createHmac\|signLog\|integrity" --include="*.js" | grep -v node_
 # 16. 하드코딩 계정 검색
 grep -rn "INSERT INTO users\|username.*=.*'" --include="*.js" --include="*.sql" | grep -v node_modules | grep -v "\.test\."
 find . -path "*/migrations/*.sql" -exec grep -l "INSERT INTO users" {} \;
+
+# 17. [추가] 경로 조작(Path Traversal) 검색
+grep -rn "fs\.readFile\|fs\.writeFile\|path\.join\|fs\.createReadStream" --include="*.js" --include="*.ts" | grep -v node_modules | grep "req\."
+
+# 18. [추가] SSRF 패턴 검색 (외부 URL → 내부 요청)
+grep -rn "axios\.get\|axios\.post\|fetch(" --include="*.js" --include="*.ts" | grep -v node_modules | grep "req\.\|url"
+
+# 19. [추가] Python AI 프레임워크 위험 함수 검색
+grep -rn "eval(\|exec(\|yaml\.load(\|pickle\.load(" --include="*.py" 2>/dev/null | grep -v "venv"
 ```
 
 ### Step 5: 결과 보고서 생성
@@ -217,16 +241,16 @@ find . -path "*/migrations/*.sql" -exec grep -l "INSERT INTO users" {} \;
 |------|------|
 | **시스템명** | [프로젝트명] |
 | **점검일** | [YYYY-MM-DD] |
-| **점검 기준** | 웹/API 보안 가이드 (43항목) + AI/LLM 보안 가이드 (20항목) |
+| **점검 기준** | 웹/API 보안 가이드 (45항목) + AI/LLM 보안 가이드 (23항목) |
 | **기술 스택** | [프레임워크, DB, AI 서비스 등] |
 
 ## 1. 종합 요약
 
 | 구분 | 양호 | 미흡 | 해당없음 | 합계 |
 |------|------|------|----------|------|
-| 웹/API 보안 | N | N | N | 43 |
-| AI/LLM 보안 | N | N | N | 20 |
-| **전체** | **N** | **N** | **N** | **63** |
+| 웹/API 보안 | N | N | N | 45 |
+| AI/LLM 보안 | N | N | N | 23 |
+| **전체** | **N** | **N** | **N** | **68** |
 
 ## 2. 웹/API 보안 점검 결과
 [각 항목별 판정 + 근거 + 관련 코드 위치]
@@ -239,6 +263,9 @@ find . -path "*/migrations/*.sql" -exec grep -l "INSERT INTO users" {} \;
 
 ## 5. 양호 항목 현황 (유지 필요)
 [현재 잘 구현된 보안 조치 목록]
+
+## [추가] 6. 취약점 조치 표준 소스코드 가이드
+[미흡 항목별 표준 조치 코드 스니펫(Before/After) 첨부 — Path Traversal 정규화, SSRF Whitelist, IDOR 소유자 검증, Human-in-the-Loop 가드레일 등]
 ```
 
 ### Step 6: 개선 조치 (선택)
@@ -304,9 +331,19 @@ find . -path "*/migrations/*.sql" -exec grep -l "INSERT INTO users" {} \;
 
 **데이터 보관 정책**:
 - 자동 정리 스케줄러 (node-cron 등): 매일 새벽 자동 실행
-- 로그인 로그: 180일(6개월) 보관 후 삭제 — 정보통신망법 준수
-- 감사 로그: 730일(2년) 후 아카이브 테이블 이동, 1825일(5년) 후 최종 삭제 — 개인정보보호법 준수
+- 로그인 로그: 180일(6개월) 보관 후 삭제 — 개인정보보호법 고시 준수
+- 감사 로그: 730일(2년) 후 아카이브 테이블 이동, 1825일(5년) 후 최종 삭제 — 개인정보보호법 고시 준수
 - AI 요청 로그: 180일 보관 후 삭제
+
+**[추가] 과도한 에이전시 및 자율성 통제 (Excessive Agency)**:
+- 파괴적인 작업(DB 삭제, 외부 결제 호출 등) 직전 'Human-in-the-Loop' 승인 게이트 추가
+- Agent 실행 도구별 화이트리스트 정의(허용 함수/URL/명령) 및 기본 거부(Deny by default) 정책 적용
+- 단일 세션당 최대 도구 호출 횟수 및 비용 한도(Budget) 강제
+
+**[추가] 안전한 데이터 파기 기법**:
+- 개인정보 삭제 시 단순 DELETE 대신 컬럼 단위 NULL화 또는 비가역 해시 치환(예: HMAC-SHA256)
+- 파일 기반 민감 데이터는 OS 단순 unlink가 아닌 다중 덮어쓰기(shred 등) 후 삭제
+- 백업/복제본까지 동시 파기 절차 명시, 파기 이력은 감사 로그에 별도 보존
 
 ---
 
@@ -314,7 +351,7 @@ find . -path "*/migrations/*.sql" -exec grep -l "INSERT INTO users" {} \;
 
 1. **점검 범위**: 이 스킬은 코드 레벨 정적 점검입니다. 동적 테스트(침투 테스트)는 별도 수행이 필요합니다.
 2. **기술 스택**: Node.js + Express + React 기반으로 작성되었으나, 점검 항목 자체는 기술 스택에 무관합니다. 다른 스택에서는 검색 패턴만 조정하면 됩니다.
-3. **AI/LLM 항목**: AI 기능이 없는 프로젝트는 LLM-01~20을 "해당없음"으로 처리합니다.
+3. **AI/LLM 항목**: AI 기능이 없는 프로젝트는 LLM-01~23을 "해당없음"으로 처리합니다.
 4. **컨테이너/NGINX 항목**: 컨테이너 미사용 프로젝트는 9-1~9-6, 10-1~10-5를 "해당없음"으로 처리합니다.
 5. **보고서**: 결과 보고서는 `docs/SECURITY_AUDIT_REPORT.md` (웹/API) 또는 `docs/LLM_SECURITY_AUDIT.md` (AI/LLM)로 저장합니다.
 6. **개선 조치**: 코드 수정은 사용자 확인 후 수행합니다. Phase별 우선순위에 따라 진행합니다.
