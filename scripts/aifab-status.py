@@ -431,6 +431,33 @@ def get_context_pct(data: dict) -> Optional[float]:
     return min(normalized, 100.0)
 
 
+def write_ctx_bridge(data: dict, ctx_pct: Optional[float]) -> None:
+    """Write context metrics to /tmp/aifab-ctx-{session_id}.json for hooks.
+
+    Consumed by aifab-ctx-guard PostToolUse hook (CLAUDE.md RULE 5).
+    Best-effort: silently no-ops on missing session_id, path-traversal patterns,
+    or I/O errors so statusline rendering is never blocked.
+    """
+    if ctx_pct is None:
+        return
+    session_id = data.get("session_id")
+    if not isinstance(session_id, str) or not session_id:
+        return
+    if "/" in session_id or "\\" in session_id or ".." in session_id:
+        return
+    try:
+        import tempfile
+        path = Path(tempfile.gettempdir()) / f"aifab-ctx-{session_id}.json"
+        payload = {
+            "used_pct": round(float(ctx_pct), 2),
+            "remaining_percentage": round(100 - float(ctx_pct), 2),
+            "timestamp": int(time.time()),
+        }
+        path.write_text(json.dumps(payload), encoding="utf-8")
+    except (OSError, ValueError):
+        pass
+
+
 # ── rate limits ─────────────────────────────────────────────────────────────
 def get_rate_limit(data: dict, key: str) -> Tuple[Optional[float], object]:
     rl = data.get("rate_limits", {}).get(key, {})
@@ -545,6 +572,7 @@ def main() -> None:
 
     # Context
     ctx_pct = get_context_pct(data)
+    write_ctx_bridge(data, ctx_pct)  # bridge file for aifab-ctx-guard hook
     if ctx_pct is not None:
         ctx_part = f"{C_LABEL}ctx{C_RESET} {bar(ctx_pct)} {pct_label(ctx_pct)}"
     else:
