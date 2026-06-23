@@ -1,101 +1,81 @@
-# AI-Fab 개발 워크플로우
+# AI-Fab Harness
 
-AI-Fab 프로젝트 전용 Claude Code 개발 워크플로우. Andrej Karpathy의 4원칙과 Opus-Sonnet-Haiku 멀티에이전트 오케스트레이션을 결합하여 일관성 있는 고품질 코드를 생성한다.
+Claude Code용 개발 워크플로우 하네스. Andrej Karpathy의 4원칙을 기반으로 Opus·Sonnet·Haiku 멀티에이전트를 오케스트레이션하여 일관성 있는 고품질 코드를 생성한다.
+
+> **스킬 목록·의존성·모델 매트릭스는 [`SKILLS.md`](.claude/plugins/aifab/SKILLS.md) 가 단일 소스.** 이 README는 설치·운영에만 집중한다.
+
+---
+
+## 핵심 개념
+
+| 개념 | 요약 |
+|---|---|
+| **Karpathy 4원칙** | 코딩 전 사고 / 단순성 / 외과적 변경 / 목표 기반 실행 — [`CLAUDE.md`](CLAUDE.md) |
+| **Multi-Agent 역할** | Opus(Advisor) → Sonnet(Worker) → Haiku(Generator). `settings.json`의 env로 모델 교체 가능 |
+| **계층 진척 모델** | Milestone(semver) → Phase(목적 그룹) → Wave(0.5~3일 작업 단위) |
+| **계획 트리플** | `ROADMAP.md`(Phase 인덱스) + `PLAN.md`(Wave 상세) + `WORKLOG.md`(작업일지) |
+| **컨텍스트 50% 규칙** | 사용률 50% 초과 시 새 태스크 시작 전 반드시 `/compact` (CLAUDE.md RULE 5) |
+| **결정론 가드** | hooks가 시크릿/위험 bash/컨텍스트 임계치를 자동 차단·경고 |
 
 ---
 
 ## 설치
 
-사용 패턴에 따라 3가지 방법 중 선택.
+세 가지 패턴 중 사용 의도에 맞는 한 가지만 선택.
 
-### 방법 A: 새 프로젝트 템플릿으로 사용 (권장)
-
-새 AI-Fab 프로젝트를 시작할 때:
+### A. 새 프로젝트 템플릿 (권장)
 
 ```bash
-# 1. AIFAB-harness 복제
-git clone <YOUR_GITLAB_REPO_URL> my-new-project
+git clone https://github.com/JaewooShin80/aifab.git my-new-project
 cd my-new-project
-
-# 2. 기존 git 히스토리 제거 후 새로 시작
-rm -rf .git
-git init
-git add .
-git commit -m "chore: initial AI-Fab setup"
-
-# 3. Claude Code 실행
+rm -rf .git && git init
+git add . && git commit -m "chore: initial AI-Fab setup"
 claude
 ```
 
-`/aifab:discover` 명령으로 바로 시작.
+세션 시작 후 `/aifab:discover`로 진입.
 
-### 방법 B: 기존 프로젝트에 적용
-
-이미 존재하는 프로젝트에 AI-Fab 워크플로우를 추가:
+### B. 기존 프로젝트에 적용
 
 ```bash
-# 기존 프로젝트 디렉토리에서
+git clone https://github.com/JaewooShin80/aifab.git /tmp/aifab
 cd my-existing-project
 
-# AIFAB-harness 파일을 임시 디렉토리에 복제
-git clone https://github.com/JaewooShin80/aifab.git /tmp/aifab
-
-# 필요 파일 복사 (기존 CLAUDE.md/settings.json 보존 주의)
 cp -r /tmp/aifab/.claude .
 cp -r /tmp/aifab/scripts .
 chmod +x scripts/aifab-status.sh
 
-# CLAUDE.md가 이미 있으면 머지, 없으면 복사
 [ -f CLAUDE.md ] || cp /tmp/aifab/CLAUDE.md .
-
-# settings.json도 같은 방식 (기존 설정과 머지 필요할 수 있음)
-[ -f settings.json ] || cp /tmp/aifab/settings.json .
+[ -f settings.json ] || cp /tmp/aifab/.claude/settings.json .claude/
 
 rm -rf /tmp/aifab
 ```
 
 기존 `CLAUDE.md`/`settings.json`이 있으면 수동 머지 필요.
 
-### 방법 C: 전역 스킬로 설치 (모든 프로젝트에서 사용)
-
-`/aifab:*` 명령어를 모든 프로젝트에서 사용하려면:
+### C. 전역 스킬 (모든 프로젝트에서 `/aifab:*` 사용)
 
 ```bash
-# 1. AIFAB-harness 복제
 git clone https://github.com/JaewooShin80/aifab.git /tmp/aifab
 
-# 2. 스킬을 전역 commands 디렉토리에 복사
+# 스킬 + 공통 표준
 mkdir -p ~/.claude/commands/aifab
 cp /tmp/aifab/.claude/plugins/aifab/skills/*.md ~/.claude/commands/aifab/
-cp -r /tmp/aifab/.claude/plugins/aifab/_shared ~/.claude/commands/aifab/_shared
-cp /tmp/aifab/.claude/plugins/aifab/SKILLS.md ~/.claude/commands/aifab/
+cp -r /tmp/aifab/.claude/plugins/aifab/_shared ~/.claude/commands/aifab/
 
-# 3. 상태바 스크립트를 전역에 복사
+# 상태바
 mkdir -p ~/.claude/scripts/aifab
-cp /tmp/aifab/scripts/aifab-status.py ~/.claude/scripts/aifab/
-cp /tmp/aifab/scripts/aifab-status.sh ~/.claude/scripts/aifab/
+cp /tmp/aifab/scripts/aifab-status.* ~/.claude/scripts/aifab/
 chmod +x ~/.claude/scripts/aifab/aifab-status.sh
 
-# 4. 전역 settings.json에 환경변수 + 상태바 설정 추가
-# ~/.claude/settings.json의 "env"에 아래 항목 추가:
-#   "AIFAB_MODEL": "claude-opus-4-7",
-#   "AIFAB_ADVISOR_MODEL": "claude-opus-4-7",
-#   "AIFAB_WORKER_MODEL": "claude-sonnet-4-6",
-#   "AIFAB_BOILERPLATE_MODEL": "claude-haiku-4-5",
-#   "AIFAB_STATUS_STYLE": "color",
-#   "LC_ALL": "en_US.UTF-8"
-#
-# "statusLine"을 아래로 변경:
-#   "statusLine": {
-#     "type": "command",
-#     "command": "bash $HOME/.claude/scripts/aifab/aifab-status.sh"
-#   }
+# 글로벌 보안 hooks
+mkdir -p ~/.claude/hooks
+cp /tmp/aifab/.claude/hooks/aifab-*.js ~/.claude/hooks/ 2>/dev/null || true
 
-# 5. 임시 디렉토리 정리
 rm -rf /tmp/aifab
 ```
 
-각 프로젝트마다 `CLAUDE.md`만 복사하거나, 전역 `~/.claude/CLAUDE.md`에 AI-Fab 규칙 추가.
+전역 `~/.claude/settings.json`에 `env`·`statusLine`·`hooks` 블록을 본 저장소의 [`.claude/settings.json`](.claude/settings.json) 참고하여 머지.
 
 ---
 
@@ -104,625 +84,194 @@ rm -rf /tmp/aifab
 | 도구 | 용도 | 필수/선택 |
 |------|------|----------|
 | Claude Code CLI | 모든 명령 실행 | 필수 |
-| `git` | 버전 관리 / 워크트리 | 필수 |
-| `bash` | 상태바 스크립트 | 필수 |
-| `python3` | 사용량 통계 파싱 | 선택 (없으면 사용량 바차트만 비활성) |
-| `node` / `npm` | Playwright (E2E 테스트) | 선택 (E2E 사용 시) |
-| `@openai/codex` CLI | 교차 AI 검증 | 선택 (codex-review 사용 시) |
-
-### Claude Code 인증
+| `git` | 버전 관리 / worktree | 필수 |
+| `bash` | 상태바 + 일부 hooks | 필수 |
+| `python3` | 진척/사용량 파싱, gen_skills_index | 필수 (없으면 진척 대시보드 미표시) |
+| `node` | hooks(`aifab-*.js`) + Playwright | 권장 |
+| `@openai/codex` | 교차 AI 검증 | 선택 (`/aifab:codex-review`) |
 
 ```bash
-# Claude Pro/Team 구독자
-claude login
-
-# 또는 API 키 사용
+# Claude Code 인증
+claude login                    # Pro/Team
+# 또는
 export ANTHROPIC_API_KEY="sk-ant-..."
-```
 
-### 선택 도구 설치
-
-```bash
-# Playwright (방법 A에서 자동 설치되지만 미리 설치 가능)
+# Playwright (E2E 사용 시)
 npm install -D @playwright/test
 npx playwright install chromium
 
-# OpenAI Codex CLI (codex-review 사용 시)
-npm install -g @openai/codex
-codex login
+# Codex CLI (교차 검증 사용 시)
+npm install -g @openai/codex && codex login
 ```
 
 ---
 
 ## 설치 확인
 
-설치 후 다음 명령으로 정상 동작 확인:
-
 ```bash
-# 1. 상태바 스크립트 동작 확인
+# 1) 상태바
 bash scripts/aifab-status.sh
-# 기대 출력: [AI-Fab] | model: opus-4-7 | wave: -/- | ctx --
-#           5h   [----------] 0%  |  7day [----------] --%
+# 2-line Powerline 출력 확인 (모델·git·ctx·5h·7d)
 
-# 2. Claude Code에서 스킬 인식 확인
-claude
-> /aifab:
-# 자동완성 목록에 23개 스킬이 보여야 함:
-# discover, plan, execute, security, playwright, uat, worklog,
-# debug, diagnose, map-codebase, worktree, codex-review,
-# refactor, migrate, rollback, compare, adr,
-# grill, grill-me, caveman, roadmap, progress, milestone
+# 2) 스킬 인식 — Claude Code 세션에서
+/aifab:
+# 자동완성에 23개 스킬 노출 (discover, plan, execute, ...)
+
+# 3) 진척 대시보드
+/aifab:progress
+# ROADMAP.md/PLAN.md 있으면 Milestone·Phase·Wave 진척률 표시
 ```
 
 ---
 
 ## 빠른 시작
 
-```bash
-# 0. 기존 코드베이스 분석 (brownfield 시작 시)
-/aifab:map-codebase
+```text
+[brownfield]  /aifab:map-codebase     # 기존 코드베이스 4-병렬 분석
 
-# 1. 새 프로젝트 시작
-/aifab:discover
+/aifab:discover  → /aifab:plan  → /aifab:execute (반복)
+        │                                  │
+        │                                  ├─ /aifab:debug         (테스트 실패 시)
+        │                                  ├─ /aifab:worktree      (병렬 Wave)
+        │                                  └─ /aifab:security       (Wave 완료 후)
+        │
+        └─ /aifab:roadmap init        # 다중 Phase 마일스톤일 때
+                                      # → /aifab:milestone new vX.Y.Z
 
-# 2. 개발 플랜 작성
-/aifab:plan
-
-# 3. Wave 실행 (반복)
-/aifab:execute
-
-# 3-1. 병렬 진행 (선택)
-/aifab:worktree create wave-3
-/aifab:execute --parallel 3,4,5
-
-# 3-2. 디버깅 (필요 시)
-/aifab:debug "<증상 설명>"
-
-# 3-3. 진척 확인 (수시)
-/aifab:progress
-
-# 4. 보안 검토 (각 Wave 완료 후)
-/aifab:security
-
-# 4-1. 교차 AI 검증 (선택)
-/aifab:codex-review
-
-# 5. E2E 테스트 (전체 개발 완료 후)
-/aifab:playwright
-
-# 6. UAT
-/aifab:uat
-
-# 작업 중단 후 재시작
-/aifab:worklog resume
-
-# === v2 추가 명령 ===
-
-# 결정 시점에 옵션 비교
-/aifab:compare "ORM 선택"
-
-# 큰 결정은 ADR로 기록
-/aifab:adr new "Pydantic v2 채택"
-
-# 동작 보존 리팩토링
-/aifab:refactor "<대상 모듈>"
-
-# 의존성 마이그레이션
-/aifab:migrate "Pydantic v1 -> v2"
-
-# Wave 단위 롤백
-/aifab:rollback wave 3
-
-# === v2.1 추가 명령 (Roadmap/Milestone 레이어) ===
-
-# 프로젝트 시작 시 로드맵 초기화
-/aifab:roadmap init v1.0.0
-
-# 마일스톤 신규/완료/감사
-/aifab:milestone new v1.0.0
-/aifab:milestone audit
-/aifab:milestone complete
-
-# === mattpocock 통합 명령 ===
-
-# 코드베이스 인식 plan 인터뷰 (CONTEXT.md/ADR 갱신)
-/aifab:grill
-
-# 코드 없이 아이디어/플랜 스트레스 테스트
-/aifab:grill-me
-
-# 재현 가능한 버그 진단 루프
-/aifab:diagnose "<증상>"
-
-# 토큰 ~75% 절감 압축 응답 모드
-/aifab:caveman
+/aifab:playwright  → /aifab:uat       # 전체 완료 후
+/aifab:milestone complete             # 마일스톤 tag + 회고
 ```
 
----
+작업 중단 후 재시작: `/aifab:worklog resume`.
 
-## 워크플로우 개요
-
-```
-[brownfield] /aifab:map-codebase  → 4-병렬 매퍼로 코드베이스 분석
-                ↓
-/aifab:discover
-    ↓  개방형 질문 → 아키텍처 선택 (스택 제약 없음)
-/aifab:plan
-    ↓  Advisor(Opus)가 Wave 분해 → PLAN.md 작성
-/aifab:execute  ← 반복 (Wave별, 워크트리로 병렬 가능)
-    ↓  Advisor → Sonnet/Haiku 병렬 실행 → Advisor 검토
-    ↳ [버그 발생] /aifab:debug → 4단계 RCA
-/aifab:security  ← 각 Wave 완료 후
-    ↓  OWASP / AI-LLM / API / 시크릿 4영역 자동 검토
-    ↳ [선택] /aifab:codex-review → OpenAI 교차 검증
-/aifab:playwright  ← 전체 개발 완료 후
-    ↓  E2E 시나리오 자동 생성 및 실행
-/aifab:uat
-    ↓  사용자 인수 테스트 → 피드백 수집 → 재작업 루프
-```
+전체 명령 목록과 의존성 그래프는 [`SKILLS.md`](.claude/plugins/aifab/SKILLS.md).
 
 ---
 
-## 명령어 레퍼런스
+## 결정론 가드 (Hooks)
 
-### `/aifab:discover` — 아키텍처 결정
+`CLAUDE.md`의 prose 규칙을 hooks가 실시간 차단·경고로 강제한다.
 
-프로젝트를 시작할 때 가장 먼저 실행한다. 사전에 정해진 스택이 없으며, 질문 답변을 바탕으로 최적 아키텍처를 도출한다.
-
-**입력 방식 (선택):**
-- 기능을 자연어로 설명
-- 기존 코드베이스 디렉토리 지정
-- 요구사항 문서 경로 지정
-
-**출력:**
-- `ARCHITECTURE.md` — 선택된 아키텍처 상세
-- `WORKLOG.md` — 작업일지 초기화
-
----
-
-### `/aifab:plan` — Wave 기반 플랜 작성
-
-Advisor(Opus)가 기능을 Wave 단위로 분해하고 `PLAN.md`를 작성한다.
-
-| Wave 크기 | 기준 | 예상 기간 |
-|-----------|------|----------|
-| Small | 단일 엔드포인트, 독립 컴포넌트 | 0.5~1일 |
-| Medium | 기능 묶음, 서비스 레이어 | 1~2일 |
-| Large | 크로스 서비스 통합, 외부 API | 2~3일 |
-
-각 Wave는 **TDD 기준** (실패 테스트 → 구현 → 리팩토링)으로 설계된다.
-
----
-
-### `/aifab:execute` — Wave 실행
-
-멀티에이전트 오케스트레이션의 핵심.
-
-```
-Advisor (Opus)
-├─ 작업 분해 및 분류
-├─ Haiku → 보일러플레이트 생성 (병렬)
-│   모델 정의, CRUD 스텁, 설정 파일
-├─ Sonnet → 비즈니스 로직 + 테스트 (병렬)
-│   TDD Red→Green→Refactor
-└─ Advisor 검토 → 통일성/원칙 확인 → 수정
-```
-
-완료 시 자동으로 git commit.
-
----
-
-### `/aifab:security` — 보안 검토
-
-4개 도메인 자동 스캔. 치명적 이슈는 즉시 자동 수정.
-
-| 도메인 | 검토 항목 |
-|--------|----------|
-| OWASP Top 10 | SQL Injection, XSS, CSRF, IDOR, Broken Auth |
-| AI/LLM 보안 | Prompt Injection, 시스템 프롬프트 노출, 출력 검증 |
-| API 보안 | JWT 검증, Rate Limiting, CORS 설정 |
-| 시크릿 관리 | 하드코딩 키 스캔, .env gitignore, 로그 노출 |
-
----
-
-### `/aifab:playwright` — E2E UI 테스트
-
-전체 개발 완료 후 실행. PLAN.md 기반으로 주요 사용자 시나리오를 자동 생성하고 실행한다.
-
-- Happy Path, Auth Flow, CRUD, Error States 자동 커버
-- 실패 시 스크린샷 캡처 → Sonnet이 수정
-
----
-
-### `/aifab:uat` — 사용자 인수 테스트
-
-Playwright 통과 후 실행. 사용자가 직접 테스트하고 결과를 입력한다.
-
-- 시나리오별 통과/실패/부분통과 수집
-- 실패 시 새 Wave를 PLAN.md에 추가 → 자동 재작업 루프
-- 전체 통과 시 `v1.0.0` git tag 생성
-
----
-
-### `/aifab:worklog` — 작업일지
-
-| 명령어 | 동작 |
-|--------|------|
-| `/aifab:worklog` | 현재 상태 표시 |
-| `/aifab:worklog init <프로젝트명>` | WORKLOG.md 초기화 |
-| `/aifab:worklog update` | 최신 git 상태 반영 |
-| `/aifab:worklog resume` | **중단된 작업 재시작** (가장 중요) |
-
----
-
-### `/aifab:debug` — 체계적 디버깅 (4단계 RCA)
-
-추측 디버깅 금지. **가설 → 증거 → 검증 → 수정** 4단계 강제.
-
-```bash
-/aifab:debug "<증상 설명>"
-/aifab:debug session              # 진행 중인 세션 재개
-/aifab:debug history              # 과거 세션 목록
-```
-
-`DEBUG-SESSION.md`에 가설별 검증 결과 기록. 재발 방지 회고 포함.
-
----
-
-### `/aifab:map-codebase` — 4-병렬 매퍼 분석
-
-기존 코드베이스에 진입할 때 4개 매퍼 에이전트(Sonnet)를 병렬 실행:
-
-| 매퍼 | 산출물 |
-|------|--------|
-| Tech Stack | `docs/codebase-map/01-TECH.md` |
-| Architecture | `docs/codebase-map/02-ARCH.md` |
-| Quality | `docs/codebase-map/03-QUALITY.md` |
-| Concerns | `docs/codebase-map/04-CONCERNS.md` |
-
-종합 SUMMARY와 권장 진입 전략 자동 생성.
-
----
-
-### `/aifab:worktree` — 병렬 Wave 워크스페이스
-
-독립 Wave를 git worktree로 분리해 동시 진행:
-
-```bash
-/aifab:worktree list
-/aifab:worktree create wave-3
-/aifab:worktree merge wave-3
-/aifab:worktree status
-```
-
-`/aifab:execute --parallel 3,4,5`로 여러 Wave 동시 실행. 충돌 가능성 자동 검사.
-
----
-
-### `/aifab:codex-review` — 교차 AI 검증
-
-OpenAI Codex CLI로 독립적 코드 리뷰. Karpathy 원칙 준수, 보안, 엣지케이스 등 검증:
-
-```bash
-/aifab:codex-review                # 마지막 commit
-/aifab:codex-review wave 3         # Wave 3 누적
-/aifab:codex-review file <path>    # 특정 파일
-```
-
-Verdict: APPROVE / APPROVE_WITH_NITS / REQUEST_CHANGES / REJECT
-
-Codex 미설치 시 사용자가 직접 ChatGPT 등에 복사하는 fallback 지원.
-
----
-
-### `/aifab:refactor` — 동작 보존 리팩토링
-
-테스트로 회귀 방지하며 점진적으로 구조 개선.
-
-```bash
-/aifab:refactor <대상 모듈>
-```
-
-- 베이스라인 테스트 통과 확인 → 거부 시 회귀 테스트부터 추가
-- Strangler-fig / Branch-by-abstraction 패턴 자동 선택
-- 각 단계 5분 이내 (revertable commit)
-- `REFACTOR-LOG.md`에 단계별 동작 보존 증거 기록
-
----
-
-### `/aifab:migrate` — 의존성/프레임워크 마이그레이션
-
-```bash
-/aifab:migrate "Pydantic v1 -> v2"
-/aifab:migrate "React 17 -> 18"
-```
-
-- WebSearch로 공식 마이그레이션 가이드 자동 참조
-- grep으로 영향 범위 스캔
-- Codemod 도구 자동 탐지 (jscodeshift, libcst, bump-pydantic 등)
-- Haiku(기계 변환) + Sonnet(의미 변환) 역할 분리
-- 의존성 commit과 코드 commit 분리
-
----
-
-### `/aifab:rollback` — 안전한 롤백
-
-```bash
-/aifab:rollback wave 3        # Wave 3 직전으로
-/aifab:rollback commit abc123 # 특정 commit으로
-/aifab:rollback last          # 마지막 Wave 취소
-/aifab:rollback dry-run       # 영향 분석만
-```
-
-- 자동 백업 브랜치 생성 (`backup/pre-rollback-YYYYMMDD-HHMM`)
-- 영향 받는 후속 Wave 분석 + 사용자 확인
-- revert(권장) / reset / cherry-pick 보존 전략 선택
-- 보안 수정 commit 보존 가능
-
----
-
-### `/aifab:compare` — N-옵션 비교
-
-```bash
-/aifab:compare "ORM 선택"
-/aifab:compare "API 스타일" --options "REST,GraphQL,tRPC"
-```
-
-- 옵션 2~5개 트레이드오프 매트릭스 작성
-- 평가 기준 정의 → 점수(1-5) + 가중치
-- Advisor 추천 + 차순위와의 결정적 차이
-- `docs/decisions/compare-<topic>.md` 보고서 저장
-- 큰 결정은 `/aifab:adr` 자동 호출 권장
-
----
-
-### `/aifab:roadmap` — Phase 인덱스 + 마일스톤 메타 (v2.1)
-
-`ROADMAP.md`를 생성·갱신하여 `PLAN.md`의 Wave를 Phase 단위로 그룹핑한다.
-
-```bash
-/aifab:roadmap                       # 현재 ROADMAP.md 표시
-/aifab:roadmap init v1.0.0           # 신규 생성
-/aifab:roadmap add-phase "<이름>"
-/aifab:roadmap update                # PLAN.md 변경 반영
-```
-
-`ROADMAP.md`가 있으면 `/aifab:plan`과 상태바가 Phase/Wave 포맷으로 동작한다 (하위호환).
-
----
-
-### `/aifab:progress` — 진척률 대시보드 (v2.1)
-
-`ROADMAP.md` + `PLAN.md`를 읽어 마일스톤·Phase·Wave 진행률과 다음 추천 명령어를 표시한다.
-
-```bash
-/aifab:progress
-```
-
-Python 헬퍼 `scripts/aifab_progress.py`가 파싱·계산을 담당하므로 추가 모델 호출 없음.
-
----
-
-### `/aifab:milestone` — 마일스톤 라이프사이클 (v2.1)
-
-semver 마일스톤을 생성·감사·완료하고 git tag를 생성한다.
-
-```bash
-/aifab:milestone                # 현재 상태
-/aifab:milestone new v1.0.0     # 시작
-/aifab:milestone audit          # 완료 직전 점검
-/aifab:milestone complete       # git tag + MILESTONE-LOG.md 회고
-```
-
----
-
-### `/aifab:grill` — 코드베이스 인식 인터뷰 (mattpocock)
-
-구현 시작 전, 도메인 모델 대비 플랜의 모든 측면을 인터뷰로 검증한다. 용어 확정 시 `CONTEXT.md`를 즉시 갱신하고 중요한 결정은 ADR로 기록한다.
-
-```bash
-/aifab:grill              # 현재 컨텍스트 기반
-/aifab:grill <topic>      # 특정 주제 집중
-```
-
-`/aifab:discover` 이전 또는 플랜이 모호할 때 사용.
-
----
-
-### `/aifab:grill-me` — 코드 없는 아이디어 인터뷰 (mattpocock)
-
-코드베이스 참조 없이 아이디어/플랜만 스트레스 테스트. `CONTEXT.md`/ADR 갱신 없음. 기술 결정 전 검증에 적합.
-
----
-
-### `/aifab:diagnose` — 재현 우선 디버깅 루프 (mattpocock)
-
-재현 가능한 버그 또는 성능 회귀 전용. `재현 → 최소화 → 가설 → 계측 → 수정 → 회귀 테스트`.
-
-```bash
-/aifab:diagnose "<증상>"
-```
-
-| 선택 기준 | `/aifab:diagnose` | `/aifab:debug` |
+| Hook | 트리거 | 동작 |
 |---|---|---|
-| 재현 가능 | O | △ |
-| 원인 불명/재현 어려움 | △ | O |
+| `aifab-secret-guard.js` | PreToolUse(Write/Edit) | 시크릿 패턴/시크릿 파일 경로 Write 차단 (exit 2) |
+| `aifab-bash-guard.js` | PreToolUse(Bash) | `rm -rf /`, `git push --force`, `curl \| sh` 등 차단 |
+| `aifab-ctx-guard.js` | PostToolUse | 컨텍스트 50%↑ 시 `/compact` 권고, 70%↑ 시 강한 경고 |
+
+설치된 hooks는 `~/.claude/settings.json` 또는 프로젝트 `.claude/settings.json`의 `hooks` 블록에서 등록한다. 자세한 구성: [`.claude/plugins/aifab/_shared/hooks.md`](.claude/plugins/aifab/_shared/hooks.md) (v2.2.0 추가).
 
 ---
 
-### `/aifab:caveman` — 초압축 응답 모드 (mattpocock)
+## 상태바
 
-관사·인사말·헤징 제거로 토큰 사용량 약 75% 절감. 기술 정확도 유지. `stop caveman` / `normal mode` 발화 시 해제.
+Claude Code 세션 하단 2-line Powerline.
 
+```
+  aifab    main    ◆ Opus 4.6    $1.24    12m 
+  M2·P2/4·W3/5 60%   ctx ████▌░░░░ 32%   5h ███▏│░░░░ 38% ⏳2h17m   7d █▏░░░░░░ 12% ⏳5d3h
+```
+
+- **Tier 글리프**: `◆` Opus / `◇` Sonnet / `○` Haiku / `◈` 기타. `model.display_name`을 stdin JSON에서 자동 추출하므로 신규 모델도 즉시 반영.
+- **진척**: `Mn·Pa/b·Wc/d pct%` — ROADMAP/PLAN 부재 시 graceful fallback.
+- **Pacing tick (`│`)**: 5h/7d 윈도우 경과 위치. tick 좌측이면 페이스 양호, 우측이면 빠른 소비.
+- **컨텍스트**: 색상 임계치 ≤40% 녹/ ≤60% 황/ ≤80% 주황/ >80% 적.
+
+### 스타일 옵션 (`AIFAB_STATUS_STYLE`)
+
+| 값 | 출력 |
+|---|---|
+| `powerline` (기본) | 2-line, ANSI 256-color, Unicode 바·tick |
+| `color` | legacy 단일 라인 |
+| `plain` | ASCII 단일 라인 (호환성 fallback) |
+
+### Windows cp949 인코딩
+
+`aifab-status.py`는 UTF-8을 강제하므로 자동 해결. 직접 호출 시 문제가 나면:
 ```bash
-/aifab:caveman
-```
-
----
-
-### `/aifab:adr` — Architecture Decision Records
-
-Michael Nygard 형식 의사결정 기록.
-
-```bash
-/aifab:adr new "Pydantic v2 채택"
-/aifab:adr list
-/aifab:adr show 0003
-/aifab:adr supersede 0003 0007
-```
-
-각 ADR: Status / Context / Decision / Consequences / Alternatives.
-`docs/adr/NNNN-<slug>.md` + 자동 인덱스 갱신.
-
----
-
-## CLI 상태바
-
-Claude Code 세션 중 하단에 2줄 표시. 터미널/폰트 환경에 따라 3가지 스타일 선택 가능.
-
-### 스타일 옵션
-
-`AIFAB_STATUS_STYLE` 환경변수 또는 `settings.json`의 `env`로 설정:
-
-| 스타일 | 출력 예시 | 권장 환경 |
-|--------|----------|----------|
-| `ascii` (기본값) | `[AI-Fab] \| model: opus-4-7 \| wave: 3/8 (37%) \| ctx ######-- 42% !` | 모든 터미널 (안전) |
-| `unicode` | `[AI-Fab] \| model: opus-4-7 \| wave: 3/8 (37%) \| ctx ████░░░░ 42% !` | 박스 문자 지원 폰트 |
-| `emoji` | `🏭 AI-Fab \| 🤖 opus-4-7 \| 📊 3/8 (37%) \| ctx ████░░░░ 42% 🔴` | iTerm2, 최신 폰트 |
-
-**기본값이 `ascii`인 이유:** 이모지/박스 문자는 폰트마다 폭이 달라 정렬이 깨지거나, 일부 폰트에서 미지원으로 깨진 글자가 표시될 수 있음.
-
-### 두 번째 줄 (사용량)
-
-```
-5h   [##--------] 12%  |  7day [######----] 41%
-```
-
-| 항목 | 설명 |
-|------|------|
-| `ctx` 바차트 | Context 창 사용률. 50% 초과 시 즉시 `/compact` |
-| `5h` 바차트 | 5시간 롤링 기준 Claude 사용량 |
-| `7day` 바차트 | 7일 기준 누적 사용량 |
-
-**Context 경고:** 35~49% `!` (warn), 50%+ `!!`/🔴 (즉시 `/compact` 필요)
-
-### 한글/이모지 깨짐 문제 해결
-
-상태바나 출력에서 글자가 깨질 경우:
-
-1. **로케일 확인**: `locale` 명령어로 `LC_ALL=en_US.UTF-8` 또는 `C.UTF-8`인지 확인
-2. **`settings.json`에 추가**:
-   ```json
-   "env": {
-     "LC_ALL": "en_US.UTF-8",
-     "AIFAB_STATUS_STYLE": "ascii"
-   }
-   ```
-3. **터미널 폰트 확인**: 한글/이모지 미지원 폰트일 경우 D2Coding, Sarasa Mono K, JetBrains Mono 등으로 변경
-
-#### Windows cp949 인코딩 오류
-
-Windows 한국어 환경에서 상태바에 `'cp949' codec can't encode character '\u2591'` 오류가 발생할 수 있다. 이는 Python의 기본 stdout 인코딩이 `cp949`로 설정되어 유니코드 바 문자(`░`, `█`)를 처리하지 못하기 때문이다.
-
-**해결:** `aifab-status.py`에 UTF-8 강제 인코딩이 내장되어 있으므로 최신 버전을 사용하면 자동 해결된다. 수동 해결이 필요한 경우:
-
-```bash
-# 환경변수로 Python UTF-8 모드 강제
 export PYTHONIOENCODING=utf-8
-# 또는 settings.json env에 추가:
-# "PYTHONIOENCODING": "utf-8"
 ```
 
 ---
 
 ## 모델 설정
 
-| 모델 | 역할 | 환경변수 |
-|------|------|----------|
-| `claude-opus-4-7` | Advisor — 플랜, 아키텍처, 검토 | `AIFAB_ADVISOR_MODEL` |
-| `claude-sonnet-4-6` | Worker — 로직, 테스트 | `AIFAB_WORKER_MODEL` |
+| 모델 | 역할 | env 변수 |
+|------|------|---------|
+| `claude-opus-4-7` | Advisor — 플랜·아키텍처·검토 | `AIFAB_ADVISOR_MODEL` |
+| `claude-sonnet-4-6` | Worker — 로직·테스트 | `AIFAB_WORKER_MODEL` |
 | `claude-haiku-4-5` | Generator — 보일러플레이트 | `AIFAB_BOILERPLATE_MODEL` |
 
-모델 교체: `settings.json`의 환경변수 수정.
-
----
-
-## 핵심 원칙 (Karpathy 4원칙)
-
-1. **코딩 전 사고** — 가정 명시, 불확실 시 질문, 추측으로 진행 금지
-2. **단순성 우선** — 요청된 최소 구현만, 미래 대비 코드 금지
-3. **수술적 변경** — 요청과 관련된 코드만 수정
-4. **목표 기반 실행** — HOW가 아닌 WHAT 지정, 에이전트가 달성까지 반복
-
-**Context 관리:** 항상 50% 미만 유지. 초과 시 `/compact` 즉시 실행.
+교체는 `settings.json`의 env만 수정. 스킬별 모델 사용 강도는 [`SKILLS.md` "모델 사용 매트릭스"](.claude/plugins/aifab/SKILLS.md#모델-사용-매트릭스) 참조.
 
 ---
 
 ## 디렉토리 구조
 
 ```
-AIFAB-harness/
-├── CLAUDE.md                    ← 전역 규칙 (Karpathy 원칙)
-├── README.md                    ← 이 파일
-├── settings.json                ← Claude Code 설정
+aifab/
+├── CLAUDE.md                     # 전역 규칙 (Karpathy 4원칙 + RULE 5 컨텍스트)
+├── README.md                     # 이 파일 (설치/운영)
+├── ROADMAP.md / PLAN.md /        # (런타임 생성) 계획 트리플
+│   WORKLOG.md
 ├── scripts/
-│   └── aifab-status.sh         ← CLI 상태바 스크립트
+│   ├── aifab-status.py           # 2-line Powerline 상태바
+│   ├── aifab-status.sh           # 상태바 진입점
+│   ├── aifab_progress.py         # ROADMAP/PLAN 파서 + Phase/Wave 진척
+│   ├── codex-usage-status.py     # Codex CLI 사용량
+│   ├── gen_skills_index.py       # CLAUDE.md/SKILLS.md 자동 인덱스 갱신
+│   └── metric_log.py / _summary.py / skill_lint.py
 └── .claude/
+    ├── settings.json             # env + statusLine + permissions + hooks
+    ├── commands/                 # 프로젝트 슬래시 명령
+    ├── hooks/                    # 결정론 가드 (aifab-*.js)
     └── plugins/aifab/
-        ├── SKILLS.md             ← 23 스킬 인덱스 + 의존성 그래프
-        ├── _shared/              ← 공통 표준 프로토콜
-        │   ├── prerequisites.md      (사전조건 매트릭스)
-        │   ├── output-format.md      (Verdict/Severity/에러코드)
-        │   ├── worklog-update.md     (WORKLOG 갱신 절차)
-        │   ├── agent-dispatch.md     (Sub-agent 프롬프트)
-        │   └── git-commit.md         (Conventional Commits)
-        └── skills/
-            ├── discover.md       ← /aifab:discover
-            ├── plan.md           ← /aifab:plan
-            ├── execute.md        ← /aifab:execute
-            ├── security.md       ← /aifab:security
-            ├── playwright.md     ← /aifab:playwright
-            ├── uat.md            ← /aifab:uat
-            ├── worklog.md        ← /aifab:worklog
-            ├── debug.md          ← /aifab:debug
-            ├── map-codebase.md   ← /aifab:map-codebase
-            ├── worktree.md       ← /aifab:worktree
-            ├── codex-review.md   ← /aifab:codex-review
-            ├── refactor.md       ← /aifab:refactor       (v2)
-            ├── migrate.md        ← /aifab:migrate        (v2)
-            ├── rollback.md       ← /aifab:rollback       (v2)
-            ├── compare.md        ← /aifab:compare        (v2)
-            ├── adr.md            ← /aifab:adr            (v2)
-            ├── roadmap.md        ← /aifab:roadmap        (v2.1)
-            ├── progress.md       ← /aifab:progress       (v2.1)
-            ├── milestone.md      ← /aifab:milestone      (v2.1)
-            ├── grill.md          ← /aifab:grill          (mattpocock)
-            ├── grill-me.md       ← /aifab:grill-me       (mattpocock)
-            ├── diagnose.md       ← /aifab:diagnose       (mattpocock)
-            └── caveman.md        ← /aifab:caveman        (mattpocock)
+        ├── SKILLS.md             # 스킬 인덱스 + 의존성 그래프
+        ├── _shared/              # 공통 표준 (prereq/output/worklog/dispatch/commit/hooks)
+        └── skills/*.md           # 각 스킬 정의
 ```
 
 ---
 
-## 생성 파일 (프로젝트별)
+## 런타임 생성 파일
 
-워크플로우 실행 중 프로젝트 루트에 생성:
+워크플로우 실행 중 프로젝트 루트에 생성되는 산출물.
 
-| 파일 | 생성 시점 | 내용 |
+| 파일 | 생성 시점 | 용도 |
 |------|----------|------|
-| `ARCHITECTURE.md` | `/aifab:discover` 완료 | 선택된 아키텍처 상세 |
+| `ARCHITECTURE.md` | `/aifab:discover` | 선택된 아키텍처 상세 |
 | `ROADMAP.md` | `/aifab:roadmap init` | Phase 인덱스 + 마일스톤 메타 |
-| `PLAN.md` | `/aifab:plan` 완료 | Wave별 작업 플랜 |
-| `CONTEXT.md` | `/aifab:grill` 실행 | 도메인 용어/제약 정렬 기록 |
-| `MILESTONE-LOG.md` | `/aifab:milestone complete` | 마일스톤 완료 회고 + git tag 기록 |
-| `WORKLOG.md` | `/aifab:discover` 완료 | 작업일지 |
-| `docs/UAT-REPORT.md` | `/aifab:uat` 완료 | UAT 결과 보고서 |
-| `DEBUG-SESSION.md` | `/aifab:debug` 진행 중 | 디버그 세션 가설/증거/결과 |
-| `docs/codebase-map/*.md` | `/aifab:map-codebase` 완료 | 4-매퍼 분석 보고서 |
-| `docs/codex-reviews/*.md` | `/aifab:codex-review` 실행 | Codex 교차 검증 결과 |
-| `.worktrees/wave-*/` | `/aifab:worktree create` | 병렬 Wave 작업 디렉토리 |
-| `REFACTOR-LOG.md` | `/aifab:refactor` 진행 중 | 리팩토링 단계별 동작 보존 기록 |
-| `MIGRATION-PLAN.md`, `MIGRATION-REPORT.md` | `/aifab:migrate` | 마이그레이션 영향 분석 + 결과 |
-| `ROLLBACK-LOG.md` | `/aifab:rollback` 실행 | 롤백 시점/사유/영향 |
-| `docs/decisions/compare-*.md` | `/aifab:compare` 실행 | 옵션 비교 매트릭스 |
+| `PLAN.md` | `/aifab:plan` | Wave별 작업 플랜 |
+| `WORKLOG.md` | `/aifab:discover` 또는 `/aifab:worklog init` | 작업일지 (재시작용) |
+| `CONTEXT.md` | `/aifab:grill` | 도메인 용어/제약 정렬 |
+| `MILESTONE-LOG.md` | `/aifab:milestone complete` | 마일스톤 회고 + git tag |
+| `DEBUG-SESSION.md` | `/aifab:debug` | 가설·증거·검증 기록 |
+| `docs/codebase-map/*.md` | `/aifab:map-codebase` | 4-매퍼 분석 보고서 |
 | `docs/adr/NNNN-*.md` | `/aifab:adr new` | Architecture Decision Records |
+| `docs/decisions/compare-*.md` | `/aifab:compare` | 옵션 비교 매트릭스 |
+| `docs/UAT-REPORT.md` | `/aifab:uat` | UAT 결과 |
+| `REFACTOR-LOG.md` | `/aifab:refactor` | 리팩토링 단계별 보존 증거 |
+| `MIGRATION-PLAN.md` / `MIGRATION-REPORT.md` | `/aifab:migrate` | 마이그레이션 분석·결과 |
+| `ROLLBACK-LOG.md` | `/aifab:rollback` | 롤백 시점·사유·영향 |
+| `.worktrees/wave-*/` | `/aifab:worktree create` | 병렬 Wave 작업 공간 |
+
+---
+
+## 트러블슈팅
+
+| 증상 | 원인 / 해결 |
+|---|---|
+| 상태바에 `cp949` 인코딩 오류 | `PYTHONIOENCODING=utf-8` 환경변수 또는 최신 `aifab-status.py` 사용 |
+| 상태바 글리프 깨짐 | 터미널 폰트를 Nerd Font (JetBrains Mono NF, Sarasa Mono K 등)로 변경, 또는 `AIFAB_STATUS_STYLE=plain` |
+| `/aifab:` 자동완성에 스킬 없음 | 글로벌 설치: `~/.claude/commands/aifab/` 경로 확인. 프로젝트 설치: `.claude/commands/aifab/` 확인 |
+| `/aifab:progress` 빈 출력 | `ROADMAP.md`/`PLAN.md` 둘 다 없으면 정상. `/aifab:roadmap init`으로 생성 |
+| hooks가 동작하지 않음 | `settings.json` `hooks` 블록 등록 여부, hook 파일 실행 권한(`chmod +x`), `node`/`bash` 경로 확인 |
+| 컨텍스트 hook 경고 미발생 | `aifab-status.py`가 `/tmp/aifab-ctx-<session_id>.json` 작성 중인지, 또는 GSD 브릿지 fallback 확인 |
+| GitLab/GitHub push 인증 실패 | `git credential-manager configure`로 GCM 설정. Personal Access Token은 만료 전 회수 |
+
+---
+
+## 라이선스 / 기여
+
+- 본 하네스는 사내·개인 워크플로우 개선 목적의 dogfooding 산출물.
+- 새 스킬 추가 또는 frontmatter 변경 후 반드시 `python3 scripts/gen_skills_index.py --write CLAUDE.md SKILLS.md`로 인덱스 갱신.
+- CI는 `--check`로 stale 여부를 검증한다.
