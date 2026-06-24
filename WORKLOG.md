@@ -61,3 +61,43 @@
 **다음 액션:** Wave 1 commit → settings.json 등록은 Wave 3에서 일괄 처리 (현재 hooks는 작성만 되어 있고 등록 전이라 실 환경 영향 없음).
 
 **다음 Wave:** Wave 2 — 프로젝트 워크플로우 hooks (worklog-auto, session-start, wave-gate)
+
+**보안 검토 (`/aifab:security wave 1`):**
+- ❌ 치명적: 0 / ⚠️ 경고: 1 / ℹ️ 정보: 3 / ✅ 통과: 10
+- **Verdict:** APPROVE_WITH_NITS — Wave 1 그대로 통과
+- **Wave 3 deferred (사용자 결정 B):**
+  - `aifab-secret-guard.js:88` stderr preview 10자 → 4자로 단축 (Low-risk secret leak in transcript log)
+  - `aifab-bash-guard.js:52` 동일 — command preview 길이 검토
+  - `aifab-status.py:write_ctx_bridge` Windows 금지 문자(`:*?<>|`) 가드 강화 (선택)
+
+---
+
+## 2026-06-24 — Wave 2 시작
+
+**RULE 1 확정 (사용자 컨펌):**
+- A: 3개 모두 `.js`로 통일 (`.sh` 폐기) — Windows 호환 + escape 안전 (Wave 1 결정과 일관)
+- B: 글로벌(`~/.claude/hooks/`) + 프로젝트(`.claude/hooks/`) 양쪽 미러 — Wave 1 패턴 유지
+
+**작업 목록 (1차 Sonnet → 사용자 지시로 Opus 재실행, 최종 Opus 감사 통과):**
+- [x] [Opus] `aifab-worklog-auto.js` — PostToolUse(Edit|Write|MultiEdit) → WORKLOG.md "## 자동 기록" append
+- [x] [Opus] `aifab-session-start.js` — SessionStart → 현재 Wave + 진척% 출력
+- [x] [Opus] `aifab-wave-gate.js` — PostToolUse(Bash[git commit]) → /aifab:security 안내
+
+**Opus 감사 결정사항:** 3개 hook 모두 Sonnet 구현이 스펙 통과 → byte-identical 유지 (rewrite 불필요).
+
+**스모크 테스트 결과 (15/15 통과):**
+- worklog-auto 5/5: 섹션 append / 섹션 자동 생성 / self-edit 차단 / no-worklog 무음 / 외부경로 차단
+- session-start 4/4: 실프로젝트 Wave 2/6 16% / 비-AI-Fab dir 무음 / 모든 Wave 완료 / 부분 33%
+- wave-gate 6/6: double-quoted / single-quoted / heredoc / 일반 feat 무시 / 비-commit 무시 / 실패 commit 무시
+
+**산출물 (글로벌 + 프로젝트 byte-identical 미러):**
+- `~/.claude/hooks/aifab-worklog-auto.js` (3151 B)
+- `~/.claude/hooks/aifab-session-start.js` (3460 B)
+- `~/.claude/hooks/aifab-wave-gate.js` (2725 B)
+- `D:\lap\26..05-aifab\.claude\hooks\aifab-*.js` (동일 3개)
+
+**상태:** 완료 ✓
+
+**다음 액션:** Wave 2 commit → Wave 3 (settings.json 등록 + docs + e2e). 현재는 등록 전이라 hooks가 실 환경에 작용하지 않음.
+
+**다음 Wave:** Wave 3 — 등록 + 문서 + 통합 테스트 (`_shared/hooks.md`, CLAUDE.md Hooks 섹션, 5개 e2e 시나리오)

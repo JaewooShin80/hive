@@ -32,14 +32,15 @@
 **목표:** `.claude/hooks/`에 AI-Fab 워크플로우 강제 hook 3종.
 
 **산출물:**
-- [ ] `aifab-worklog-auto.sh` — PostToolUse(Edit|Write), WORKLOG.md "## 자동 기록" 섹션에 `{date} {file}` append
-- [ ] `aifab-session-start.sh` — SessionStart, ROADMAP/PLAN/WORKLOG 존재 시 현재 Wave + 진척% 출력
-- [ ] `aifab-wave-gate.js` — PostToolUse(Bash[git commit]), 커밋 메시지에 `feat(wave-N)` 포함 시 "다음: `/aifab:security wave N`" 알림
+- [x] `aifab-worklog-auto.js` — PostToolUse(Edit|Write|MultiEdit), WORKLOG.md "## 자동 기록" 섹션에 `{date} {file}` append (RULE 1: .sh → .js 통일, Windows 호환)
+- [x] `aifab-session-start.js` — SessionStart, ROADMAP/PLAN/WORKLOG 존재 시 현재 Wave + 진척% 출력 (RULE 1: .sh → .js 통일)
+- [x] `aifab-wave-gate.js` — PostToolUse(Bash[git commit]), 커밋 메시지에 `feat(wave-N)` 포함 시 "다음: `/aifab:security wave N`" 알림
 
-**검증:**
-- [ ] Edit 한 번 후 WORKLOG.md에 entry 추가 확인
-- [ ] 신규 세션 시작 시 "현재 Wave 1, 2/6 완료(33%)" 같은 메시지 출력
-- [ ] `git commit -m "feat(wave-1): ..."` 직후 security 안내 출력
+**검증 (15/15 통과):**
+- [x] worklog-auto: 섹션 존재시 append (1) / 섹션 없으면 생성 (2) / WORKLOG.md self-edit 차단 (3) / WORKLOG.md 없는 cwd 무음 (4) / cwd 밖 경로 차단 (5)
+- [x] session-start: 실제 프로젝트 Wave 2/6 16% 출력 (1) / 비-AI-Fab dir 무음 (2) / 모든 Wave 완료 메시지 (3) / 부분 진척 Wave 2/3 33% (4)
+- [x] wave-gate: double-quoted (1) / single-quoted (2) / heredoc (3) / 일반 feat 무시 (4) / 비-commit 무시 (5) / 실패 commit 무시 (6)
+- [x] 글로벌(`~/.claude/hooks/`)과 프로젝트(`.claude/hooks/`) 양쪽 byte-identical 미러 확인
 
 **커밋:** `feat(hooks): add project workflow hooks (worklog/session/wave-gate)`
 
