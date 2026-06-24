@@ -196,6 +196,7 @@ CLAUDE.md(1,100) + 스킬 1개 평균 사용 시: ~2,700 토큰 (Context의 1.4%
 | `/aifab:debug` | Systematic 4-stage RCA debugging |
 | `/aifab:diagnose` | Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when bug is reproducible. For hard-to-reproduce bugs with unclear cause, use /aifab:debug instead. |
 | `/aifab:discover` | Use when starting a new project or feature and needing to select the right architecture. Triggers on /aifab:discover command. Use when the user has not yet chosen a tech stack, wants to explore options, or needs a structured discovery session before planning. |
+| `/aifab:evaluate` | Live feature verification via Playwright MCP. Reads feature-list.json, drives each feature's verify URL/command, updates status (passing/failing/partial). Anthropic 3-agent Evaluator role. |
 | `/aifab:execute` | Multi-agent Wave execution (Opus + Sonnet/Haiku) |
 | `/aifab:grill` | Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates CONTEXT.md and ADRs inline as decisions crystallise. Use before /aifab:discover when requirements are fuzzy or when the user wants to stress-test a plan. |
 | `/aifab:grill-me` | Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test an idea or plan without codebase context. For code-aware sessions with CONTEXT.md updates, use /aifab:grill instead. |
@@ -208,7 +209,7 @@ CLAUDE.md(1,100) + 스킬 1개 평균 사용 시: ~2,700 토큰 (Context의 1.4%
 | `/aifab:refactor` | Behavior-preserving incremental refactoring |
 | `/aifab:roadmap` | Manage project roadmap (Phase-level grouping of Waves) and milestone metadata. Subcommands init/add-phase/update. Generates ROADMAP.md as the index above PLAN.md. |
 | `/aifab:rollback` | Safe Wave-level rollback with backup |
-| `/aifab:security` | 4-domain security review (OWASP/AI-LLM/API/secrets) |
+| `/aifab:security` | 5-domain security review (OWASP/AI-LLM/API/Secrets/Dependencies) |
 | `/aifab:uat` | UAT scenarios + result collection |
 | `/aifab:worklog` | Work log for resumable sessions |
 | `/aifab:worktree` | Parallel Wave via git worktrees |

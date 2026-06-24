@@ -44,6 +44,29 @@
 | `wave` | integer | yes | 소속 Wave 번호 (1-based). |
 | `pass_criteria` | string | yes | 검증 가능한 단일 문장. "예/아니오" 판단 가능해야 한다. |
 | `status` | enum | yes | 아래 status enum 참조. |
+| `verify` | object | no | `/aifab:evaluate` 라이브 검증용 (Wave 6). 부재 시 수동 검증 영역 (status 미변경). |
+
+### verify 객체 (옵션 — Wave 6 도입)
+
+```json
+"verify": {
+  "type": "url",
+  "target": "file:///abs/path/to/page.html",
+  "assert": "OK"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `type` | enum | yes | `"url"` (Playwright MCP로 navigate + DOM/HTML fetch) 또는 `"cmd"` (쉘 명령 실행). |
+| `target` | string | yes | type=url이면 URL (file://, http://, https://). type=cmd이면 쉘 명령. |
+| `assert` | string | yes | 응답/stdout에서 매칭할 정규식 또는 substring. 매치 → `passing`, 불일치 → `failing`. |
+
+`/aifab:evaluate` 동작:
+- type=url + 매치 → `passing` / 불일치 → `failing` / 네트워크 오류 → `partial`
+- type=cmd + exit 0 + stdout 매치 → `passing` / exit !=0 또는 매치 실패 → `failing` / 30s 타임아웃 → `partial`
+- `verify` 부재 → 해당 entry는 status 미변경 (수동 검증 영역, 보고만 함)
+- `aifab-bash-guard.js` 차단 패턴(type=cmd)은 실행 전 거부 (이중 가드)
 
 ## status enum
 

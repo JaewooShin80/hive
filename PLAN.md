@@ -108,18 +108,19 @@
 **목표:** Anthropic 3-agent 패턴의 Evaluator를 AI-Fab에 합성.
 
 **Wave 시작 시점 RULE 1 재확인 (구현 전):**
-- [ ] 신규 `/aifab:evaluate` vs `/aifab:playwright` 확장 — 어느 쪽? (현재 가정: 확장. 시작 시 사용자 확인)
+- [x] 신규 `/aifab:evaluate` vs `/aifab:playwright` 확장 — Q1=A 신규 스킬 채택 (단일 책임, RULE 2). 사용자 컨펌 2026-06-24.
 
 **산출물:**
-- [ ] Evaluator 스킬: feature-list.json 읽고 → Playwright MCP로 라이브 검증 → status 갱신
-- [ ] mock 앱 1개 + mock feature 3개로 e2e 시나리오 (pass→fail→pass 전이 감지)
-- [ ] CLAUDE.md 워크플로우 명령어 표 갱신 (gen_skills_index.py 자동 재생성)
+- [x] Evaluator 스킬 `/aifab:evaluate` (3 mirror byte-identical 6031b) — feature-list.json read → verify 필드 따라 url/cmd 라이브 검증 → status (passing/failing/partial) 갱신. graceful skip + bash-guard 이중 가드.
+- [x] mock 앱 `tests/mock-app/` — 3 HTML (feature-a/b/c.html) + feature-list.json (3 entry, verify=url) + `evaluate_harness.py` (Playwright MCP fallback stub, file:// + regex)
+- [x] CLAUDE.md 워크플로우 명령어 표 갱신 — gen_skills_index.py 자동 재생성으로 16→17 스킬 (`/aifab:evaluate` 추가). SKILLS.md mirror 동시 갱신.
+- [x] `_shared/feature-list-schema.md`에 옵션 `verify` 객체 정의 추가 (type/target/assert + Wave 6 동작 명세)
 
-**검증:**
-- [ ] mock 앱에서 feature A 정상 → status: passing
-- [ ] mock 앱 의도적 break → 다음 evaluate 호출 시 status: failing 감지
-- [ ] fix 후 재실행 → status: passing 회복
-- [ ] Phase 2 전체 e2e: plan → execute → evaluate → worklog resume 사이클 1회 무중단 완료
+**검증 (4/4 통과):**
+- [x] (A) 초기 상태 → M-F1/F2/F3 모두 pending→passing 전이 (3/3)
+- [x] (B) feature-a.html 마커 BROKEN으로 변경 → re-evaluate → M-F1: passing→failing 검출 (2/3 passing, 1 failing)
+- [x] (C) 마커 FEATURE-A-OK 복원 → re-evaluate → M-F1: failing→passing 회복 (3/3 passing)
+- [x] (D) 전체 사이클: plan(emit pending) → execute(simulate test pass→passing) → evaluate(live re-verify, 0 diff) → worklog resume(branch=b "Wave N+1 시작") — 무중단 1회 완료
 
 **커밋:** `feat(evaluate): add trajectory evaluator (Anthropic 3-agent pattern)`
 **Phase 2 완료 커밋:** `chore(milestone): Phase 2 complete (Feature List + Evaluator)`

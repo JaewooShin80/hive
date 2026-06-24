@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "milestone": "mock-e2e",
+  "features": [
+    {
+      "id": "M-F1",
+      "title": "Feature A login page renders",
+      "wave": 1,
+      "pass_criteria": "marker FEATURE-A-OK present in feature-a.html",
+      "status": "passing",
+      "verify": {
+        "type": "url",
+        "target": "feature-a.html",
+        "assert": "FEATURE-A-OK"
+      }
+    },
+    {
+      "id": "M-F2",
+      "title": "Feature B dashboard renders",
+      "wave": 1,
+      "pass_criteria": "marker FEATURE-B-OK present in feature-b.html",
+      "status": "passing",
+      "verify": {
+        "type": "url",
+        "target": "feature-b.html",
+        "assert": "FEATURE-B-OK"
+      }
+    },
+    {
+      "id": "M-F3",
+      "title": "Feature C report renders",
+      "wave": 1,
+      "pass_criteria": "marker FEATURE-C-OK present in feature-c.html",
+      "status": "passing",
+      "verify": {
+        "type": "url",
+        "target": "feature-c.html",
+        "assert": "FEATURE-C-OK"
+      }
+    }
+  ]
+}

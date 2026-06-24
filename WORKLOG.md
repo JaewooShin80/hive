@@ -294,6 +294,45 @@
 
 ---
 
+## Wave 6 시작 — 2026-06-24
+
+**RULE 1 결정 (사용자 컨펌, 추천안 채택):**
+- Q1=A 신규 `/aifab:evaluate` 스킬 (단일 책임, RULE 2)
+- Q2=a 정적 HTML mock 앱 (`tests/mock-app/`, 의존성 최소)
+- Q3=b Stub harness (Wave 4/5 검증 패턴 일관, Playwright MCP 환경 의존성 0)
+- Q4=b 본 repo 자체 dogfooding (Wave 1-5 패턴 연장)
+
+**작업 목록:**
+- [x] [Advisor] `/aifab:evaluate` 스킬 (3 mirror byte-identical 6031b) 작성 완료
+- [x] [Advisor] `_shared/feature-list-schema.md`에 옵션 `verify` 필드 정의 추가
+- [x] [Advisor] `tests/mock-app/` — 3 HTML + feature-list.json + evaluate_harness.py (Playwright MCP fallback stub)
+- [x] [Advisor] e2e 4 시나리오 (A/B/C/D) 통과 — pass→fail→pass 전이 + 무중단 사이클
+- [x] [Advisor] `python scripts/gen_skills_index.py --write CLAUDE.md` 실행 — 16→17 스킬 (`/aifab:evaluate` 추가)
+- [x] [Advisor] PLAN.md Wave 6 + Phase 2 마킹
+
+## Wave 6 완료 — 2026-06-24
+
+**상태:** Wave 6 완료 ✓ / Phase 2 완료 ✓ / v2.2.0 milestone 종료
+
+**산출물:**
+- `/aifab:evaluate` 스킬 (3 mirror byte-identical 6031b)
+- `_shared/feature-list-schema.md` 확장 — 옵션 `verify` 객체 (type/target/assert)
+- `tests/mock-app/` — feature-a/b/c.html + feature-list.json + evaluate_harness.py
+- CLAUDE.md / SKILLS.md — gen_skills_index.py 재생성 (16→17)
+
+**검증 결과 (4/4 통과):**
+- A: 초기 pending×3 → passing×3 전이
+- B: feature-a 마커 BROKEN → M-F1 failing 검출 (2/3 passing)
+- C: 마커 복원 → M-F1 passing 회복 (3/3)
+- D: plan→execute→evaluate→worklog resume 무중단 1회 완료, branch=b "Wave N+1 시작"
+
+**Phase 2 진척:** 3/3 Wave 완료 (100%) — feature-list 스키마 + execute/worklog 통합 + evaluator 완성
+**전체 진척:** 6/6 Wave 완료 (100%) — v2.2.0 AI-Fab Harness Hardening 종료
+
+**다음:** `chore(milestone): Phase 2 complete` + `git tag v2.2.0`
+
+---
+
 ## 자동 기록
 
 - 2026-06-24 10:05 CLAUDE.md
@@ -312,3 +351,14 @@
 - 2026-06-24 10:50 .claude/plugins/aifab/_shared/hooks.md
 - 2026-06-24 10:53 PLAN.md
 - 2026-06-24 11:18 PLAN.md
+- 2026-06-24 12:32 .claude/plugins/aifab/_shared/feature-list-schema.md
+- 2026-06-24 12:33 tests/mock-app/feature-a.html
+- 2026-06-24 12:33 tests/mock-app/feature-b.html
+- 2026-06-24 12:33 tests/mock-app/feature-c.html
+- 2026-06-24 12:33 tests/mock-app/feature-list.json
+- 2026-06-24 12:33 tests/mock-app/evaluate_harness.py
+- 2026-06-24 12:33 tests/mock-app/feature-a.html
+- 2026-06-24 12:34 tests/mock-app/feature-a.html
+- 2026-06-24 12:36 CLAUDE.md
+- 2026-06-24 12:37 PLAN.md
+- 2026-06-24 12:42 .gitignore
