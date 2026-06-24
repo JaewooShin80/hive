@@ -257,6 +257,43 @@
 
 ---
 
+## 2026-06-24 — Wave 4 보안 검토 완료
+
+- **스캔 범위:** Wave 4 (7 파일 — `git diff HEAD~1`)
+- **결과:** ❌ 치명적 0 / ⚠️ 경고 0 / ℹ️ 정보 1 / ✅ 통과 13
+- **Verdict:** APPROVE
+- **정보 (Wave 5+ 검토):** `_shared/hooks.md:23` + PLAN.md L14/20 시크릿 prefix 9종 doc 노출 — Wave 3과 동일 finding, 투명성 우선 유지 권고
+- **Dogfooding:** wave-gate가 `feat(wave-4)` commit 검출 → `/aifab:security wave 4` advisory emit (성공). ctx-guard가 새 임계(70/80%)로 73% warning → 80% critical 단계적 발화 확인.
+
+---
+
+## Wave 5 시작 — 2026-06-24
+
+- 상태: 진행 중
+- 목표: `/aifab:execute` Wave 종료 시 feature-list.json status 자동 전이 + `/aifab:worklog resume`에 feature 검증 결합
+- 작업 목록:
+  - [x] [Advisor] `/aifab:execute` skill에 6-3 (feature-list.json status 전이) 단계 추가 + 6-4/6-5 리넘버
+  - [x] [Advisor] `/aifab:worklog resume` 갱신 (feature-list.json read + 분기 a/b 안내)
+  - [x] [Advisor] 양쪽 mirror byte-identical 검증 (execute 13108b / worklog 6674b)
+  - [x] [Advisor] 4 mock 시나리오 검증 (passing 전이 / failing 잔존 / 모두 passing / 부재 graceful)
+
+## Wave 5 완료 — 2026-06-24
+
+**상태:** Wave 5 완료 ✓
+
+**산출물:**
+- `~/.claude/plugins/aifab/skills/execute.md` (+ commands mirror) — 6-3 신설, 6-4 commit, 6-5 완료 안내
+- `~/.claude/plugins/aifab/skills/worklog.md` (+ commands mirror) — resume 분기 a/b 추가
+
+**검증 결과 (4/4 통과):** A passing 전이 / B failing 잔존 + fix 안내 / C 모두 passing + 다음 Wave 안내 / D 부재 graceful skip (Wave 4 규약 준수)
+
+**Phase 2 진척:** 2/3 Wave 완료 (67%)
+**전체 진척:** 5/6 Wave 완료 (83%)
+
+**다음 Wave:** Wave 6 — Trajectory evaluator + Phase 2 e2e (시작 시 RULE 1: `/aifab:evaluate` 신규 vs `/aifab:playwright` 확장 결정 필요)
+
+---
+
 ## 자동 기록
 
 - 2026-06-24 10:05 CLAUDE.md
@@ -274,3 +311,4 @@
 - 2026-06-24 10:50 .claude/plugins/aifab/_shared/hooks.md
 - 2026-06-24 10:50 .claude/plugins/aifab/_shared/hooks.md
 - 2026-06-24 10:53 PLAN.md
+- 2026-06-24 11:18 PLAN.md

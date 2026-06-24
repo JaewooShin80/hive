@@ -264,7 +264,29 @@ Agent 도구를 사용하여 작업을 병렬로 디스패치한다.
 
 또한 Wave 목록에서 해당 항목을 `[ ]` → `[x]`로 변경한다.
 
-### 6-3. Git 커밋
+### 6-3. feature-list.json status 전이
+
+프로젝트 루트에 `feature-list.json`이 존재하면 Wave N에 매핑된 모든 feature entry의 `status`를 다음 규칙으로 전이한다. 파일이 없으면 이 단계를 건너뛴다 (기존 프로젝트 backward compat — Wave 4 graceful 규약 준수).
+
+**전이 규칙:**
+
+| 6-1단계 테스트 결과 | feature.status 전이 |
+|---|---|
+| 모든 테스트 통과 | `pending` → `passing` (Wave 매핑 entry 전부) |
+| 일부 실패 후 Advisor 수정으로 통과 | `pending` → `passing` |
+| 2회 재시도 후에도 일부 실패 | 실패 영향 entry → `failing`, 나머지 → `passing` |
+| Wave 범위에 검증 미작성 영역 있음 | 해당 entry → `partial` |
+
+**절차:**
+
+1. `feature-list.json`을 읽고 JSON으로 파싱한다. `JSONDecodeError`는 `features` 키 무효로 간주하고 6-4단계로 진행한다 (graceful skip).
+2. `features` 배열에서 `wave == N`인 entry만 필터한다.
+3. 각 entry의 `status` 필드를 위 규칙으로 갱신한다.
+4. 갱신된 JSON을 **들여쓰기 2 spaces · 마지막 newline** 으로 다시 쓴다 (Wave 4 schema 규약).
+5. 전이 내역을 한 줄 보고한다:
+   > "feature-list.json: Wave N — {passing N}개 passing / {failing N}개 failing / {partial N}개 partial"
+
+### 6-4. Git 커밋
 
 다음 형식으로 커밋한다:
 
@@ -272,9 +294,9 @@ Agent 도구를 사용하여 작업을 병렬로 디스패치한다.
 feat: Wave N - <wave 제목>
 ```
 
-커밋에 포함할 파일: Wave N에서 생성·수정된 모든 파일 + `WORKLOG.md`
+커밋에 포함할 파일: Wave N에서 생성·수정된 모든 파일 + `WORKLOG.md` + (존재 시) `feature-list.json`
 
-### 6-4. 완료 안내 출력
+### 6-5. 완료 안내 출력
 
 다음 메시지를 출력한다:
 

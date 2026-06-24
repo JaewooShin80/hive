@@ -90,13 +90,14 @@
 **목표:** Wave 완료 시 feature status 자동 전이, resume이 둘 다 read.
 
 **산출물:**
-- [ ] `/aifab:execute` 갱신: Wave 종료 직전 `feature-list.json` 해당 Wave entry의 status를 테스트 결과 기반으로 갱신 (test pass→passing / fail→failing / skip→partial)
-- [ ] `/aifab:worklog resume` 갱신: WORKLOG.md(서술) + feature-list.json(검증) 모두 read → 다음 작업이 "Wave N 미통과 feature 수정" 또는 "Wave N+1 시작" 인지 정확히 추론
+- [x] `/aifab:execute` 갱신: 6-3단계 신설 — Wave 종료 시 `feature-list.json`의 Wave 매핑 entry status 전이 (all_pass→passing / some_fail→failing+passing 혼합 / skip→partial), graceful skip 보장. 6-4 commit / 6-5 안내로 리넘버. 양쪽 mirror byte-identical (13108 bytes).
+- [x] `/aifab:worklog resume` 갱신: feature-list.json도 read → 마지막 Wave entry 중 `failing`/`partial` 잔존 시 분기 a("F<id> 수정 먼저"), 전부 passing이면 분기 b("Wave N+1 시작"). 양쪽 mirror byte-identical (6674 bytes).
 
-**검증:**
-- [ ] mock Wave 종료 시뮬레이션 → feature status pending→passing 전이
-- [ ] failing feature 1개 남기고 resume → "Wave N의 F2 fix 먼저" 안내
-- [ ] 모든 feature passing → "Wave N+1 시작" 안내
+**검증 (4/4 시나리오 통과):**
+- [x] A: 3-feature(Wave 2×2 pending + Wave 4×1 passing) all_pass → Wave 2 둘 다 passing 전이, Wave 4 미변경 (단순 wave 필터)
+- [x] B: 2-feature(Wave 2 둘 다 pending) some_fail → F1 failing / F2 passing, resume 분기 'a' + "Wave 2의 F1 수정 먼저" 메시지
+- [x] C: 2-feature(Wave 2 모두 passing) → resume 분기 'b' + "Wave 3 시작" 메시지
+- [x] D (backward compat): feature-list.json 부재 → execute 6-3 None 반환(skip), resume 분기 'b' (기본 안내) — Wave 4 graceful 규약 준수
 
 **커밋:** `feat(execute,worklog): integrate feature-list.json pass/fail tracking`
 

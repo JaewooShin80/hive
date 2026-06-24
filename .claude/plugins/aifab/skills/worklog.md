@@ -103,23 +103,36 @@ allowed-tools:
 
 1. `WORKLOG.md`를 읽는다
 2. `git log --oneline -10`을 실행하여 실제 Git 상태를 확인한다
-3. 교차 검증한다:
+3. `feature-list.json`이 존재하면 읽고 JSON 파싱한다 (graceful: 부재·malformed → 무시하고 4단계로 진행 — Wave 4 규약).
+4. 교차 검증한다:
    - WORKLOG.md에 "Wave N 완료"라고 되어 있으면, 해당 커밋이 git log에 존재하는지 확인한다
    - 불일치가 있으면 git log를 우선 기준으로 삼는다
-4. 다음 형식으로 보고한다:
+   - feature-list.json이 있으면 마지막 완료 Wave N의 feature entry 상태를 확인한다
+5. **분기 안내** (feature-list.json 존재 시 우선 적용):
+   - **a. 마지막 Wave N의 feature 중 `failing` 또는 `partial` 잔존 시:**
+     > "마지막 완료: Wave N — <제목> (커밋: abc1234)
+     > ⚠️ feature-list.json: Wave N에 미통과 feature 잔존 — F<id> (<title>): <status>
+     > 다음 작업: Wave N의 F<id> 수정 먼저 — 통과 후 Wave N+1 진입"
+   - **b. 마지막 Wave N의 feature 모두 `passing` (또는 feature-list.json 없음):**
+     > "마지막 완료: Wave N — <제목> (커밋: abc1234)
+     > ✅ feature-list.json: Wave N 모두 passing (또는 미사용)
+     > 다음 작업: <WORKLOG.md의 '다음 작업' 필드>"
+6. **보고 즉시 해당 작업을 시작한다. 추가 확인 없이 진행한다.**
 
-```
-마지막 완료: Wave N — <Wave 제목> (커밋: abc1234)
-다음 작업: <WORKLOG.md의 "다음 작업" 필드의 구체적 스텝>
-```
-
-5. **보고 즉시 해당 작업을 시작한다. 추가 확인 없이 진행한다.**
-
-**예시 출력:**
+**예시 출력 (모두 passing):**
 ```
 마지막 완료: Wave 2 — 데이터베이스 스키마 구현 (커밋: f3a8b21)
-다음 작업: Wave 3 시작 — API 엔드포인트 구현 (/aifab:execute wave=3)
+✅ feature-list.json: Wave 2 모두 passing
+다음 작업: Wave 3 시작 — API 엔드포인트 구현 (/aifab:execute)
 → Wave 3 실행을 시작합니다...
+```
+
+**예시 출력 (failing 잔존):**
+```
+마지막 완료: Wave 2 — 데이터베이스 스키마 구현 (커밋: f3a8b21)
+⚠️ feature-list.json: Wave 2에 미통과 feature 잔존 — F2 (User CRUD endpoint): failing
+다음 작업: Wave 2의 F2 수정 먼저 — 통과 후 Wave 3 진입
+→ F2 수정에 착수합니다...
 ```
 
 ---
