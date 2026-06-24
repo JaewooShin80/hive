@@ -171,6 +171,14 @@
 
 **상태:** Wave 3 완료 ✓ / Phase 1 마일스톤 도달
 
+**보안 검토 (`/aifab:security wave 3`):**
+- ❌ 치명적: 0 / ⚠️ 경고: 0 / ℹ️ 정보: 3 / ✅ 통과: 13개 항목
+- **Verdict:** APPROVE — Wave 3 그대로 통과
+- **정보 (Wave 4+ 검토):**
+  - `_shared/hooks.md:23` 시크릿 가드 prefix 9종 공개 — 투명성 우선, 유지 권고
+  - `WORKLOG.md:135,154` `ghp_xxxx` 합성 placeholder — 향후 엄격 스캐너 false positive 가능성
+  - `~/.claude/settings.json:264-265` `skip*PermissionPrompt: true` (pre-existing user pref, 본 Wave 무관)
+
 ---
 
 ## 자동 기록
