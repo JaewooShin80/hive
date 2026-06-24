@@ -99,6 +99,24 @@
 
 ---
 
+## Hooks (자동 가드 — v2.2.0 Wave 1-3)
+
+`~/.claude/settings.json`에 등록된 6개의 `aifab-*` hook이 모든 세션에서 자동 실행된다.
+GSD hook 9종과 네임스페이스 분리되어 공존한다.
+
+| Hook | Event | 역할 | Exit 정책 |
+|---|---|---|---|
+| `aifab-secret-guard.js` | PreToolUse(Write\|Edit) | 시크릿 패턴/금지 경로 차단 | exit 2 = block |
+| `aifab-bash-guard.js` | PreToolUse(Bash) | `rm -rf /` 등 위험 명령 차단 | exit 2 = block |
+| `aifab-ctx-guard.js` | PostToolUse(*) | 컨텍스트 50% RULE 5 가드 | advisory only |
+| `aifab-worklog-auto.js` | PostToolUse(Edit\|Write\|MultiEdit) | WORKLOG.md "## 자동 기록" append | advisory |
+| `aifab-session-start.js` | SessionStart | 현재 Wave + 진척% 출력 | advisory |
+| `aifab-wave-gate.js` | PostToolUse(Bash) | `feat(wave-N)` 커밋 후 `/aifab:security` 안내 | advisory |
+
+상세 동작/비활성화 방법: [`_shared/hooks.md`](.claude/plugins/aifab/_shared/hooks.md)
+
+---
+
 ## Security Defaults (보안 기본값 — 비타협적)
 
 - API 키, 비밀번호, 토큰 등 시크릿(secret)을 코드에 하드코딩하는 것은 **절대 금지**한다.

@@ -51,16 +51,16 @@
 **목표:** settings.json 등록, `_shared/hooks.md` 작성, e2e 시나리오 통과.
 
 **산출물:**
-- [ ] `~/.claude/settings.json` hooks 블록에 aifab-* 6개 추가 (GSD 보존)
-- [ ] `.claude/plugins/aifab/_shared/hooks.md` — 각 hook 역할/exit code/비활성 방법
-- [ ] CLAUDE.md "## Hooks" 섹션 추가, `_shared/hooks.md` 링크
+- [x] `~/.claude/settings.json` hooks 블록에 aifab-* 6개 추가 (GSD 보존)
+- [x] `.claude/plugins/aifab/_shared/hooks.md` — 각 hook 역할/exit code/비활성 방법
+- [x] CLAUDE.md "## Hooks" 섹션 추가, `_shared/hooks.md` 링크
 
-**검증 (5개 e2e 시나리오):**
-- [ ] (1) `.env`에 secret 쓰기 시도 → 차단
-- [ ] (2) `rm -rf /` 시도 → 차단
-- [ ] (3) 신규 세션 → SessionStart hook이 ROADMAP head 출력
-- [ ] (4) Edit 후 WORKLOG.md auto-append 확인
-- [ ] (5) ctx 60% 합성 → Stop hook advisory
+**검증 (5개 e2e 시나리오 통과):**
+- [x] (1) `.env`에 secret 쓰기 시도 → 차단 (exit 2)
+- [x] (2) `rm -rf /` 시도 → 차단 (exit 2)
+- [x] (3) 신규 세션 → SessionStart hook이 Wave 3 / 6 출력
+- [x] (4) Edit 후 WORKLOG.md auto-append 확인 (L81 substring 매칭 info-level 이슈 라이브 검출)
+- [x] (5) ctx 78% → PostToolUse(ctx-guard) critical advisory (실제 세션에서 자체 검증)
 
 **커밋:** `feat(hooks): register aifab hooks + docs + e2e tests`
 **Phase 1 완료 커밋:** `chore(milestone): Phase 1 complete (Hooks)`

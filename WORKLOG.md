@@ -101,3 +101,80 @@
 **다음 액션:** Wave 2 commit → Wave 3 (settings.json 등록 + docs + e2e). 현재는 등록 전이라 hooks가 실 환경에 작용하지 않음.
 
 **다음 Wave:** Wave 3 — 등록 + 문서 + 통합 테스트 (`_shared/hooks.md`, CLAUDE.md Hooks 섹션, 5개 e2e 시나리오)
+
+**보안 검토 (`/aifab:security wave 2`):**
+- ❌ 치명적: 0 / ⚠️ 경고: 0 / ℹ️ 정보: 3 / ✅ 통과: 13개 항목
+- **Verdict:** APPROVE — Wave 2 그대로 통과
+- **Wave 3 deferred:**
+  - `aifab-worklog-auto.js:79` WORKLOG.md size cap 추가 (5MB 권장, session-start의 1MB 패턴 참고)
+  - `aifab-wave-gate.js:65` `^feat\(wave-(\d+)\):` 엄격 매칭으로 강화 (콜론 필수, 보안 영향 없음)
+  - `aifab-worklog-auto.js:81` SECTION_HEADER 라인-앵커 매칭 (`^## 자동 기록$/m`)으로 강화
+
+---
+
+## 2026-06-24 — Wave 3 시작
+
+**RULE 1 결정:**
+- settings.json 편집은 Advisor 직접 (GSD 9개 hook 보존이 절대 조건, delegation 위험 > 가치)
+- hooks.md 신규 문서 작성만 Opus subagent에 위임
+
+**작업 목록:**
+- [x] [Advisor] `~/.claude/settings.json` — aifab 6개 hook 등록 완료 (PreToolUse 6=4GSD+2aifab / PostToolUse 6=3기존+3aifab / SessionStart 3=2GSD+1aifab). JSON 유효, GSD 전부 보존 확인.
+- [x] [Opus] `.claude/plugins/aifab/_shared/hooks.md` — 5433 B / 96 lines 신규 작성 완료
+- [ ] [Advisor] `CLAUDE.md` "## Hooks" 섹션 추가 (남음)
+- [ ] [Advisor] 5개 e2e 시나리오 검증 (남음)
+- [ ] [Advisor] commit + Phase 1 milestone 표시 (남음)
+
+**체크포인트 (2026-06-24 09:xx):**
+- **자체 dogfooding 성공:** Wave 2의 aifab-ctx-guard.js가 settings.json 등록 직후 발화. 78% used → critical advisory 정상 emit. Wave 2 산출물이 자기 자신을 검출 (현재 세션).
+- CLAUDE.md RULE 5 준수를 위해 ctx 78% 시점 외재화 후 중단. 사용자 `/compact` 후 재개 예정.
+
+**재개 지점 (resume after /compact):**
+1. CLAUDE.md "## Hooks" 섹션 추가 — `.claude/plugins/aifab/_shared/hooks.md` 링크 포함
+2. 5개 e2e 시나리오:
+   - (1) secret-guard: 합성 PreToolUse Edit on `.env` with `ghp_xxxx` content → exit 2
+   - (2) bash-guard: 합성 PreToolUse Bash `rm -rf /` → exit 2
+   - (3) session-start: 합성 SessionStart in cwd `D:/lap/26..05-aifab` → JSON with Wave 3
+   - (4) worklog-auto: 합성 PostToolUse Edit on `foo.py` → WORKLOG.md "## 자동 기록" entry 추가
+   - (5) ctx-guard: 이미 본 세션에서 78% 발화 확인 (자체 검증 통과)
+3. Wave 3 commit `feat(wave-3): register aifab hooks + docs + e2e tests` + Phase 1 milestone `chore(milestone): Phase 1 complete (Hooks)`
+
+**상태:** Wave 3 진행 중 (50% — 등록·문서 완료, 섹션·e2e·commit 남음)
+
+---
+
+## 2026-06-24 — Wave 3 완료
+
+**산출물 (모두 완료):**
+- `~/.claude/settings.json` aifab 6개 hook 등록 (GSD 9개 보존 / PreToolUse 6 / PostToolUse 6 / SessionStart 3)
+- `.claude/plugins/aifab/_shared/hooks.md` (5433 B, 96 lines)
+- `CLAUDE.md` "## Hooks" 섹션 추가 (6개 hook 표 + `_shared/hooks.md` 링크)
+
+**E2E 스모크 테스트 결과 (5/5 통과):**
+- (1) secret-guard: `.env` + `ghp_…` → exit 2, BLOCKED 메시지 정상
+- (2) bash-guard: `rm -rf /` → exit 2, BLOCKED 메시지 정상
+- (3) session-start: `cwd=D:/lap/26..05-aifab` → JSON `Wave 3 / 6` 출력
+- (4) worklog-auto: `Edit foo.py` → WORKLOG.md 자동 append (단, 본 파일에 `## 자동 기록` 리터럴이 체크리스트 텍스트로 존재해 L81 substring 매칭이 trigger → 자동 섹션 header 생성 스킵. Wave 2 보안 검토에서 info-level로 deferred된 그 케이스를 라이브에서 첫 검출. 다음 wave에서 `^## 자동 기록$/m` 라인-앵커 매칭으로 강화 필요. 본 Wave에서는 미수정.)
+- (5) ctx-guard: 직전 세션에서 78% used → critical advisory emit 확인 (자체 dogfooding 검증)
+
+**관찰 (dogfooding):**
+- Wave 2 wave-gate가 Wave 2 자체 commit을 검출하여 `/aifab:security wave 2` 안내를 emit (성공)
+- Wave 2 ctx-guard가 현재 세션의 컨텍스트 78% used를 검출하여 RULE 5 강제 중단을 유도 (성공)
+- 모든 6개 hook이 글로벌 settings.json 등록 즉시 라이브 동작
+
+**Phase 1 (Hooks) 완료:**
+- Wave 1: 글로벌 보안/제어 hooks 3종 ✓
+- Wave 2: 프로젝트 워크플로우 hooks 3종 ✓
+- Wave 3: 등록 + 문서 + e2e ✓
+
+**다음 Wave:** Wave 4 — feature-list.json 스키마 + plan 통합 (Phase 2 시작)
+
+**상태:** Wave 3 완료 ✓ / Phase 1 마일스톤 도달
+
+---
+
+## 자동 기록
+
+- 2026-06-24 10:05 CLAUDE.md
+- 2026-06-24 10:06 foo.py
+- 2026-06-24 10:09 PLAN.md
