@@ -55,12 +55,22 @@ class Plan:
 
 
 @dataclass
+class FeatureList:
+    """feature-list.json content (Wave 4)."""
+
+    passing: int
+    total: int
+    milestone: Optional[str]
+
+
+@dataclass
 class Progress:
     completed_waves: int
     total_waves: int
     overall_pct: int
     current_phase: Optional[Phase]
     days_elapsed: int
+    features: Optional[FeatureList] = None
 
 
 def parse_roadmap(text: str) -> Roadmap:
@@ -83,6 +93,41 @@ def parse_roadmap(text: str) -> Roadmap:
         status=status_m.group(1) if status_m else None,
         phases=phases,
     )
+
+
+def parse_feature_list(text: str) -> Optional[FeatureList]:
+    """Parse feature-list.json text. Returns None on any error (graceful)."""
+    try:
+        data = json.loads(text)
+    except (ValueError, json.JSONDecodeError):
+        print("[aifab-progress] feature-list.json: JSON 파싱 실패, skip", file=sys.stderr)
+        return None
+    if not isinstance(data, dict):
+        return None
+    features = data.get("features")
+    if not isinstance(features, list):
+        print("[aifab-progress] feature-list.json: 'features' 키 누락 또는 비-array, skip", file=sys.stderr)
+        return None
+    total = 0
+    passing = 0
+    valid_statuses = {"pending", "passing", "failing", "partial"}
+    for entry in features:
+        if not isinstance(entry, dict):
+            continue
+        # Required field check (id, title, wave, pass_criteria, status)
+        if not all(k in entry for k in ("id", "title", "wave", "pass_criteria", "status")):
+            print(f"[aifab-progress] feature entry 필수 필드 누락 (id={entry.get('id', '?')}), skip", file=sys.stderr)
+            continue
+        status = entry.get("status")
+        if status not in valid_statuses:
+            # Entry counted in total but not in passing
+            total += 1
+            continue
+        total += 1
+        if status == "passing":
+            passing += 1
+    milestone = data.get("milestone") if isinstance(data.get("milestone"), str) else None
+    return FeatureList(passing=passing, total=total, milestone=milestone)
 
 
 def parse_plan(text: str) -> Plan:
@@ -127,10 +172,13 @@ def compute_progress(roadmap: Roadmap, plan: Plan) -> Progress:
 
 
 def format_short(roadmap: Roadmap, plan: Plan, progress: Progress) -> str:
-    """One-line representation for status bar: 'P2/3 W7/12 (58%)'"""
+    """One-line representation for status bar: 'P2/3 W7/12 (58%) F12/24'"""
     total_phases = len(roadmap.phases)
     current_n = progress.current_phase.number if progress.current_phase else 0
-    return f"P{current_n}/{total_phases} W{progress.completed_waves}/{progress.total_waves} ({progress.overall_pct}%)"
+    base = f"P{current_n}/{total_phases} W{progress.completed_waves}/{progress.total_waves} ({progress.overall_pct}%)"
+    if progress.features is not None:
+        base += f" F{progress.features.passing}/{progress.features.total}"
+    return base
 
 
 def format_dashboard(roadmap: Roadmap, plan: Plan, progress: Progress) -> str:
@@ -142,6 +190,10 @@ def format_dashboard(roadmap: Roadmap, plan: Plan, progress: Progress) -> str:
         lines.append(f"🏷  마일스톤: {roadmap.milestone}  (시작 {roadmap.start_date}, {days})")
     lines.append("")
     lines.append(f"📊 전체 진척: {progress.completed_waves}/{progress.total_waves} Wave ({progress.overall_pct}%)")
+    if progress.features is not None:
+        feat = progress.features
+        feat_pct = int(round(feat.passing * 100 / feat.total)) if feat.total > 0 else 0
+        lines.append(f"🎯 기능 검증: {feat.passing}/{feat.total} passing ({feat_pct}%)")
     lines.append("")
     for p in roadmap.phases:
         wave_count = p.wave_range[1] - p.wave_range[0] + 1
@@ -161,12 +213,14 @@ def format_dashboard(roadmap: Roadmap, plan: Plan, progress: Progress) -> str:
     return "\n".join(lines)
 
 
-def _load_files() -> Tuple[Optional[Roadmap], Optional[Plan]]:
+def _load_files() -> Tuple[Optional[Roadmap], Optional[Plan], Optional[FeatureList]]:
     roadmap_path = Path("ROADMAP.md")
     plan_path = Path("PLAN.md")
+    feature_path = Path("feature-list.json")
     rm = parse_roadmap(roadmap_path.read_text(encoding="utf-8")) if roadmap_path.exists() else None
     plan = parse_plan(plan_path.read_text(encoding="utf-8")) if plan_path.exists() else None
-    return rm, plan
+    features = parse_feature_list(feature_path.read_text(encoding="utf-8")) if feature_path.exists() else None
+    return rm, plan, features
 
 
 def main():
@@ -175,24 +229,29 @@ def main():
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    rm, plan = _load_files()
+    rm, plan, features = _load_files()
     if rm is None or plan is None:
         print("ROADMAP.md 또는 PLAN.md 없음. /aifab:roadmap init 먼저 실행하세요.", file=sys.stderr)
         sys.exit(2)
 
     prog = compute_progress(rm, plan)
+    prog.features = features
 
     if args.short:
         print(format_short(rm, plan, prog))
     elif args.json:
-        print(json.dumps({
+        payload = {
             "milestone": rm.milestone,
             "completed_waves": prog.completed_waves,
             "total_waves": prog.total_waves,
             "overall_pct": prog.overall_pct,
             "current_phase": prog.current_phase.number if prog.current_phase else None,
             "total_phases": len(rm.phases),
-        }))
+        }
+        if features is not None:
+            payload["features_passing"] = features.passing
+            payload["features_total"] = features.total
+        print(json.dumps(payload))
     else:
         print(format_dashboard(rm, plan, prog))
 

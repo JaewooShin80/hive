@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // aifab-ctx-guard.js — PostToolUse hook
-// Enforces CLAUDE.md RULE 5 (컨텍스트 사용률 50% 유지).
-// When `used_pct` >= 50, injects an advisory recommending /compact.
+// Enforces CLAUDE.md RULE 5 (컨텍스트 사용률 80% 이내 유지).
+// When `used_pct` >= 70, injects an advisory recommending /compact.
 //
 // Bridge file: /tmp/aifab-ctx-{session_id}.json (written by aifab-status.py).
 // Format:
@@ -16,8 +16,8 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const THRESHOLD_USED = 50;     // CLAUDE.md RULE 5
-const CRITICAL_USED = 70;      // escalated phrasing past this point
+const THRESHOLD_USED = 70;     // CLAUDE.md RULE 5 warning band
+const CRITICAL_USED = 80;      // CLAUDE.md RULE 5 enforcement (escalated phrasing past this point)
 const STALE_SECONDS = 60;
 const DEBOUNCE_CALLS = 8;       // GSD uses 5; we're noisier-tolerant since threshold is lower
 
@@ -83,11 +83,11 @@ process.stdin.on("end", () => {
 
     const msg =
       level === "critical"
-        ? `[AI-Fab RULE 5] 컨텍스트 사용률 ${Math.round(usedPct)}% — 임계 (70%↑). ` +
+        ? `[AI-Fab RULE 5] 컨텍스트 사용률 ${Math.round(usedPct)}% — 임계 (80%↑). ` +
           `현재 진행 중인 작업 단위만 마무리하고, 새 태스크 시작 전 반드시 /compact 실행. ` +
           `WORKLOG.md / feature-list.json 등 외재화된 상태에 진행 사항을 정리하라.`
-        : `[AI-Fab RULE 5] 컨텍스트 사용률 ${Math.round(usedPct)}% — CLAUDE.md 50% 임계 초과. ` +
-          `다음 태스크 시작 전 /compact 권장. 현재 단위 완료 후 자연 중단점에서 실행.`;
+        : `[AI-Fab RULE 5] 컨텍스트 사용률 ${Math.round(usedPct)}% — CLAUDE.md 70% 경고 진입. ` +
+          `다음 태스크 시작 전 /compact 준비. 80% 도달 전 자연 중단점 확보.`;
 
     const output = {
       hookSpecificOutput: {

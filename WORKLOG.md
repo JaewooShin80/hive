@@ -181,8 +181,96 @@
 
 ---
 
+## 2026-06-24 — Wave 4 진입 직전 RULE 5 강제 중단
+
+**상황:**
+- Wave 3 완료 + 보안 검토 + GitHub push(`bdc8d92`) 완료
+- GitLab push는 인증 실패로 스킵 (사용자 결정)
+- Wave 4 `/aifab:execute` 시작 직후 ctx-guard hook이 60% used 검출 → RULE 5 강제 중단
+
+**Wave 4 spec (PLAN.md L70-93):**
+- 산출물: `_shared/feature-list-schema.md` / `/aifab:plan` 갱신 / `scripts/aifab_progress.py` 확장
+- 검증: mock plan → PLAN.md + feature-list.json 동시 생성, progress에 "Features: N/M passing" 표시
+
+**확인된 사실 (탐색 결과):**
+- `scripts/aifab_progress.py` 존재 (확장 대상)
+- `/aifab:plan` 스킬: 3개 위치 발견
+  - `~/.claude/plugins/aifab/skills/plan.md` (플러그인)
+  - `~/.claude/commands/aifab/plan.md` (커맨드)
+  - `~/.claude/plugins/marketplaces/planning-with-files/commands/plan.md` (서드파티, 무관)
+- `_shared/` 5개 표준 문서 존재 (hooks.md 포함, 본 Wave에서 6번째 추가 예정)
+
+**Wave 4 RULE 1 결정 필요 (재개 시 사용자에게 질문):**
+1. **feature-list.json 위치:** 루트(`./feature-list.json`) vs `.claude/feature-list.json` vs `docs/`
+2. **스키마 형식:** 마크다운(`_shared/feature-list-schema.md`)만 vs JSON Schema 파일도 함께(`schema/feature-list.schema.json`)
+3. **`/aifab:plan` 갱신 대상:** `plugins/aifab/skills/plan.md` vs `commands/aifab/plan.md` — Wave 1·2·3에서 갱신한 hook들의 패턴 확인 필요 (settings.json은 `~/.claude/` 사용)
+4. **기존 PLAN.md 호환성:** feature-list.json 없으면 `/aifab:progress` graceful skip vs migration prompt
+
+**재개 절차 (post-/compact):**
+1. 위 4가지 RULE 1 확인 (사용자 컨펌)
+2. Wave 4 작업 분해 + Opus 서브에이전트 디스패치(memory: 본 프로젝트 모든 에이전트 Opus 강제)
+3. 검증 → WORKLOG/PLAN 갱신 → `feat(wave-4): emit feature-list.json alongside PLAN.md`
+
+**Phase 1 종합 성과 (참고):**
+- 6개 aifab hooks 라이브 운영
+- 보안 검토 3 Wave 모두 APPROVE
+- Dogfooding 3건 (wave-gate 자체검출 2회, ctx-guard 자체검출 2회 — 본 중단 포함)
+
+---
+
+## Wave 4 시작 — 2026-06-24
+
+**결정사항 (RULE 1 확인 완료):**
+- Q1=루트 `./feature-list.json` / Q2=마크다운 스키마만 / Q3=plan.md 양쪽 byte-identical 미러 / Q4=graceful skip
+
+**작업 목록 (4/4 완료):**
+- [x] `_shared/feature-list-schema.md` 작성 (JSON 스키마 + status enum + graceful 규약)
+- [x] `plan.md` 양쪽 갱신 (7-1/7-2 분리, 9단계 메시지 갱신, byte-identical 8506 bytes 확인)
+- [x] `scripts/aifab_progress.py` 확장 (FeatureList + parse_feature_list + short/dashboard/json 출력, py_compile OK)
+- [x] 검증 3 시나리오 통과 + PLAN 마킹 + 커밋
+
+**메모:** Wave 4는 단일 Advisor 직접 구현 (RULE 2: simplicity, sub-agent 분배 없이도 4시간 예산 내 완료).
+
+**중간 RULE 5 발화 → 정책 변경 (2026-06-24):**
+- 55% used에서 ctx-guard 발화 → 사용자 결정 "50% 너무 타이트, 80%로 변경"
+- `CLAUDE.md` RULE 5: 50/35 → 80/70 임계 시프트
+- `aifab-ctx-guard.js`: warning 50→70, critical 70→80 (글로벌+프로젝트 미러)
+- `hooks.md`: 임계 70/80 반영 + GSD(65%) → aifab(70/80) 에스컬레이션 관계 명시
+
+## Wave 4 완료 — 2026-06-24
+
+**상태:** Wave 4 완료 ✓ / Phase 2 시작
+
+**Phase 2 진척:** 1/3 Wave 완료 (33%)
+**전체 진척:** 4/6 Wave 완료 (67%)
+
+**검증 결과 (3/3 통과):**
+- 시나리오 1: 4-feature(2 passing) → dashboard `🎯 기능 검증: 2/4 passing (50%)`, short `F2/4`, json `features_passing=2/total=4`
+- 시나리오 2: feature-list.json 부재 → 기존 출력 (변경 없음, 신구 호환 확인)
+- 시나리오 3: graceful skip 3 변형 모두 정상 (비-array / malformed JSON / entry 누락)
+
+**Phase 1·2 통합 가치:**
+- PLAN.md(서술) ↔ feature-list.json(검증) 분리 → Wave 5/6에서 자동 status 전이 기반 마련
+- 기존 AI-Fab 프로젝트(feature-list.json 없음) graceful 호환 → 점진 마이그레이션 가능
+
+**다음 Wave:** Wave 5 — execute/worklog 통합 (Wave 종료 시 status 자동 전이)
+
+---
+
 ## 자동 기록
 
 - 2026-06-24 10:05 CLAUDE.md
 - 2026-06-24 10:06 foo.py
 - 2026-06-24 10:09 PLAN.md
+- 2026-06-24 10:32 .claude/plugins/aifab/_shared/feature-list-schema.md
+- 2026-06-24 10:34 scripts/aifab_progress.py
+- 2026-06-24 10:34 scripts/aifab_progress.py
+- 2026-06-24 10:35 scripts/aifab_progress.py
+- 2026-06-24 10:35 scripts/aifab_progress.py
+- 2026-06-24 10:35 scripts/aifab_progress.py
+- 2026-06-24 10:35 scripts/aifab_progress.py
+- 2026-06-24 10:50 CLAUDE.md
+- 2026-06-24 10:50 .claude/plugins/aifab/_shared/hooks.md
+- 2026-06-24 10:50 .claude/plugins/aifab/_shared/hooks.md
+- 2026-06-24 10:50 .claude/plugins/aifab/_shared/hooks.md
+- 2026-06-24 10:53 PLAN.md

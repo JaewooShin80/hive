@@ -11,7 +11,7 @@
 |---|---|---|---|---|---|
 | aifab-secret-guard.js | PreToolUse | Write\|Edit | 글로벌·보안 | 시크릿 토큰/키 패턴 또는 민감 파일 경로 차단 | exit 2 차단 |
 | aifab-bash-guard.js | PreToolUse | Bash | 글로벌·보안 | 파괴적 쉘 명령(rm -rf /, force push, fork bomb 등) 차단 | exit 2 차단 |
-| aifab-ctx-guard.js | PostToolUse | Bash\|Edit\|Write\|MultiEdit\|Agent\|Task | 글로벌·제어 | 컨텍스트 사용률 50/70% 경고 emit (RULE 5 강제) | exit 0 advisory |
+| aifab-ctx-guard.js | PostToolUse | Bash\|Edit\|Write\|MultiEdit\|Agent\|Task | 글로벌·제어 | 컨텍스트 사용률 70/80% 경고 emit (RULE 5 강제) | exit 0 advisory |
 | aifab-worklog-auto.js | PostToolUse | Edit\|Write\|MultiEdit | 프로젝트·워크플로우 | WORKLOG.md `## 자동 기록` 섹션에 편집 경로 자동 append | exit 0 |
 | aifab-session-start.js | SessionStart | - | 프로젝트·워크플로우 | PLAN.md 파싱해 현재 Wave 위치/진척% 주입 | exit 0 advisory |
 | aifab-wave-gate.js | PostToolUse | Bash | 프로젝트·워크플로우 | `feat(wave-N)` 커밋 감지 시 보안 리뷰 명령 안내 | exit 0 advisory |
@@ -36,7 +36,7 @@
 ## 3. aifab-ctx-guard.js
 - 이벤트: PostToolUse(Bash\|Edit\|Write\|MultiEdit\|Agent\|Task)
 - 동작: `/tmp/aifab-ctx-{session_id}.json` (aifab-status.py가 작성) 읽고 CLAUDE.md RULE 5 강제
-- 임계: 50% used → warning, 70% used → critical
+- 임계: 70% used → warning, 80% used → critical
 - 출력: `hookSpecificOutput.additionalContext` JSON (advisory)
 - Debounce: 8 calls per (session, level), stale 60s
 - GSD 브릿지(/tmp/claude-ctx-*)도 fallback으로 read
@@ -70,9 +70,9 @@
 aifab-*는 `aifab-*` 파일명 + `/tmp/aifab-ctx-*` 네임스페이스로 GSD(`gsd-*` / `/tmp/claude-ctx-*`)와 완전 분리된다. 동일 hook 이벤트에 둘 다 등록되면 Claude Code 런타임이 순차 실행하며, exit code 2가 하나라도 발생하면 차단된다.
 
 임계값 충돌 시 정책:
-- aifab-ctx-guard: 50% used에서 fire (CLAUDE.md RULE 5)
+- aifab-ctx-guard: 70%/80% used에서 fire (CLAUDE.md RULE 5)
 - gsd-context-monitor: 35% remaining(=65% used)에서 fire
-- → aifab가 먼저 fire하여 GSD를 보완하는 관계
+- → GSD가 먼저(65%) fire하여 조기 경고, aifab(70%/80%)가 강제 단계 — 단계적 에스컬레이션 관계
 
 ## 일괄 비활성 (개발/디버깅)
 

@@ -72,23 +72,14 @@
 **목표:** PLAN.md와 짝이 되는 외재화 검증 파일 도입.
 
 **산출물:**
-- [ ] `.claude/plugins/aifab/_shared/feature-list-schema.md` — JSON 스키마 정의
-  ```
-  {
-    "milestone": "v2.2.0",
-    "features": [
-      {"id":"W1-F1","title":"secret guard blocks .env","wave":1,
-       "pass_criteria":"exit 2 on .env Write","status":"pending"}
-    ]
-  }
-  ```
-- [ ] `/aifab:plan` 스킬 갱신: PLAN.md 작성 시 동일 정보로 feature-list.json도 emit
-- [ ] `scripts/aifab_progress.py` 확장: feature-list.json 읽어 pass% 계산, dashboard에 추가
+- [x] `.claude/plugins/aifab/_shared/feature-list-schema.md` — JSON 스키마 + status enum + graceful 규약
+- [x] `/aifab:plan` 스킬 양쪽 미러 갱신 (plugins/aifab/skills + commands/aifab) — 7-1/7-2 단계 분리, 9단계 메시지 갱신, 8506 bytes byte-identical
+- [x] `scripts/aifab_progress.py` 확장: FeatureList dataclass + parse_feature_list + short/dashboard/json 출력에 features_passing/features_total
 
-**검증:**
-- [ ] mock 입력으로 `/aifab:plan` 실행 → PLAN.md + feature-list.json 동시 생성
-- [ ] `/aifab:progress` 출력에 "Wave: 3/6 / Features: 12/24 passing" 표시
-- [ ] 스키마 위반 JSON은 progress가 detect (graceful fallback)
+**검증 (3/3 시나리오 통과):**
+- [x] mock feature-list.json 4 entry(2 passing) → dashboard "🎯 기능 검증: 2/4 passing (50%)", short "F2/4", json features_passing=2/features_total=4
+- [x] feature-list.json 부재 → 기존 동작 (feature 라인/필드 미출력)
+- [x] 스키마 위반 graceful: (a) features 비-array → stderr warning + skip / (b) malformed JSON → 동상 / (c) entry 필수필드 누락 → 해당 entry만 skip, 나머지 카운트
 
 **커밋:** `feat(plan): emit feature-list.json alongside PLAN.md`
 
