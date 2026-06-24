@@ -333,6 +333,19 @@
 
 ---
 
+## 2026-06-24 — Wave 6 보안 검토 완료
+
+- **스캔 범위:** Wave 6 (12 파일 — `git show HEAD~1`)
+- **결과:** ❌ 치명적 0 / ⚠️ 경고 2 / ℹ️ 정보 2 / ✅ 통과 9
+- **Verdict:** APPROVE
+- **경고 (수용 — 의도된 설계 / repo-controlled 저위험):**
+  - HARNESS-SHELL `evaluate_harness.py:45-52` — `subprocess.run(shell=True)`는 schema type=cmd 명세 + `aifab-bash-guard.js` 이중 가드 모델. mock app은 type=url만 사용. harness 재사용 시 cmd 화이트리스트 추가 권고.
+  - HARNESS-PATH `evaluate_harness.py:33` — `base_dir / target` path-traversal 가능성. feature-list.json은 repo-controlled, 외부 입력 아님. 차기 점진 개선.
+- **정보 (차기 milestone 검토):** SECRET-GITIGNORE(.env 명시적 entry 없음), HARNESS-REDOS(timeout 30s로 부분 완화).
+- **Dogfooding:** wave-gate hook이 `feat(wave-6)` commit 검출 → `/aifab:security wave 6` advisory emit 성공. v2.2.0 milestone 전 final security review 완료.
+
+---
+
 ## 자동 기록
 
 - 2026-06-24 10:05 CLAUDE.md
