@@ -139,19 +139,28 @@ Wave의 목표와 작업 분해 항목을 기반으로 각 작업을 **원자 �
 ```
 Workflow({ name: "hive-wave", args: {
   wave: N,
+  root: "<git rev-parse --show-toplevel 결과 — 절대경로>",
+  test_cmd: "<PLAN.md 공통 규약의 테스트 명령, 예: .venv/bin/pytest -q>",
   batches: [                       // 배치는 순서대로, 배치 안 작업은 동시에
-    [ { id: "T1", title: "...", files: ["src/a.py"], stub: true,
+    [ { id: "T1", title: "...", files: ["src/a.py"],
         test: "tests/test_a.py", context: ["PLAN.md Wave N 섹션", "src/db.py:1-40"] } ],
-    [ { id: "T2", ... } ]          // T1 결과에 의존하는 작업
+    [ { id: "T2", ..., depends_on: ["T1"] } ]   // 의존 대상만 명시하면 무관한 BLOCKED 에 끌려가지 않음
   ]
 }})
 ```
 
-- 2단계 분해를 그대로 옮긴다. 같은 파일을 건드리는 작업은 하나로 합친다. `context`에는 포인터만 넣는다.
-- 작업마다 stub(haiku, `stub: true`일 때만) → Red(sonnet) → Green(sonnet) 순으로 실행된다.
-- 반환값 `{wave, results, blocked, skipped}`를 5단계 검토의 입력으로 쓴다. `blocked`가 있으면 사유를 보고 직접 해결하거나 사용자에게 알린다.
+- `root`·`test_cmd`는 필수다. 워크플로우 에이전트는 세션 cwd(다른 레포일 수 있음)에서 시작하므로 `root`는 반드시 절대경로로 넣는다. `files`·`test`·`context`는 `root` 기준 상대경로.
+- 2단계 분해를 그대로 옮긴다. 같은 파일을 건드리는 작업은 하나로 합친다(병렬 작업 간 파일 소유권 충돌 금지). `context`에는 포인터만 넣는다.
+- 작업마다 Red(sonnet) → Green(sonnet) 순으로 실행된다. `stub: true`는 스키마·타입 선언처럼 구현과 명확히 분리되는 경우에만 켠다(기본 off — haiku stub 은 범위를 넘기 쉽다).
+- 모든 프롬프트에 "커밋 금지 · WORKLOG/PLAN/ROADMAP/feature-list 수정 금지 · 지정 파일만 쓰기"가 자동 포함된다. 커밋과 상태 파일 갱신은 Advisor(6단계)만 한다.
+- 각 배치 뒤에 gate(haiku, low effort)가 전체 `test_cmd`와 `git status --porcelain`으로 범위 밖 변경을 검사한다. gate 실패 시 이후 배치는 skip 된다.
+- 반환값 `{wave, results, blocked, skipped, gates}`를 5단계 검토의 입력으로 쓴다.
+  - `results[].status`: `DONE` · `DONE_WITH_CONCERNS` · `ALREADY_SATISFIED`(이미 구현·기준 충족 — 완료로 취급)
+  - `blocked[]`: `{id, stage, notes, files, test_output}` — 사유를 보고 Advisor 가 직접 해결하거나 해당 작업만 다시 디스패치한다.
+  - Green 이 `TEST_DEFECT`(테스트 자체 결함)를 반환하면 워크플로우가 Red 를 사유와 함께 1회 재실행한다. 그래도 결함이면 `blocked`.
+  - `gates[]`: `{batch, passed, summary, out_of_scope}` — `out_of_scope`가 비어 있지 않으면 범위 밖 수정이므로 검토 후 되돌리거나 반영한다.
 - 중단되면 같은 args로 `resumeFromRunId`를 지정해 재개한다.
-- 작업이 4개를 넘으면 에이전트가 10개를 넘을 수 있다. Wave 분할을 고려한다.
+- 에이전트 수 ≈ 작업×2 + 배치 수. 작업이 4개를 넘으면 Wave 분할을 고려한다.
 
 ### 4-B. Workflow 도구가 없으면 (Codex 등) — 대체 경로
 
@@ -166,6 +175,11 @@ Agent 도구를 사용하여 작업을 병렬로 디스패치한다.
 3. **기대 출력 형식** (함수 시그니처, 클래스 구조 등)
 4. **TDD 지시문** (Sonnet 구현 작업에 한함):
    > "실패하는 테스트를 먼저 작성하고, 구현하고, 테스트가 통과하는지 확인하세요."
+5. **공통 안전장치** (4-A의 hive-wave 와 동일):
+   - "프로젝트 루트 `<절대경로>`로 cd 한 뒤 작업"
+   - "git commit 금지, WORKLOG.md·PLAN.md·ROADMAP.md·feature-list.json 수정 금지 (Advisor 전용)"
+   - "지정된 파일만 작성. 다른 작업의 파일·테스트는 실행/수정하지 말고 자기 테스트 파일만 실행"
+   - 배치가 끝나면 Advisor 가 전체 테스트와 `git status --porcelain`으로 범위 밖 변경을 확인한 뒤 다음 배치로 간다.
 
 ### 배치 1: Haiku 보일러플레이트 (병렬)
 

@@ -172,3 +172,7 @@ allowed-tools:
 | Git 커밋 메시지 | [`_shared/git-commit.md`](../_shared/git-commit.md) | Conventional Commits + 스킬별 자동 메시지 |
 
 스킬 인덱스: [`SKILLS.md`](../SKILLS.md)
+
+## 자동 기록
+
+- 2026-10-07 08:38 execute.md
