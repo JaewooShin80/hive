@@ -1,6 +1,6 @@
-# CLAUDE.md — AI-Fab 프로젝트 전역 규칙
+# CLAUDE.md — HIVE 프로젝트 전역 규칙
 
-이 파일은 AI-Fab 프로젝트 내 모든 Claude Code 인터랙션을 지배하는 전역 규칙 파일이다.
+이 파일은 HIVE 프로젝트 내 모든 Claude Code 인터랙션을 지배하는 전역 규칙 파일이다.
 규칙이지 제안이 아니다. 예외 없이 따른다.
 
 ---
@@ -57,7 +57,7 @@
 
 ---
 
-## AI-Fab Workflow Commands (워크플로우 명령어)
+## HIVE Workflow Commands (워크플로우 명령어)
 
 > 아래 표는 `scripts/gen_skills_index.py`가 각 스킬 frontmatter `description`에서
 > 자동 생성한다. 직접 편집하지 말 것 — 새 스킬 추가/변경 후
@@ -67,55 +67,55 @@
 <!-- AUTO-INDEX:start -->
 | Command | Description |
 | --- | --- |
-| `/aifab:adr` | Manage Architecture Decision Records (Michael Nygard format) |
-| `/aifab:caveman` | Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Activated by /aifab:caveman, "caveman mode", "talk like caveman", "less tokens", "be brief". Stays active until user says "stop caveman" or "normal mode". |
-| `/aifab:codex-review` | Cross-AI verification via OpenAI Codex CLI |
-| `/aifab:compare` | Use when facing a multi-option technical decision and needing a structured trade-off analysis. Triggers on /aifab:compare command. Use when selecting libraries, architecture patterns, frameworks, design patterns, or algorithms and wanting a weighted decision matrix with recommendation. |
-| `/aifab:debug` | Systematic 4-stage RCA debugging |
-| `/aifab:diagnose` | Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when bug is reproducible. For hard-to-reproduce bugs with unclear cause, use /aifab:debug instead. |
-| `/aifab:discover` | Use when starting a new project or feature and needing to select the right architecture. Triggers on /aifab:discover command. Use when the user has not yet chosen a tech stack, wants to explore options, or needs a structured discovery session before planning. |
-| `/aifab:evaluate` | Live feature verification via Playwright MCP. Reads feature-list.json, drives each feature's verify URL/command, updates status (passing/failing/partial). Anthropic 3-agent Evaluator role. |
-| `/aifab:execute` | Multi-agent Wave execution (Opus + Sonnet/Haiku) |
-| `/aifab:grill` | Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates CONTEXT.md and ADRs inline as decisions crystallise. Use before /aifab:discover when requirements are fuzzy or when the user wants to stress-test a plan. |
-| `/aifab:grill-me` | Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test an idea or plan without codebase context. For code-aware sessions with CONTEXT.md updates, use /aifab:grill instead. |
-| `/aifab:map-codebase` | 4-parallel mappers for codebase analysis |
-| `/aifab:migrate` | Dependency/framework migration |
-| `/aifab:milestone` | Manage project milestones (semver tags). Subcommands new/complete/audit handle milestone lifecycle from start to git tag. Use new at project start, audit before declaring done, complete to tag. |
-| `/aifab:plan` | Wave-based implementation plan creation |
-| `/aifab:playwright` | E2E UI test generation with Playwright |
-| `/aifab:progress` | Display project progress dashboard — milestone, phase progression, wave completion percentages, current position, and next recommended command. Reads ROADMAP.md and PLAN.md. |
-| `/aifab:refactor` | Behavior-preserving incremental refactoring |
-| `/aifab:roadmap` | Manage project roadmap (Phase-level grouping of Waves) and milestone metadata. Subcommands init/add-phase/update. Generates ROADMAP.md as the index above PLAN.md. |
-| `/aifab:rollback` | Safe Wave-level rollback with backup |
-| `/aifab:security` | 5-domain security review (OWASP/AI-LLM/API/Secrets/Dependencies) |
-| `/aifab:uat` | UAT scenarios + result collection |
-| `/aifab:worklog` | Work log for resumable sessions |
-| `/aifab:worktree` | Parallel Wave via git worktrees |
+| `/hive:adr` | Manage Architecture Decision Records (Michael Nygard format) |
+| `/hive:caveman` | Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Activated by /hive:caveman, "caveman mode", "talk like caveman", "less tokens", "be brief". Stays active until user says "stop caveman" or "normal mode". |
+| `/hive:codex-review` | Cross-AI verification via OpenAI Codex CLI |
+| `/hive:compare` | Use when facing a multi-option technical decision and needing a structured trade-off analysis. Triggers on /hive:compare command. Use when selecting libraries, architecture patterns, frameworks, design patterns, or algorithms and wanting a weighted decision matrix with recommendation. |
+| `/hive:debug` | Systematic 4-stage RCA debugging |
+| `/hive:diagnose` | Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when bug is reproducible. For hard-to-reproduce bugs with unclear cause, use /hive:debug instead. |
+| `/hive:discover` | Use when starting a new project or feature and needing to select the right architecture. Triggers on /hive:discover command. Use when the user has not yet chosen a tech stack, wants to explore options, or needs a structured discovery session before planning. |
+| `/hive:evaluate` | Live feature verification via Playwright MCP. Reads feature-list.json, drives each feature's verify URL/command, updates status (passing/failing/partial). Anthropic 3-agent Evaluator role. |
+| `/hive:execute` | Multi-agent Wave execution (Opus + Sonnet/Haiku) |
+| `/hive:grill` | Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates CONTEXT.md and ADRs inline as decisions crystallise. Use before /hive:discover when requirements are fuzzy or when the user wants to stress-test a plan. |
+| `/hive:grill-me` | Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test an idea or plan without codebase context. For code-aware sessions with CONTEXT.md updates, use /hive:grill instead. |
+| `/hive:map-codebase` | 4-parallel mappers for codebase analysis |
+| `/hive:migrate` | Dependency/framework migration |
+| `/hive:milestone` | Manage project milestones (semver tags). Subcommands new/complete/audit handle milestone lifecycle from start to git tag. Use new at project start, audit before declaring done, complete to tag. |
+| `/hive:plan` | Wave-based implementation plan creation |
+| `/hive:playwright` | E2E UI test generation with Playwright |
+| `/hive:progress` | Display project progress dashboard — milestone, phase progression, wave completion percentages, current position, and next recommended command. Reads ROADMAP.md and PLAN.md. |
+| `/hive:refactor` | Behavior-preserving incremental refactoring |
+| `/hive:roadmap` | Manage project roadmap (Phase-level grouping of Waves) and milestone metadata. Subcommands init/add-phase/update. Generates ROADMAP.md as the index above PLAN.md. |
+| `/hive:rollback` | Safe Wave-level rollback with backup |
+| `/hive:security` | 5-domain security review (OWASP/AI-LLM/API/Secrets/Dependencies) |
+| `/hive:uat` | UAT scenarios + result collection |
+| `/hive:worklog` | Work log for resumable sessions |
+| `/hive:worktree` | Parallel Wave via git worktrees |
 <!-- AUTO-INDEX:end -->
 
 | `/security-audit` | 정부 개발보안 가이드 기반 정적 점검 (웹/API 43항목 + AI/LLM 20항목 + Docker/NGINX) — `.claude/commands/security-audit.md` |
 
-**전체 17 스킬.** 카테고리/의존성 그래프: [`SKILLS.md`](.claude/plugins/aifab/SKILLS.md)
-**공통 표준:** [`_shared/`](.claude/plugins/aifab/_shared/) (prerequisites, output-format, worklog-update, agent-dispatch, git-commit)
+**전체 17 스킬.** 카테고리/의존성 그래프: [`SKILLS.md`](.claude/plugins/hive/SKILLS.md)
+**공통 표준:** [`_shared/`](.claude/plugins/hive/_shared/) (prerequisites, output-format, worklog-update, agent-dispatch, git-commit)
 
 ---
 
 ## Hooks (자동 가드 — v2.2.0 Wave 1-3)
 
-설치기(`install.sh` / `install.ps1` → `scripts/aifab-install.js`)가 6개의 `aifab-*` hook을 `settings.json`에
+설치기(`install.sh` / `install.ps1` → `scripts/hive-install.js`)가 6개의 `hive-*` hook을 `settings.json`에
 `node "<절대경로>"` 형식으로 등록한다 (`--global`이면 `~/.claude/settings.json`, 아니면 프로젝트). macOS/Linux/Windows 공통.
 GSD hook 9종과 네임스페이스 분리되어 공존한다.
 
 | Hook | Event | 역할 | Exit 정책 |
 |---|---|---|---|
-| `aifab-secret-guard.js` | PreToolUse(Write\|Edit) | 시크릿 패턴/금지 경로 차단 | exit 2 = block |
-| `aifab-bash-guard.js` | PreToolUse(Bash) | `rm -rf /` 등 위험 명령 차단 | exit 2 = block |
-| `aifab-ctx-guard.js` | PostToolUse(*) | 컨텍스트 50% RULE 5 가드 | advisory only |
-| `aifab-worklog-auto.js` | PostToolUse(Edit\|Write\|MultiEdit) | WORKLOG.md "## 자동 기록" append | advisory |
-| `aifab-session-start.js` | SessionStart | 현재 Wave + 진척% 출력 | advisory |
-| `aifab-wave-gate.js` | PostToolUse(Bash) | `feat(wave-N)` 커밋 후 `/aifab:security` 안내 | advisory |
+| `hive-secret-guard.js` | PreToolUse(Write\|Edit) | 시크릿 패턴/금지 경로 차단 | exit 2 = block |
+| `hive-bash-guard.js` | PreToolUse(Bash) | `rm -rf /` 등 위험 명령 차단 | exit 2 = block |
+| `hive-ctx-guard.js` | PostToolUse(*) | 컨텍스트 50% RULE 5 가드 | advisory only |
+| `hive-worklog-auto.js` | PostToolUse(Edit\|Write\|MultiEdit) | WORKLOG.md "## 자동 기록" append | advisory |
+| `hive-session-start.js` | SessionStart | 현재 Wave + 진척% 출력 | advisory |
+| `hive-wave-gate.js` | PostToolUse(Bash) | `feat(wave-N)` 커밋 후 `/hive:security` 안내 | advisory |
 
-상세 동작/비활성화 방법: [`_shared/hooks.md`](.claude/plugins/aifab/_shared/hooks.md)
+상세 동작/비활성화 방법: [`_shared/hooks.md`](.claude/plugins/hive/_shared/hooks.md)
 
 ---
 
@@ -131,12 +131,12 @@ GSD hook 9종과 네임스페이스 분리되어 공존한다.
 
 - **TDD를 항상 따른다**: Red → Green → Refactor 순서를 지킨다.
 - 각 기능 또는 웨이브 완료 후 git 커밋을 수행한다.
-- 각 웨이브 완료 후 `/aifab:security`를 실행하여 보안 검사를 수행한다.
-- 테스트 실패나 버그 발생 시 추측하지 말고 `/aifab:debug`로 4단계 RCA를 수행한다.
-- 기존 코드베이스 진입 시 `/aifab:map-codebase`로 먼저 분석한다.
-- 독립 가능한 Wave는 `/aifab:worktree`로 병렬 진행을 고려한다.
-- 중요 변경 후 `/aifab:codex-review`로 교차 AI 검증을 받을 수 있다.
-- 동작 보존 변경은 `/aifab:refactor`로 점진 적용한다 (테스트 없는 코드 리팩토링 금지).
-- 의존성/프레임워크 변경은 `/aifab:migrate`로 Wave 단위 적용한다.
-- 롤백 필요 시 `/aifab:rollback`을 사용 (force-push 금지, 백업 브랜치 자동 보존).
-- 결정 시점에 `/aifab:compare`로 옵션을 비교하고, 큰 결정은 `/aifab:adr`로 기록한다.
+- 각 웨이브 완료 후 `/hive:security`를 실행하여 보안 검사를 수행한다.
+- 테스트 실패나 버그 발생 시 추측하지 말고 `/hive:debug`로 4단계 RCA를 수행한다.
+- 기존 코드베이스 진입 시 `/hive:map-codebase`로 먼저 분석한다.
+- 독립 가능한 Wave는 `/hive:worktree`로 병렬 진행을 고려한다.
+- 중요 변경 후 `/hive:codex-review`로 교차 AI 검증을 받을 수 있다.
+- 동작 보존 변경은 `/hive:refactor`로 점진 적용한다 (테스트 없는 코드 리팩토링 금지).
+- 의존성/프레임워크 변경은 `/hive:migrate`로 Wave 단위 적용한다.
+- 롤백 필요 시 `/hive:rollback`을 사용 (force-push 금지, 백업 브랜치 자동 보존).
+- 결정 시점에 `/hive:compare`로 옵션을 비교하고, 큰 결정은 `/hive:adr`로 기록한다.

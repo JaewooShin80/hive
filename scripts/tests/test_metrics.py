@@ -19,18 +19,18 @@ class TestLogEvent(unittest.TestCase):
     def test_no_op_when_disabled(self):
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "metrics.jsonl"
-            log_event("skill_start", skill="aifab:plan", path=path, enabled=False)
+            log_event("skill_start", skill="hive:plan", path=path, enabled=False)
             self.assertFalse(path.exists(), "must not write when disabled")
 
     def test_writes_jsonl_when_enabled(self):
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "metrics.jsonl"
-            log_event("skill_start", skill="aifab:plan", path=path, enabled=True)
+            log_event("skill_start", skill="hive:plan", path=path, enabled=True)
             self.assertTrue(path.exists())
             line = path.read_text(encoding="utf-8").strip()
             obj = json.loads(line)
             self.assertEqual(obj["event"], "skill_start")
-            self.assertEqual(obj["skill"], "aifab:plan")
+            self.assertEqual(obj["skill"], "hive:plan")
             self.assertIn("ts", obj)
 
     def test_appends_multiple_events(self):
@@ -58,27 +58,27 @@ class TestLogEvent(unittest.TestCase):
 
 class TestIsEnabled(unittest.TestCase):
     def setUp(self):
-        self._saved = os.environ.pop("AIFAB_METRICS", None)
+        self._saved = os.environ.pop("HIVE_METRICS", None)
 
     def tearDown(self):
         if self._saved is not None:
-            os.environ["AIFAB_METRICS"] = self._saved
+            os.environ["HIVE_METRICS"] = self._saved
         else:
-            os.environ.pop("AIFAB_METRICS", None)
+            os.environ.pop("HIVE_METRICS", None)
 
     def test_default_disabled(self):
         self.assertFalse(is_enabled())
 
     def test_enabled_when_env_is_one(self):
-        os.environ["AIFAB_METRICS"] = "1"
+        os.environ["HIVE_METRICS"] = "1"
         self.assertTrue(is_enabled())
 
     def test_disabled_when_env_is_zero(self):
-        os.environ["AIFAB_METRICS"] = "0"
+        os.environ["HIVE_METRICS"] = "0"
         self.assertFalse(is_enabled())
 
     def test_enabled_when_env_is_true(self):
-        os.environ["AIFAB_METRICS"] = "true"
+        os.environ["HIVE_METRICS"] = "true"
         self.assertTrue(is_enabled())
 
 

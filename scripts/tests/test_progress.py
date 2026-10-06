@@ -1,4 +1,4 @@
-"""Tests for aifab-progress.py."""
+"""Tests for hive-progress.py."""
 from __future__ import annotations
 import sys
 import unittest
@@ -7,7 +7,7 @@ from textwrap import dedent
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from aifab_progress import parse_roadmap, parse_plan, compute_progress, Phase, Roadmap, Plan
+from hive_progress import parse_roadmap, parse_plan, compute_progress, Phase, Roadmap, Plan
 
 
 class TestRoadmapParser(unittest.TestCase):
@@ -131,7 +131,7 @@ class TestFormatters(unittest.TestCase):
         return rm, plan, compute_progress(rm, plan)
 
     def test_format_short_one_liner(self):
-        from aifab_progress import format_short
+        from hive_progress import format_short
         rm, plan, prog = self._make_progress()
         out = format_short(rm, plan, prog)
         self.assertIn("P2/2", out)
@@ -139,7 +139,7 @@ class TestFormatters(unittest.TestCase):
         self.assertIn("75%", out)
 
     def test_format_dashboard_contains_milestone_and_phases(self):
-        from aifab_progress import format_dashboard
+        from hive_progress import format_dashboard
         rm, plan, prog = self._make_progress()
         out = format_dashboard(rm, plan, prog)
         self.assertIn("v1.0.0", out)

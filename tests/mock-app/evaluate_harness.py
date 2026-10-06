@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Stub evaluate harness — Playwright MCP fallback for `/aifab:evaluate`.
+"""Stub evaluate harness — Playwright MCP fallback for `/hive:evaluate`.
 
 Reads feature-list.json with optional `verify` fields, opens each `target`
 relative to its directory (type=url, file:// only here), checks `assert`
 substring against the file content, and updates `status` in-place.
 
 This is the offline equivalent of the Playwright-driven flow described in
-`.claude/plugins/aifab/skills/evaluate.md` — same input/output, no browser.
+`.claude/plugins/hive/skills/evaluate.md` — same input/output, no browser.
 """
 from __future__ import annotations
 

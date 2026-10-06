@@ -8,14 +8,14 @@ Accepted.
 
 ## Context
 
-The AI-Fab harness is intended to be **dropped into any user's project**
+The HIVE harness is intended to be **dropped into any user's project**
 via `install.sh`. Every additional dependency the harness requires becomes
 either:
 
 - a setup step the user must run before using the harness, or
 - a pinned version that may conflict with the user's own project deps.
 
-Initial v1.x scripts already used Python 3 stdlib only (`scripts/aifab-status.py`).
+Initial v1.x scripts already used Python 3 stdlib only (`scripts/hive-status.py`).
 When P0 added a self-test layer, we faced a choice: adopt `pytest` for
 ergonomic fixtures and parametrization, or stay on `unittest`.
 

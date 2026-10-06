@@ -25,10 +25,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Run skill_lint CLI on real plugin
-        run: python3 scripts/skill_lint.py .claude/plugins/aifab
+        run: python3 scripts/skill_lint.py .claude/plugins/hive
 
       - name: Verify SKILLS.md auto-index is in sync
-        run: python3 scripts/gen_skills_index.py --check .claude/plugins/aifab/SKILLS.md
+        run: python3 scripts/gen_skills_index.py --check .claude/plugins/hive/SKILLS.md
 
       - name: Verify CLAUDE.md auto-index is in sync
         run: python3 scripts/gen_skills_index.py --check CLAUDE.md

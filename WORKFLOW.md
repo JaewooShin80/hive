@@ -1,8 +1,8 @@
-# AIFAB 하네스 워크플로우 가이드
+# HIVE 하네스 워크플로우 가이드
 
 > **기준일**: 2026-05-08
 > **버전**: 2.1
-> **하네스**: AI-Fab v2 — 23 스킬 (16 AIFAB + 4 mattpocock + 3 매니지먼트) + 보안 감사 스킬 + 자동 Hook
+> **하네스**: HIVE v2 — 23 스킬 (16 HIVE + 4 mattpocock + 3 매니지먼트) + 보안 감사 스킬 + 자동 Hook
 
 ---
 
@@ -20,37 +20,37 @@
 
 ## 스킬 전체 목록
 
-### AI-Fab 워크플로우 스킬 (20개)
+### HIVE 워크플로우 스킬 (20개)
 
 #### 정렬/언어 (4개) — mattpocock 통합
 
 | 명령어 | 설명 |
 |---|---|
-| `/aifab:grill` | 구현 전 1:1 인터뷰로 요구사항 정렬 + CONTEXT.md / ADR 실시간 업데이트 |
-| `/aifab:grill-me` | 코드 무관 아이디어/플랜 인터뷰로 공유된 이해 도달 |
-| `/aifab:caveman` | 토큰 75% 절감 초압축 모드 (세션 내 지속, "stop caveman"으로 해제) |
-| `/aifab:diagnose` | 재현 우선 디버깅 루프 (재현→최소화→가설→계측→수정→회귀테스트) |
+| `/hive:grill` | 구현 전 1:1 인터뷰로 요구사항 정렬 + CONTEXT.md / ADR 실시간 업데이트 |
+| `/hive:grill-me` | 코드 무관 아이디어/플랜 인터뷰로 공유된 이해 도달 |
+| `/hive:caveman` | 토큰 75% 절감 초압축 모드 (세션 내 지속, "stop caveman"으로 해제) |
+| `/hive:diagnose` | 재현 우선 디버깅 루프 (재현→최소화→가설→계측→수정→회귀테스트) |
 
 #### 핵심 워크플로우 + 보조 도구 + 코드 조작 + 결정 (16개)
 
 | 명령어 | 설명 |
 |---|---|
-| `/aifab:discover` | 프로젝트 구조 및 기존 코드베이스를 분석하여 컨텍스트를 수집한다 |
-| `/aifab:plan` | 요구사항을 파악하고 구현 웨이브(wave)로 분해한 실행 계획을 생성한다 |
-| `/aifab:execute` | 계획된 웨이브를 순서대로 실행하며 기능을 구현한다 |
-| `/aifab:security` | OWASP/AI-LLM/API/시크릿 4도메인 보안 스캔 및 치명적 이슈 자동 수정 |
-| `/aifab:playwright` | Playwright E2E 테스트를 생성하고 실행한다 |
-| `/aifab:uat` | 사용자 인수 테스트(UAT) 시나리오를 준비하고 실행한다 |
-| `/aifab:worklog` | 완료된 작업, 결정 사항, 변경 이력을 기록한다 |
-| `/aifab:debug` | 4단계 RCA(가설→증거→검증→수정)로 체계적 디버깅을 수행한다 |
-| `/aifab:map-codebase` | 4-병렬 매퍼(tech/arch/quality/concerns)로 코드베이스를 분석한다 |
-| `/aifab:worktree` | git worktree로 병렬 Wave를 동시 진행할 수 있게 한다 |
-| `/aifab:codex-review` | OpenAI Codex CLI로 교차 AI 검증을 수행한다 |
-| `/aifab:refactor` | 동작 보존 점진 리팩토링 (REFACTOR-LOG.md 작성, 단계별 commit) |
-| `/aifab:migrate` | 의존성/프레임워크 마이그레이션 (codemod 활용, Wave 단위 적용) |
-| `/aifab:rollback` | Wave 단위 안전한 롤백 (백업 브랜치 자동 생성) |
-| `/aifab:compare` | N개 옵션 비교 (트레이드오프 매트릭스 + 추천) |
-| `/aifab:adr` | Architecture Decision Records 관리 (Michael Nygard 형식) |
+| `/hive:discover` | 프로젝트 구조 및 기존 코드베이스를 분석하여 컨텍스트를 수집한다 |
+| `/hive:plan` | 요구사항을 파악하고 구현 웨이브(wave)로 분해한 실행 계획을 생성한다 |
+| `/hive:execute` | 계획된 웨이브를 순서대로 실행하며 기능을 구현한다 |
+| `/hive:security` | OWASP/AI-LLM/API/시크릿 4도메인 보안 스캔 및 치명적 이슈 자동 수정 |
+| `/hive:playwright` | Playwright E2E 테스트를 생성하고 실행한다 |
+| `/hive:uat` | 사용자 인수 테스트(UAT) 시나리오를 준비하고 실행한다 |
+| `/hive:worklog` | 완료된 작업, 결정 사항, 변경 이력을 기록한다 |
+| `/hive:debug` | 4단계 RCA(가설→증거→검증→수정)로 체계적 디버깅을 수행한다 |
+| `/hive:map-codebase` | 4-병렬 매퍼(tech/arch/quality/concerns)로 코드베이스를 분석한다 |
+| `/hive:worktree` | git worktree로 병렬 Wave를 동시 진행할 수 있게 한다 |
+| `/hive:codex-review` | OpenAI Codex CLI로 교차 AI 검증을 수행한다 |
+| `/hive:refactor` | 동작 보존 점진 리팩토링 (REFACTOR-LOG.md 작성, 단계별 commit) |
+| `/hive:migrate` | 의존성/프레임워크 마이그레이션 (codemod 활용, Wave 단위 적용) |
+| `/hive:rollback` | Wave 단위 안전한 롤백 (백업 브랜치 자동 생성) |
+| `/hive:compare` | N개 옵션 비교 (트레이드오프 매트릭스 + 추천) |
+| `/hive:adr` | Architecture Decision Records 관리 (Michael Nygard 형식) |
 
 ### 보안 감사 스킬 (전수 점검용)
 
@@ -73,8 +73,8 @@ Bash 도구로 git commit 실행
     └─ PostToolUse Hook 발동
     └─ 커맨드에 "git commit" 포함 여부 확인
     └─ 포함 시 → Claude 컨텍스트에 알림 주입:
-         "[자동알림] git commit 감지됨. /aifab:security 실행 필요"
-    └─ Claude가 즉시 /aifab:security 자동 실행
+         "[자동알림] git commit 감지됨. /hive:security 실행 필요"
+    └─ Claude가 즉시 /hive:security 자동 실행
          ├─ ❌ 치명적 이슈 → 코드 자동 수정 + git commit
          ├─ ⚠️ 경고 → 사용자 확인 후 처리
          └─ ✅ 통과 항목 보고
@@ -98,14 +98,14 @@ milestone new → roadmap init → grill → discover → plan(phase) → [execu
 #### Phase 0a: 아이디어 정렬 (선택)
 
 ```
-/aifab:grill-me
+/hive:grill-me
 ```
 - 코드와 무관한 아이디어·플랜 단계에서 호출
 - AI가 의사결정 트리의 모든 가지를 인터뷰로 해소
 - 산출물 없음 (대화 기반)
 
 ```
-/aifab:grill
+/hive:grill
 ```
 - 구현 직전 도메인 언어와 요구사항을 정렬
 - `CONTEXT.md`를 실시간 갱신 (도메인 전문가 공유 언어)
@@ -116,13 +116,13 @@ milestone new → roadmap init → grill → discover → plan(phase) → [execu
 #### Phase 0b: 방향 설정
 
 ```
-/aifab:compare
+/hive:compare
 ```
 - 기술 스택 N개 옵션 비교 (트레이드오프 매트릭스 생성)
 - 예: React vs Vue, PostgreSQL vs MongoDB, REST vs GraphQL
 
 ```
-/aifab:adr
+/hive:adr
 ```
 - 결정 사항을 Architecture Decision Record(Michael Nygard 형식)로 기록
 - 결정의 배경·대안·결과를 문서화하여 나중에 "왜 이렇게 했지?" 방지
@@ -132,7 +132,7 @@ milestone new → roadmap init → grill → discover → plan(phase) → [execu
 #### Phase 1: 계획 수립
 
 ```
-/aifab:plan
+/hive:plan
 ```
 - 요구사항 분석 → Wave N개로 분해
 - 각 Wave에 성공 기준(success criteria) 정의
@@ -145,9 +145,9 @@ milestone new → roadmap init → grill → discover → plan(phase) → [execu
 각 Wave마다 아래 루프를 반복한다.
 
 ```
-/aifab:execute          ← Wave N 구현 (TDD: Red → Green → Refactor)
+/hive:execute          ← Wave N 구현 (TDD: Red → Green → Refactor)
                            └─ git commit 발생
-                                └─ [자동 Hook] /aifab:security 알림 주입
+                                └─ [자동 Hook] /hive:security 알림 주입
                                      └─ Claude가 즉시 보안 스캔 실행
                                           ├─ ❌ 치명적 → 자동 코드 수정 + commit
                                           └─ ⚠️ 경고 → 사용자 확인 후 처리
@@ -156,16 +156,16 @@ milestone new → roadmap init → grill → discover → plan(phase) → [execu
 **독립적인 Wave인 경우 (선택)**:
 
 ```
-/aifab:worktree         ← git worktree로 병렬 Wave 동시 진행
+/hive:worktree         ← git worktree로 병렬 Wave 동시 진행
 ```
 
 **문제 발생 시 (둘 중 선택)**:
 
 ```
-/aifab:diagnose         ← 재현 가능한 버그
+/hive:diagnose         ← 재현 가능한 버그
                            재현 루프 → 최소화 → 가설 → 계측 → 수정 → 회귀테스트
 
-/aifab:debug            ← 재현 어려움 / 원인 불명
+/hive:debug            ← 재현 어려움 / 원인 불명
                            가설 → 증거 → 검증 → 수정 (4단계 RCA)
 ```
 
@@ -174,7 +174,7 @@ milestone new → roadmap init → grill → discover → plan(phase) → [execu
 #### Phase 3: 교차 검증 (선택)
 
 ```
-/aifab:codex-review     ← OpenAI Codex로 교차 AI 검증
+/hive:codex-review     ← OpenAI Codex로 교차 AI 검증
 ```
 - Claude의 맹점을 다른 AI 관점에서 교차 확인
 - 중요한 비즈니스 로직 구현 후 권장
@@ -184,8 +184,8 @@ milestone new → roadmap init → grill → discover → plan(phase) → [execu
 #### Phase 4: E2E 및 UAT
 
 ```
-/aifab:playwright       ← E2E 테스트 생성 및 실행
-/aifab:uat              ← 사용자 인수 테스트 시나리오 실행
+/hive:playwright       ← E2E 테스트 생성 및 실행
+/hive:uat              ← 사용자 인수 테스트 시나리오 실행
 ```
 
 ---
@@ -197,7 +197,7 @@ milestone new → roadmap init → grill → discover → plan(phase) → [execu
                            └─ docs/SECURITY_AUDIT_REPORT.md 생성
                                 (납품·감사·컴플라이언스 증적용)
 
-/aifab:worklog          ← 전체 작업 이력·결정 사항 기록
+/hive:worklog          ← 전체 작업 이력·결정 사항 기록
 ```
 
 ---
@@ -217,13 +217,13 @@ discover → map-codebase → grill → security-audit(before)
 #### Phase 0: 현황 파악 (코딩 전 필수)
 
 ```
-/aifab:discover
+/hive:discover
 ```
 - 프로젝트 구조, 의존성, 진입점, 라우트 분석
 - 리팩토링 전 컨텍스트를 충분히 확보 (가정 위에서 작업 금지)
 
 ```
-/aifab:map-codebase
+/hive:map-codebase
 ```
 - 4개 병렬 매퍼로 코드베이스 전체 분석:
   - `tech` — 기술 스택, 라이브러리 버전
@@ -233,7 +233,7 @@ discover → map-codebase → grill → security-audit(before)
 - 변경 전 스냅샷 확보 (리팩토링 후 비교 기준)
 
 ```
-/aifab:grill
+/hive:grill
 ```
 - map-codebase 결과를 바탕으로 기존 도메인 언어를 학습하고, 리팩토링 의도를 정렬
 - `CONTEXT.md` 신규 생성 또는 갱신 (기존 코드 용어와 충돌 시 즉시 표면화)
@@ -255,10 +255,10 @@ discover → map-codebase → grill → security-audit(before)
 #### Phase 2: 전략 수립
 
 ```
-/aifab:compare          ← 리팩토링 방식 비교
+/hive:compare          ← 리팩토링 방식 비교
                            예: 점진적 vs 일괄, 모노리스 vs 모듈 분리
-/aifab:adr              ← 결정 기록
-/aifab:plan             ← Wave 단위 계획 수립 (PLAN.md 생성)
+/hive:adr              ← 결정 기록
+/hive:plan             ← Wave 단위 계획 수립 (PLAN.md 생성)
 ```
 
 ---
@@ -268,31 +268,31 @@ discover → map-codebase → grill → security-audit(before)
 각 Wave마다 아래 루프를 반복한다.
 
 ```
-/aifab:refactor         ← Wave N 점진 리팩토링
+/hive:refactor         ← Wave N 점진 리팩토링
                            ├─ 변경 전 테스트 통과 확인 (동작 기준선 확보)
                            ├─ 동작 보존하며 코드 변경
                            ├─ 변경 후 테스트 통과 확인
                            ├─ REFACTOR-LOG.md 자동 작성
                            └─ git commit
-                                └─ [자동 Hook] /aifab:security 알림 주입
+                                └─ [자동 Hook] /hive:security 알림 주입
                                      └─ 리팩토링이 보안 회귀 일으켰는지 즉시 확인
 ```
 
 **의존성·프레임워크 변경이 포함된 경우**:
 
 ```
-/aifab:migrate          ← codemod 활용, Wave 단위 마이그레이션
+/hive:migrate          ← codemod 활용, Wave 단위 마이그레이션
                            예: Express 4 → 5, React 17 → 18, CommonJS → ESM
 ```
 
 **문제 발생 시**:
 
 ```
-/aifab:diagnose         ← 재현 가능한 동작 변경
+/hive:diagnose         ← 재현 가능한 동작 변경
                            재현 루프 구축 → 최소화 → 계측 → 수정 → 회귀테스트
-/aifab:debug            ← 재현 어려움 / 원인 불명
+/hive:debug            ← 재현 어려움 / 원인 불명
                            가설 → 증거 → 검증 → 수정 (4단계 RCA)
-/aifab:rollback         ← Wave 단위 안전한 롤백 (백업 브랜치 자동 보존)
+/hive:rollback         ← Wave 단위 안전한 롤백 (백업 브랜치 자동 보존)
                            ※ force-push 금지, 백업 브랜치로 항상 복구 가능
 ```
 
@@ -301,14 +301,14 @@ discover → map-codebase → grill → security-audit(before)
 #### Phase 4: 최종 검증
 
 ```
-/aifab:playwright       ← 기존 E2E 시나리오 전체 재실행
+/hive:playwright       ← 기존 E2E 시나리오 전체 재실행
                            (리팩토링 후 사용자 시나리오 동작 여부 확인)
 
 /security-audit         ← 리팩토링 후 보안 점검
                            └─ docs/SECURITY_AUDIT_REPORT_after.md 생성
                                 └─ before vs after 비교로 개선 증적 확보
 
-/aifab:worklog          ← 변경 이력·결정 사항·REFACTOR-LOG 기록
+/hive:worklog          ← 변경 이력·결정 사항·REFACTOR-LOG 기록
 ```
 
 ---
@@ -338,7 +338,7 @@ discover → map-codebase → grill → security-audit(before)
 │      └─ TDD (Red → Green → Refactor)             │
 │      └─ git commit                               │
 │           └─ [자동 Hook] security 알림 주입      │
-│                └─ /aifab:security 실행           │
+│                └─ /hive:security 실행           │
 │                     ├─ ❌ 치명적 → 즉시 수정    │
 │                     ├─ ⚠️ 경고 → 사용자 확인   │
 │                     └─ ✅ 통과 → 다음 Wave      │
@@ -349,7 +349,7 @@ discover → map-codebase → grill → security-audit(before)
 
 ## 보안 스킬 상세 비교
 
-| 항목 | `/aifab:security` | `/security-audit` |
+| 항목 | `/hive:security` | `/security-audit` |
 |---|---|---|
 | **실행 시점** | Wave 완료 후 자동 (Hook) | 프로젝트 시작·종료 시 수동 1회 |
 | **점검 기준** | OWASP Top 10 + AI/LLM + API + 시크릿 | 행정안전부 개발보안 가이드 + AI/LLM v1.1.0 |
@@ -365,31 +365,31 @@ discover → map-codebase → grill → security-audit(before)
 
 | 상황 | 명령어 |
 |------|--------|
-| 뭘 만들지 모르겠다 | `/aifab:grill-me` |
-| 요구사항이 모호하다 | `/aifab:grill` |
-| 새 프로젝트 출발 (구조 결정) | `/aifab:discover` |
-| 처음 보는 코드베이스 | `/aifab:map-codebase` |
-| 두 옵션 사이 결정 | `/aifab:compare` |
-| 큰 결정 영구 기록 | `/aifab:adr new` |
-| 재현되는 버그/회귀 | `/aifab:diagnose` |
-| 가끔 나는 / 원인 불명 버그 | `/aifab:debug` |
-| 컨텍스트 50% 도달, 토큰 압박 | `/aifab:caveman` |
-| 작업 재개 | `/aifab:worklog resume` |
-| 동작 보존 점진 개선 | `/aifab:refactor` |
-| 의존성/프레임워크 교체 | `/aifab:migrate` |
-| 문제 시 안전한 되돌리기 | `/aifab:rollback` |
-| Phase 단위 로드맵 만들기 | `/aifab:roadmap init <semver>` |
-| 프로젝트 진행률 확인 | `/aifab:progress` |
-| 마일스톤 시작/완료 | `/aifab:milestone new` / `/aifab:milestone complete` |
+| 뭘 만들지 모르겠다 | `/hive:grill-me` |
+| 요구사항이 모호하다 | `/hive:grill` |
+| 새 프로젝트 출발 (구조 결정) | `/hive:discover` |
+| 처음 보는 코드베이스 | `/hive:map-codebase` |
+| 두 옵션 사이 결정 | `/hive:compare` |
+| 큰 결정 영구 기록 | `/hive:adr new` |
+| 재현되는 버그/회귀 | `/hive:diagnose` |
+| 가끔 나는 / 원인 불명 버그 | `/hive:debug` |
+| 컨텍스트 50% 도달, 토큰 압박 | `/hive:caveman` |
+| 작업 재개 | `/hive:worklog resume` |
+| 동작 보존 점진 개선 | `/hive:refactor` |
+| 의존성/프레임워크 교체 | `/hive:migrate` |
+| 문제 시 안전한 되돌리기 | `/hive:rollback` |
+| Phase 단위 로드맵 만들기 | `/hive:roadmap init <semver>` |
+| 프로젝트 진행률 확인 | `/hive:progress` |
+| 마일스톤 시작/완료 | `/hive:milestone new` / `/hive:milestone complete` |
 
 ---
 
 ## 변경 이력
 
-- **v2.1 (2026-05-08)**: Phase·로드맵·진척률·마일스톤 매니지먼트 추가 (`/aifab:roadmap`, `/aifab:progress`, `/aifab:milestone`).
+- **v2.1 (2026-05-08)**: Phase·로드맵·진척률·마일스톤 매니지먼트 추가 (`/hive:roadmap`, `/hive:progress`, `/hive:milestone`).
 - **v2.0 (2026-05-08)**: mattpocock/skills 4개 통합 (grill, grill-me, caveman, diagnose). 정렬 단계와 재현 우선 디버깅 옵션 추가.
-- **v1.0 (2026-05-08)**: 초기 버전 (16 AIFAB 스킬 + security-audit + Hook).
+- **v1.0 (2026-05-08)**: 초기 버전 (16 HIVE 스킬 + security-audit + Hook).
 
 ---
 
-*이 문서는 AI-Fab v2 하네스 기준으로 작성되었습니다. 스킬 목록 전체: [`.claude/plugins/aifab/SKILLS.md`](.claude/plugins/aifab/SKILLS.md)*
+*이 문서는 HIVE v2 하네스 기준으로 작성되었습니다. 스킬 목록 전체: [`.claude/plugins/hive/SKILLS.md`](.claude/plugins/hive/SKILLS.md)*

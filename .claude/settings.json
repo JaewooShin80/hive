@@ -1,16 +1,16 @@
 {
   "model": "opus",
   "env": {
-    "AIFAB_MODEL": "opus",
-    "AIFAB_ADVISOR_MODEL": "opus",
-    "AIFAB_WORKER_MODEL": "sonnet",
-    "AIFAB_BOILERPLATE_MODEL": "haiku",
-    "AIFAB_STATUS_STYLE": "color",
+    "HIVE_MODEL": "opus",
+    "HIVE_ADVISOR_MODEL": "opus",
+    "HIVE_WORKER_MODEL": "sonnet",
+    "HIVE_BOILERPLATE_MODEL": "haiku",
+    "HIVE_STATUS_STYLE": "color",
     "LC_ALL": "en_US.UTF-8"
   },
   "statusLine": {
     "type": "command",
-    "command": "node scripts/aifab-status.js"
+    "command": "node scripts/hive-status.js"
   },
   "permissions": {
     "allow": [
@@ -53,7 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/aifab-secret-guard.js"
+            "command": "node .claude/hooks/hive-secret-guard.js"
           }
         ]
       },
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/aifab-bash-guard.js"
+            "command": "node .claude/hooks/hive-bash-guard.js"
           }
         ]
       }
@@ -73,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/aifab-ctx-guard.js"
+            "command": "node .claude/hooks/hive-ctx-guard.js"
           }
         ]
       },
@@ -82,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/aifab-worklog-auto.js"
+            "command": "node .claude/hooks/hive-worklog-auto.js"
           }
         ]
       },
@@ -91,7 +91,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/aifab-wave-gate.js"
+            "command": "node .claude/hooks/hive-wave-gate.js"
           }
         ]
       }
@@ -101,7 +101,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/aifab-session-start.js"
+            "command": "node .claude/hooks/hive-session-start.js"
           }
         ]
       }

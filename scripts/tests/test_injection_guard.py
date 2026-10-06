@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DISPATCH_MD = REPO_ROOT / ".claude" / "plugins" / "aifab" / "_shared" / "agent-dispatch.md"
+DISPATCH_MD = REPO_ROOT / ".claude" / "plugins" / "hive" / "_shared" / "agent-dispatch.md"
 
 
 class TestInjectionGuard(unittest.TestCase):

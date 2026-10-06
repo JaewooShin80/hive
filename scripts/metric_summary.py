@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-metric_summary.py — Read AI-Fab metrics JSONL and emit a summary.
+metric_summary.py — Read HIVE metrics JSONL and emit a summary.
 
 CLI:
     python3 scripts/metric_summary.py [--file PATH] [--json]
 
-Default file: .aifab/metrics.jsonl (or AIFAB_METRICS_FILE env var).
+Default file: .hive/metrics.jsonl (or HIVE_METRICS_FILE env var).
 """
 
 from __future__ import annotations
@@ -18,13 +18,13 @@ from collections import Counter
 from pathlib import Path
 from typing import Optional
 
-DEFAULT_PATH = Path(".aifab") / "metrics.jsonl"
+DEFAULT_PATH = Path(".hive") / "metrics.jsonl"
 
 
 def _resolve_path(arg: Optional[str]) -> Path:
     if arg:
         return Path(arg)
-    env = os.environ.get("AIFAB_METRICS_FILE")
+    env = os.environ.get("HIVE_METRICS_FILE")
     if env:
         return Path(env)
     return DEFAULT_PATH
@@ -68,7 +68,7 @@ def summarize(path: Path) -> dict:
 
 def _format(summary: dict) -> str:
     lines = [
-        f"AI-Fab metrics summary: {summary['file']}",
+        f"HIVE metrics summary: {summary['file']}",
         f"  total events: {summary['total_events']}",
     ]
     if summary["malformed_lines"]:
@@ -86,7 +86,7 @@ def _format(summary: dict) -> str:
 
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    p.add_argument("--file", help="metrics file path (default: .aifab/metrics.jsonl)")
+    p.add_argument("--file", help="metrics file path (default: .hive/metrics.jsonl)")
     p.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     args = p.parse_args(argv[1:])
     summary = summarize(_resolve_path(args.file))

@@ -9,8 +9,8 @@
 
 <!-- Exact commands run + what they verify. -->
 
-- [ ] `python3 scripts/skill_lint.py .claude/plugins/aifab` → 0 errors
-- [ ] `python3 scripts/gen_skills_index.py --check .claude/plugins/aifab/SKILLS.md` → exit 0
+- [ ] `python3 scripts/skill_lint.py .claude/plugins/hive` → 0 errors
+- [ ] `python3 scripts/gen_skills_index.py --check .claude/plugins/hive/SKILLS.md` → exit 0
 - [ ] `python3 -m unittest discover -s scripts/tests` → all green
 - [ ] CI matrix (Python 3.9 / 3.11 / 3.13)
 

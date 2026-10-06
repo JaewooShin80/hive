@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-skill_lint.py — AI-Fab 스킬 markdown 정합성 검사기.
+skill_lint.py — HIVE 스킬 markdown 정합성 검사기.
 
 검증 항목:
   1. 각 skills/*.md 파일에 YAML frontmatter 존재 + 필수 필드(name, description)
@@ -9,7 +9,7 @@ skill_lint.py — AI-Fab 스킬 markdown 정합성 검사기.
 
 CLI:
     python3 scripts/skill_lint.py [plugin_dir]
-    (default: .claude/plugins/aifab)
+    (default: .claude/plugins/hive)
 
 exit 0 = clean, 1 = issues found.
 """
@@ -145,7 +145,7 @@ def lint_plugin(plugin_root: Path) -> list[Issue]:
 
 
 def main(argv: list[str]) -> int:
-    plugin_dir = Path(argv[1]) if len(argv) > 1 else Path(".claude/plugins/aifab")
+    plugin_dir = Path(argv[1]) if len(argv) > 1 else Path(".claude/plugins/hive")
     if not plugin_dir.exists():
         print(f"error: plugin dir not found: {plugin_dir}", file=sys.stderr)
         return 1

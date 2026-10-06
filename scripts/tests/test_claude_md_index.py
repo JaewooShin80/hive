@@ -10,7 +10,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLAUDE_MD = REPO_ROOT / "CLAUDE.md"
-PLUGIN_DIR = REPO_ROOT / ".claude" / "plugins" / "aifab"
+PLUGIN_DIR = REPO_ROOT / ".claude" / "plugins" / "hive"
 GEN = REPO_ROOT / "scripts" / "gen_skills_index.py"
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
@@ -51,7 +51,7 @@ class TestGeneratorOnTwoFiles(unittest.TestCase):
             plugin = tmp_root / "plug"
             (plugin / "skills").mkdir(parents=True)
             (plugin / "skills" / "x.md").write_text(
-                "---\nname: aifab:x\ndescription: do x\n---\n",
+                "---\nname: hive:x\ndescription: do x\n---\n",
                 encoding="utf-8",
             )
             f1 = tmp_root / "A.md"
@@ -65,7 +65,7 @@ class TestGeneratorOnTwoFiles(unittest.TestCase):
                 )
                 self.assertEqual(r.returncode, 0, msg=r.stderr)
             for path in (f1, f2):
-                self.assertIn("`/aifab:x`", path.read_text(encoding="utf-8"))
+                self.assertIn("`/hive:x`", path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

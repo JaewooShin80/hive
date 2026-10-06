@@ -65,9 +65,9 @@ class TestSettingsJson(unittest.TestCase):
                 self.assertNotIn("python3", cmd)
                 self.assertNotIn("$", cmd)
 
-    def test_all_six_aifab_hooks_registered(self):
+    def test_all_six_hive_hooks_registered(self):
         blob = json.dumps(self.data["hooks"])
-        for f in sorted((REPO_ROOT / ".claude" / "hooks").glob("aifab-*.js")):
+        for f in sorted((REPO_ROOT / ".claude" / "hooks").glob("hive-*.js")):
             with self.subTest(hook=f.name):
                 self.assertEqual(blob.count(f.name), 1)
 
@@ -75,7 +75,7 @@ class TestSettingsJson(unittest.TestCase):
         # aliases (opus/sonnet/haiku) auto-track the latest release
         pinned = re.compile(r"claude-(opus|sonnet|haiku|fable)-\d")
         files = [SETTINGS_FILE, REPO_ROOT / "CLAUDE.md"]
-        files += list((REPO_ROOT / ".claude" / "plugins" / "aifab").rglob("*.md"))
+        files += list((REPO_ROOT / ".claude" / "plugins" / "hive").rglob("*.md"))
         for f in files:
             with self.subTest(file=str(f.relative_to(REPO_ROOT))):
                 self.assertIsNone(pinned.search(f.read_text(encoding="utf-8")))

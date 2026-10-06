@@ -17,10 +17,10 @@ REQUIRED_HEADINGS = [
 ]
 
 REQUIRED_COMMANDS = [
-    "/aifab:discover",
-    "/aifab:plan",
-    "/aifab:execute",
-    "/aifab:security",
+    "/hive:discover",
+    "/hive:plan",
+    "/hive:execute",
+    "/hive:security",
 ]
 
 

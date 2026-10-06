@@ -82,8 +82,8 @@ def main(argv: List[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument(
         "--plugin",
-        default=".claude/plugins/aifab",
-        help="plugin root directory (default: .claude/plugins/aifab)",
+        default=".claude/plugins/hive",
+        help="plugin root directory (default: .claude/plugins/hive)",
     )
     p.add_argument("--write", metavar="FILE", help="rewrite FILE with refreshed table")
     p.add_argument("--check", metavar="FILE", help="exit 1 if FILE is stale")

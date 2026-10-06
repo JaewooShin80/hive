@@ -1,8 +1,8 @@
 # Architecture Decision Records (ADRs) — Harness
 
-This directory holds ADRs about the AI-Fab harness *itself* — decisions
+This directory holds ADRs about the HIVE harness *itself* — decisions
 that shape how the harness is built, distributed, and tested. They are
-distinct from project-level ADRs that the `/aifab:adr` skill creates inside
+distinct from project-level ADRs that the `/hive:adr` skill creates inside
 user projects.
 
 Format follows [Michael Nygard's template](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions):

@@ -1,4 +1,4 @@
-# Contributing to AI-Fab
+# Contributing to HIVE
 
 Thank you for considering a contribution. This harness is small and opinionated;
 the rules below keep it simple to maintain.
@@ -8,8 +8,8 @@ the rules below keep it simple to maintain.
 ## Development setup
 
 ```bash
-git clone https://github.com/JaewooShin80/aifab.git
-cd aifab
+git clone https://github.com/JaewooShin80/hive.git
+cd hive
 # No package manager needed — the harness is stdlib-only.
 python3 --version   # 3.9 or newer
 bash --version
@@ -26,10 +26,10 @@ The full test suite runs in under a second:
 
 ```bash
 # Skill markdown integrity
-python3 scripts/skill_lint.py .claude/plugins/aifab
+python3 scripts/skill_lint.py .claude/plugins/hive
 
 # SKILLS.md auto-index freshness
-python3 scripts/gen_skills_index.py --check .claude/plugins/aifab/SKILLS.md
+python3 scripts/gen_skills_index.py --check .claude/plugins/hive/SKILLS.md
 
 # Unit + integration tests
 python3 -m unittest discover -s scripts/tests -v
@@ -41,29 +41,29 @@ CI runs the same three commands across Python 3.9 / 3.11 / 3.13.
 
 ## Adding a new skill
 
-1. Create `.claude/plugins/aifab/skills/<name>.md` with valid YAML frontmatter:
+1. Create `.claude/plugins/hive/skills/<name>.md` with valid YAML frontmatter:
 
    ```markdown
    ---
-   name: aifab:<name>
+   name: hive:<name>
    description: <one-line trigger description for Claude Code>
    ---
 
-   # /aifab:<name>
+   # /hive:<name>
 
    ...
    ```
 
 2. Reference the skill in the appropriate category section of
-   [`.claude/plugins/aifab/SKILLS.md`](.claude/plugins/aifab/SKILLS.md).
+   [`.claude/plugins/hive/SKILLS.md`](.claude/plugins/hive/SKILLS.md).
 
 3. Regenerate the auto-index table:
 
    ```bash
-   python3 scripts/gen_skills_index.py --write .claude/plugins/aifab/SKILLS.md
+   python3 scripts/gen_skills_index.py --write .claude/plugins/hive/SKILLS.md
    ```
 
-4. Run `python3 scripts/skill_lint.py .claude/plugins/aifab` — must report 0 errors.
+4. Run `python3 scripts/skill_lint.py .claude/plugins/hive` — must report 0 errors.
 
 5. If the skill introduces a new shared protocol, add a file under `_shared/`
    and link to it from the skill body.
@@ -95,8 +95,8 @@ Each commit must:
 Before opening a PR, run:
 
 ```bash
-python3 scripts/skill_lint.py .claude/plugins/aifab
-python3 scripts/gen_skills_index.py --check .claude/plugins/aifab/SKILLS.md
+python3 scripts/skill_lint.py .claude/plugins/hive
+python3 scripts/gen_skills_index.py --check .claude/plugins/hive/SKILLS.md
 python3 -m unittest discover -s scripts/tests
 ```
 

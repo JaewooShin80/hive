@@ -51,7 +51,7 @@ class TestValidateSkillFile(unittest.TestCase):
             d = Path(d)
             f = self._write(
                 d, "ok.md",
-                "---\nname: aifab:ok\ndescription: a valid skill\n---\n\nbody\n",
+                "---\nname: hive:ok\ndescription: a valid skill\n---\n\nbody\n",
             )
             issues = validate_skill_file(f)
             self.assertEqual(issues, [])
@@ -79,7 +79,7 @@ class TestValidateSkillFile(unittest.TestCase):
             d = Path(d)
             f = self._write(
                 d, "bad.md",
-                "---\nname: aifab:foo\n---\nbody\n",
+                "---\nname: hive:foo\n---\nbody\n",
             )
             issues = validate_skill_file(f)
             self.assertTrue(any("description" in i.message for i in issues))
@@ -133,9 +133,9 @@ class TestValidateIndex(unittest.TestCase):
 
 
 class TestLintPlugin(unittest.TestCase):
-    def test_real_aifab_plugin_passes(self):
+    def test_real_hive_plugin_passes(self):
         repo_root = Path(__file__).resolve().parents[2]
-        plugin = repo_root / ".claude" / "plugins" / "aifab"
+        plugin = repo_root / ".claude" / "plugins" / "hive"
         self.assertTrue(plugin.exists(), f"missing plugin dir: {plugin}")
         issues = lint_plugin(plugin)
         errors = [i for i in issues if i.severity is Severity.ERROR]

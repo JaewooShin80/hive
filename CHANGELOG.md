@@ -7,6 +7,22 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed (BREAKING)
+- Harness renamed **AI-Fab → HIVE**: commands `/aifab:*` → `/hive:*`, files `aifab-*` → `hive-*`,
+  env `AIFAB_*` → `HIVE_*`, plugin dir `.claude/plugins/aifab` → `.claude/plugins/hive`.
+  Re-running the installer migrates old settings (aifab hook entries, `AIFAB_*` env, statusLine)
+  and warns about a leftover `commands/aifab` directory.
+- Model ids use family aliases (`opus` / `sonnet` / `haiku`) so the latest release is picked up automatically.
+
+### Added
+- Cross-platform installer core `scripts/hive-install.js`; `install.sh` (bash) and new `install.ps1`
+  (Windows PowerShell) are thin wrappers. Skills install as slash commands, `_shared` lives outside
+  the commands tree, hooks + statusLine are registered as shell-neutral `node "<path>"` commands.
+- `scripts/hive-status.js` statusLine launcher (python3 → python → py -3 discovery).
+
+### Fixed
+- `/hive:progress` referenced a non-existent `scripts/aifab-progress.py`.
+
 ## [2.3.1] — 2026-05-05
 
 ### Changed

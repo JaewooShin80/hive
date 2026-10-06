@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# install.sh — AI-Fab harness installer (macOS / Linux / Git Bash)
+# install.sh — HIVE harness installer (macOS / Linux / Git Bash)
 #
-# Thin wrapper: all logic lives in scripts/aifab-install.js (shared with install.ps1).
+# Thin wrapper: all logic lives in scripts/hive-install.js (shared with install.ps1).
 # Idempotent: re-running is safe; existing CLAUDE.md is preserved, settings.json is merged.
 
 set -euo pipefail
@@ -13,4 +13,4 @@ if ! command -v node >/dev/null 2>&1; then
   exit 3
 fi
 
-exec node "$SCRIPT_DIR/scripts/aifab-install.js" "$@"
+exec node "$SCRIPT_DIR/scripts/hive-install.js" "$@"

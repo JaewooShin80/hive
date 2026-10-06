@@ -31,35 +31,35 @@ class TestExtractCatalog(unittest.TestCase):
     def test_returns_sorted_entries(self):
         with tempfile.TemporaryDirectory() as d:
             plugin = Path(d)
-            _write_skill(plugin, "b.md", "aifab:b", "second skill")
-            _write_skill(plugin, "a.md", "aifab:a", "first skill")
+            _write_skill(plugin, "b.md", "hive:b", "second skill")
+            _write_skill(plugin, "a.md", "hive:a", "first skill")
             entries = extract_catalog(plugin)
-            self.assertEqual([e["name"] for e in entries], ["aifab:a", "aifab:b"])
+            self.assertEqual([e["name"] for e in entries], ["hive:a", "hive:b"])
             self.assertEqual(entries[0]["description"], "first skill")
 
     def test_skips_files_without_frontmatter(self):
         with tempfile.TemporaryDirectory() as d:
             plugin = Path(d)
-            _write_skill(plugin, "ok.md", "aifab:ok", "valid")
+            _write_skill(plugin, "ok.md", "hive:ok", "valid")
             (plugin / "skills" / "broken.md").write_text("# no frontmatter", encoding="utf-8")
             entries = extract_catalog(plugin)
             self.assertEqual(len(entries), 1)
-            self.assertEqual(entries[0]["name"], "aifab:ok")
+            self.assertEqual(entries[0]["name"], "hive:ok")
 
 
 class TestRenderTable(unittest.TestCase):
     def test_renders_markdown_table(self):
         catalog = [
-            {"name": "aifab:foo", "description": "do foo"},
-            {"name": "aifab:bar", "description": "do bar"},
+            {"name": "hive:foo", "description": "do foo"},
+            {"name": "hive:bar", "description": "do bar"},
         ]
         out = render_table(catalog)
         self.assertIn("| Command | Description |", out)
-        self.assertIn("| `/aifab:foo` | do foo |", out)
-        self.assertIn("| `/aifab:bar` | do bar |", out)
+        self.assertIn("| `/hive:foo` | do foo |", out)
+        self.assertIn("| `/hive:bar` | do bar |", out)
 
     def test_escapes_pipe_in_description(self):
-        catalog = [{"name": "aifab:x", "description": "use a | pipe"}]
+        catalog = [{"name": "hive:x", "description": "use a | pipe"}]
         out = render_table(catalog)
         # raw | inside description must be escaped to \|
         self.assertIn(r"use a \| pipe", out)
@@ -91,12 +91,12 @@ class TestUpdateMarkerSection(unittest.TestCase):
 class TestRealPluginCatalog(unittest.TestCase):
     def test_real_plugin_yields_all_skills(self):
         repo_root = Path(__file__).resolve().parents[2]
-        plugin = repo_root / ".claude" / "plugins" / "aifab"
+        plugin = repo_root / ".claude" / "plugins" / "hive"
         entries = extract_catalog(plugin)
         skill_files = list((plugin / "skills").glob("*.md"))
         self.assertEqual(len(entries), len(skill_files))
         for e in entries:
-            self.assertTrue(e["name"].startswith("aifab:"), f"unexpected name: {e['name']}")
+            self.assertTrue(e["name"].startswith("hive:"), f"unexpected name: {e['name']}")
             self.assertTrue(e["description"], "empty description")
 
 

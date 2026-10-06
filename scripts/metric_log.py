@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-metric_log.py — Opt-in event logger for AI-Fab harness usage.
+metric_log.py — Opt-in event logger for HIVE harness usage.
 
-Disabled by default. Enabled when env var AIFAB_METRICS is one of
+Disabled by default. Enabled when env var HIVE_METRICS is one of
 {"1", "true", "yes", "on"} (case-insensitive). Output is line-delimited
-JSON appended to AIFAB_METRICS_FILE (default: .aifab/metrics.jsonl).
+JSON appended to HIVE_METRICS_FILE (default: .hive/metrics.jsonl).
 
 CLI:
     python3 scripts/metric_log.py EVENT [--skill NAME] [--data K=V ...]
@@ -26,17 +26,17 @@ from pathlib import Path
 from typing import Optional
 
 ENABLED_VALUES = {"1", "true", "yes", "on"}
-DEFAULT_PATH = Path(".aifab") / "metrics.jsonl"
+DEFAULT_PATH = Path(".hive") / "metrics.jsonl"
 
 
 def is_enabled() -> bool:
-    return os.environ.get("AIFAB_METRICS", "").strip().lower() in ENABLED_VALUES
+    return os.environ.get("HIVE_METRICS", "").strip().lower() in ENABLED_VALUES
 
 
 def _resolve_path(path: Optional[Path]) -> Path:
     if path is not None:
         return path
-    env_path = os.environ.get("AIFAB_METRICS_FILE")
+    env_path = os.environ.get("HIVE_METRICS_FILE")
     if env_path:
         return Path(env_path)
     return DEFAULT_PATH
