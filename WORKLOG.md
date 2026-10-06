@@ -448,3 +448,5 @@
 - 2026-10-06 22:56 .claude/plugins/hive/skills/execute.md
 - 2026-10-06 22:56 .claude/plugins/hive/skills/execute.md
 - 2026-10-06 22:56 .claude/plugins/hive/skills/execute.md
+- 2026-10-06 22:59 scripts/tests/test_install.py
+- 2026-10-06 22:59 scripts/tests/test_install.py

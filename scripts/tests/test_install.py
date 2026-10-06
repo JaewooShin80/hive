@@ -50,8 +50,10 @@ class _Base(unittest.TestCase):
         if home is not None:
             env["HOME"] = str(home)
             env["USERPROFILE"] = str(home)
+        # Call the shared node core directly: on Windows a bare "bash" resolves to
+        # System32\bash.exe (WSL), not Git Bash. Wrappers are smoke-tested per OS in CI.
         return subprocess.run(
-            ["bash", str(INSTALL_SH), *args],
+            ["node", str(INSTALL_JS), *args],
             capture_output=True,
             text=True,
             env=env,
