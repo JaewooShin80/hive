@@ -5,13 +5,12 @@ HIVE 워크플로우의 모든 스킬과 의존성 그래프.
 ## 스킬 카테고리
 
 ### 🗣️ 정렬/언어 (4) — mattpocock 통합
-구현 전 요구사항 정렬, 도메인 언어 확립, 토큰 효율화.
+구현 전 요구사항 정렬, 도메인 언어 확립.
 
 | 명령어 | 역할 |
 |--------|------|
 | `/hive:grill` | 구현 전 인터뷰 + CONTEXT.md / ADR 실시간 업데이트 |
 | `/hive:grill-me` | 코드 무관 아이디어/플랜 인터뷰 |
-| `/hive:caveman` | 토큰 75% 절감 초압축 모드 |
 | `/hive:diagnose` | 재현→최소화→가설→계측→수정→회귀테스트 디버깅 루프 |
 
 ### 🎯 핵심 워크플로우 (7)
@@ -142,7 +141,6 @@ HIVE 워크플로우의 모든 스킬과 의존성 그래프.
 | adr | ●● | ● | - |
 | grill | ●●● | - | - |
 | grill-me | ●●● | - | - |
-| caveman | - | - | - |
 | diagnose | - | ●●● | - |
 
 `●●●` 주력 / `●●` 보조 / `●` 가벼운 사용 / `○` 거의 안 씀 / `-` 미사용
@@ -190,7 +188,6 @@ CLAUDE.md(1,100) + 스킬 1개 평균 사용 시: ~2,700 토큰 (Context의 1.4%
 | Command | Description |
 | --- | --- |
 | `/hive:adr` | Manage Architecture Decision Records (Michael Nygard format) |
-| `/hive:caveman` | Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Activated by /hive:caveman, "caveman mode", "talk like caveman", "less tokens", "be brief". Stays active until user says "stop caveman" or "normal mode". |
 | `/hive:codex-review` | Cross-AI verification via OpenAI Codex CLI |
 | `/hive:compare` | Use when facing a multi-option technical decision and needing a structured trade-off analysis. Triggers on /hive:compare command. Use when selecting libraries, architecture patterns, frameworks, design patterns, or algorithms and wanting a weighted decision matrix with recommendation. |
 | `/hive:debug` | Systematic 4-stage RCA debugging |

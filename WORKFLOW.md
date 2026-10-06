@@ -2,7 +2,7 @@
 
 > **기준일**: 2026-05-08
 > **버전**: 2.1
-> **하네스**: HIVE v2 — 23 스킬 (16 HIVE + 4 mattpocock + 3 매니지먼트) + 보안 감사 스킬 + 자동 Hook
+> **하네스**: HIVE v2 — 22 스킬 (16 HIVE + 3 mattpocock + 3 매니지먼트) + 보안 감사 스킬 + 자동 Hook
 
 ---
 
@@ -20,7 +20,7 @@
 
 ## 스킬 전체 목록
 
-### HIVE 워크플로우 스킬 (20개)
+### HIVE 워크플로우 스킬 (19개)
 
 #### 정렬/언어 (4개) — mattpocock 통합
 
@@ -28,7 +28,6 @@
 |---|---|
 | `/hive:grill` | 구현 전 1:1 인터뷰로 요구사항 정렬 + CONTEXT.md / ADR 실시간 업데이트 |
 | `/hive:grill-me` | 코드 무관 아이디어/플랜 인터뷰로 공유된 이해 도달 |
-| `/hive:caveman` | 토큰 75% 절감 초압축 모드 (세션 내 지속, "stop caveman"으로 해제) |
 | `/hive:diagnose` | 재현 우선 디버깅 루프 (재현→최소화→가설→계측→수정→회귀테스트) |
 
 #### 핵심 워크플로우 + 보조 도구 + 코드 조작 + 결정 (16개)
@@ -326,7 +325,6 @@ discover → map-codebase → grill → security-audit(before)
 | **교차 검증** | `codex-review` (선택) | `codex-review` (선택) |
 | **최종 감사** | `security-audit` 1회 | `security-audit` before/after 비교 |
 | **기록** | `worklog` + `CONTEXT.md` | `worklog` + REFACTOR-LOG.md + `CONTEXT.md` |
-| **상시** | `caveman` (토큰 압박 시) | `caveman` (토큰 압박 시) |
 
 ### Wave 루프 — 두 시나리오 공통
 
@@ -373,7 +371,6 @@ discover → map-codebase → grill → security-audit(before)
 | 큰 결정 영구 기록 | `/hive:adr new` |
 | 재현되는 버그/회귀 | `/hive:diagnose` |
 | 가끔 나는 / 원인 불명 버그 | `/hive:debug` |
-| 컨텍스트 50% 도달, 토큰 압박 | `/hive:caveman` |
 | 작업 재개 | `/hive:worklog resume` |
 | 동작 보존 점진 개선 | `/hive:refactor` |
 | 의존성/프레임워크 교체 | `/hive:migrate` |

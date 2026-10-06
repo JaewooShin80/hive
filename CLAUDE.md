@@ -68,7 +68,6 @@
 | Command | Description |
 | --- | --- |
 | `/hive:adr` | Manage Architecture Decision Records (Michael Nygard format) |
-| `/hive:caveman` | Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Activated by /hive:caveman, "caveman mode", "talk like caveman", "less tokens", "be brief". Stays active until user says "stop caveman" or "normal mode". |
 | `/hive:codex-review` | Cross-AI verification via OpenAI Codex CLI |
 | `/hive:compare` | Use when facing a multi-option technical decision and needing a structured trade-off analysis. Triggers on /hive:compare command. Use when selecting libraries, architecture patterns, frameworks, design patterns, or algorithms and wanting a weighted decision matrix with recommendation. |
 | `/hive:debug` | Systematic 4-stage RCA debugging |
