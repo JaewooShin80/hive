@@ -520,3 +520,5 @@
 - 2026-10-07 08:49 scripts/tests/test_hive_evaluate.py
 - 2026-10-07 08:49 scripts/hive_evaluate.py
 - 2026-10-07 08:49 scripts/hive_evaluate.py
+- 2026-10-07 08:51 .claude/hooks/hive-hook-dedupe.js
+- 2026-10-07 08:51 .claude/hooks/hive-hook-dedupe.js

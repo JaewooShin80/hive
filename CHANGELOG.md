@@ -20,8 +20,32 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the commands tree, hooks + statusLine are registered as shell-neutral `node "<path>"` commands.
 - `scripts/hive-status.js` statusLine launcher (python3 → python → py -3 discovery).
 
-### Fixed
+### Fixed — harness review (3 entry scenarios, H-01..H-34)
+- `hive-wave` workflow: `stub:false` tasks no longer vanish silently; `root`/`test_cmd` args;
+  guardrails in every prompt (no commit, no WORKLOG/PLAN edits, own files only); stub stage
+  cannot write tests; Red may return ALREADY_SATISFIED; Green may return TEST_DEFECT (one Red
+  rerun); `depends_on`; per-batch test gate with out-of-scope change check; accounting check.
+- Progress has one source of truth — PLAN.md success-criteria checkboxes — read the same way by
+  `/hive:execute`, session-start hook, `/hive:progress` (now works without ROADMAP.md) and
+  `/hive:roadmap update`; `##`/`###` Wave headers both accepted.
+- Wave commits use `feat(wave-N): …` everywhere; wave-gate detects `-qm`/`-am`/`--message`/heredoc.
+- `/hive:security`: threat model + stack gate (N/A domains), availability/DoS (ReDoS, zip bomb,
+  unbounded input) as Critical, project-env dependency audit, report file, `--no-commit`.
+- `/hive:playwright` Python path (pytest-playwright in the project venv); `/hive:uat` no longer
+  creates a hardcoded `v1.0.0` tag; `/hive:rollback` uses `git reset --keep` (`--hard` is denied).
+- `hive-worklog-auto` records into the edited file's own project even when the session cwd differs.
+- Global + project hook installs no longer run twice (`hive-hook-dedupe.js`).
 - `/hive:progress` referenced a non-existent `scripts/aifab-progress.py`.
+
+### Added — harness review
+- `--auto` mode and batched questions (`_shared/auto-mode.md`); document input for docx/xlsx/pptx/
+  pdf/hwp requirement docs (`_shared/document-input.md`).
+- README quick start with three entry paths (idea / requirements doc / existing code); brownfield
+  path map-codebase → spec (change mode) → discover (B: keep/restructure/rewrite) → plan.
+- `/hive:uat --evidence` (Playwright screenshots, video, trace, report with embedded images).
+- `scripts/gen_feature_list.py` (PLAN → feature-list.json, append-only, ``(verify: `cmd`)``),
+  `scripts/hive_evaluate.py` (MCP-less `/hive:evaluate` runner) — both installed.
+- Installer `--check` (drift report, exit 1) and `hive/INSTALLED` version stamp.
 
 ## [2.3.1] — 2026-05-05
 

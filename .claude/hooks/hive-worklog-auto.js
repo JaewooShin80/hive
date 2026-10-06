@@ -4,7 +4,7 @@
 //
 // Matchers: Edit | Write | MultiEdit
 // Section: ## 자동 기록 (created at file end if absent).
-// Guards: skip WORKLOG.md self-edit, outside-cwd, .git/, no WORKLOG.md in cwd.
+// Guards: skip WORKLOG.md self-edit, .git/, and files with no WORKLOG.md up to their git root.
 // Exit code: always 0 (advisory, never blocks).
 
 const fs = require("fs");
@@ -34,6 +34,8 @@ process.stdin.on("end", function() {
   clearTimeout(stdinTimeout);
   try {
     const data = JSON.parse(input);
+    // Global copy steps aside when the project registers the same hook (no double runs).
+    try { if (require("./hive-hook-dedupe")(data.cwd || process.cwd(), __filename)) process.exit(0); } catch (_) {}
 
     const toolName = data.tool_name || "";
     if (["Edit", "Write", "MultiEdit"].indexOf(toolName) === -1) {
@@ -45,13 +47,24 @@ process.stdin.on("end", function() {
       process.exit(0);
     }
 
-    const cwd = (typeof data.cwd === "string" && data.cwd) ? data.cwd : process.cwd();
-
     const resolvedFile = path.resolve(filePath);
-    const resolvedCwd = path.resolve(cwd);
 
-    // Path traversal / outside-cwd guard
-    const rel = path.relative(resolvedCwd, resolvedFile);
+    // Project root = nearest ancestor of the edited file that has WORKLOG.md,
+    // searching up to (and including) the first directory with a .git entry.
+    // Works when the session was opened in another folder than the project.
+    let projectRoot = null;
+    let dir = path.dirname(resolvedFile);
+    for (;;) {
+      if (fs.existsSync(path.join(dir, WORKLOG_NAME))) { projectRoot = dir; break; }
+      const parent = path.dirname(dir);
+      if (fs.existsSync(path.join(dir, ".git")) || parent === dir) break;
+      dir = parent;
+    }
+    if (!projectRoot) {
+      process.exit(0);
+    }
+
+    const rel = path.relative(projectRoot, resolvedFile);
     if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) {
       process.exit(0);
     }
@@ -62,16 +75,11 @@ process.stdin.on("end", function() {
     }
 
     // Skip WORKLOG.md self-edit (infinite loop guard)
-    if (path.basename(resolvedFile) === WORKLOG_NAME &&
-        path.dirname(resolvedFile) === resolvedCwd) {
+    if (rel === WORKLOG_NAME) {
       process.exit(0);
     }
 
-    // Check WORKLOG.md exists in cwd
-    const worklogPath = path.join(resolvedCwd, WORKLOG_NAME);
-    if (!fs.existsSync(worklogPath)) {
-      process.exit(0);
-    }
+    const worklogPath = path.join(projectRoot, WORKLOG_NAME);
 
     // Normalise separators to forward-slash (cross-platform)
     const relFwd = rel.split(path.sep).join("/");

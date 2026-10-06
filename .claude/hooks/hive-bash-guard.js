@@ -42,6 +42,8 @@ process.stdin.on("end", () => {
   clearTimeout(stdinTimeout);
   try {
     const data = JSON.parse(input);
+    // Global copy steps aside when the project registers the same hook (no double runs).
+    try { if (require("./hive-hook-dedupe")(data.cwd || process.cwd(), __filename)) process.exit(0); } catch (_) {}
     const cmd = ((data.tool_input || {}).command || "").trim();
     if (!cmd) {
       process.exit(0);

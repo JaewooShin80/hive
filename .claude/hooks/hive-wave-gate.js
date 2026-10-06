@@ -14,6 +14,8 @@ process.stdin.on("end", () => {
   clearTimeout(stdinTimeout);
   try {
     const data = JSON.parse(input);
+    // Global copy steps aside when the project registers the same hook (no double runs).
+    try { if (require("./hive-hook-dedupe")(data.cwd || process.cwd(), __filename)) process.exit(0); } catch (_) {}
 
     // Only act on Bash tool calls
     if (data?.tool_name !== "Bash") {

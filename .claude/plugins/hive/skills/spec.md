@@ -98,7 +98,7 @@ Must 기능에 해당하는 화면마다 텍스트 와이어프레임을 그린�
 프로젝트 루트에 저장한다.
 
 ```markdown
-# 요구사항 — <프로젝트명>
+# 요구사항 — <프로젝트명: 영문 소문자 kebab-case, 예: decision-desk — discover/worklog 가 같은 이름을 쓴다>
 작성일: YYYY-MM-DD | 상태: 확정
 
 ## 목적

@@ -33,6 +33,9 @@ const HOOKS = [
   ["SessionStart", null, "hive-session-start.js"],
 ];
 
+// Shared hook helpers: copied next to the hooks but never registered.
+const HOOK_HELPERS = ["hive-hook-dedupe.js"];
+
 const PINNED_MODEL = /claude-(opus|sonnet|haiku|fable)-\d/;
 // pre-rename (AI-Fab) artifacts migrated on install
 const LEGACY_HOOK = /aifab-(secret-guard|bash-guard|ctx-guard|worklog-auto|session-start|wave-gate)\.js/;
@@ -46,6 +49,7 @@ OPTIONS:
   --global        Install user-wide into ~/.claude (all projects) instead of a project
   --copy          Accepted for compatibility (files are always copied)
   --dry-run       Show what would be done without making changes
+  --check         Compare installed files with this source and list drift (exit 1 if any); writes nothing
   -h, --help      Show this help
 
 Behavior:
@@ -59,7 +63,7 @@ Requires: node (hooks, installer), python3/python/py -3 (statusline, progress)
 `;
 
 function parseArgs(argv) {
-  const opts = { target: process.cwd(), global: false, dryRun: false };
+  const opts = { target: process.cwd(), global: false, dryRun: false, check: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--target") {
@@ -68,6 +72,7 @@ function parseArgs(argv) {
     } else if (a === "--global") opts.global = true;
     else if (a === "--copy") continue;
     else if (a === "--dry-run") opts.dryRun = true;
+    else if (a === "--check") opts.check = true;
     else if (a === "-h" || a === "--help") {
       process.stdout.write(USAGE);
       process.exit(0);
@@ -118,8 +123,9 @@ function detectPython() {
 
 function main() {
   const opts = parseArgs(process.argv.slice(2));
-  const dry = opts.dryRun;
-  const say = (m) => process.stdout.write((dry ? "[dry-run] " : "") + m + "\n");
+  const check = opts.check;
+  const dry = opts.dryRun || check;
+  const say = (m) => check || process.stdout.write((opts.dryRun ? "[dry-run] " : "") + m + "\n");
 
   let target = null;
   let base;
@@ -154,9 +160,18 @@ function main() {
   say(`→ source: ${SRC}`);
   say(`→ base:   ${base}`);
 
+  // --check: every write/copy becomes a comparison against what is installed.
+  const drift = [];
+  const differs = (f, expected) => !fs.existsSync(f) || !fs.readFileSync(f).equals(expected);
   const mkdir = (d) => dry || fs.mkdirSync(d, { recursive: true });
-  const write = (f, data) => dry || fs.writeFileSync(f, data, "utf8");
-  const copy = (from, to) => dry || fs.copyFileSync(from, to);
+  const write = (f, data) => {
+    if (check) { if (differs(f, Buffer.from(data, "utf8"))) drift.push(f); return; }
+    dry || fs.writeFileSync(f, data, "utf8");
+  };
+  const copy = (from, to) => {
+    if (check) { if (differs(to, fs.readFileSync(from))) drift.push(to); return; }
+    dry || fs.copyFileSync(from, to);
+  };
 
   // 1. scripts
   mkdir(scriptsDir);
@@ -192,6 +207,7 @@ function main() {
   // 4. hooks
   mkdir(hooksDir);
   for (const [, , file] of HOOKS) copy(path.join(HOOKS_SRC, file), path.join(hooksDir, file));
+  for (const file of HOOK_HELPERS) copy(path.join(HOOKS_SRC, file), path.join(hooksDir, file));
   say(`  ${HOOKS.length} hooks → ${hooksDir}`);
 
   // 4b. saved workflows (Claude Code reads <base>/workflows/*.js)
@@ -199,6 +215,24 @@ function main() {
   const workflows = fs.readdirSync(WORKFLOWS_SRC).filter((f) => f.endsWith(".js"));
   for (const f of workflows) copy(path.join(WORKFLOWS_SRC, f), path.join(workflowsDir, f));
   say(`  ${workflows.length} workflows → ${workflowsDir}`);
+
+  // 4c. install stamp — which version/source these copies came from
+  const version = fs.readFileSync(path.join(SRC, "VERSION"), "utf8").trim();
+  const head = spawnSync("git", ["-C", SRC, "rev-parse", "--short", "HEAD"], { encoding: "utf8" });
+  const commit = !head.error && head.status === 0 ? head.stdout.trim() : "unknown";
+  if (check) {
+    const stampPath = path.join(sharedRoot, "INSTALLED");
+    const stamp = fs.existsSync(stampPath) ? fs.readFileSync(stampPath, "utf8") : "(no stamp)";
+    const lines = drift.map((f) => `  ✗ ${posix(f)}`);
+    process.stdout.write(
+      `installed: ${stamp.split("\n")[0]}\nsource:    HIVE ${version} (${commit})\n` +
+        (drift.length ? `drift (${drift.length}):\n${lines.join("\n")}\n→ re-run the installer to update\n`
+                      : "✓ installed copies are up to date\n"),
+    );
+    process.exit(drift.length ? 1 : 0);
+  }
+  mkdir(sharedRoot);
+  write(path.join(sharedRoot, "INSTALLED"), `HIVE ${version} (${commit})\nsource: ${posix(SRC)}\n`);
 
   // 5. CLAUDE.md (project only, never overwritten)
   if (target) {
@@ -276,7 +310,7 @@ function main() {
   }
 
   say("");
-  say("✓ HIVE harness installed. Restart Claude Code, then try /hive:discover");
+  say("✓ HIVE harness installed. Restart Claude Code, then start with /hive:spec (idea or requirements doc) or /hive:map-codebase (existing code)");
 }
 
 main();

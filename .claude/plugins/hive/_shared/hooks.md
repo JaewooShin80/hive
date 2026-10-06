@@ -12,7 +12,7 @@
 | hive-secret-guard.js | PreToolUse | Write\|Edit | 글로벌·보안 | 시크릿 토큰/키 패턴 또는 민감 파일 경로 차단 | exit 2 차단 |
 | hive-bash-guard.js | PreToolUse | Bash | 글로벌·보안 | 파괴적 쉘 명령(rm -rf /, force push, fork bomb 등) 차단 | exit 2 차단 |
 | hive-ctx-guard.js | PostToolUse | Bash\|Edit\|Write\|MultiEdit\|Agent\|Task | 글로벌·제어 | 컨텍스트 사용률 70/80% 경고 emit (RULE 5 강제) | exit 0 advisory |
-| hive-worklog-auto.js | PostToolUse | Edit\|Write\|MultiEdit | 프로젝트·워크플로우 | WORKLOG.md `## 자동 기록` 섹션에 편집 경로 자동 append | exit 0 |
+| hive-worklog-auto.js | PostToolUse | Edit\|Write\|MultiEdit | 프로젝트·워크플로우 | 편집한 파일에서 git 루트까지 올라가며 찾은 WORKLOG.md 의 `## 자동 기록` 섹션에 경로 append (세션 cwd 와 무관) | exit 0 |
 | hive-session-start.js | SessionStart | - | 프로젝트·워크플로우 | PLAN.md 파싱해 현재 Wave 위치/진척% 주입 | exit 0 advisory |
 | hive-wave-gate.js | PostToolUse | Bash | 프로젝트·워크플로우 | `feat(wave-N)` 커밋 감지 시 보안 리뷰 명령 안내 | exit 0 advisory |
 
@@ -44,8 +44,8 @@
 
 ## 4. hive-worklog-auto.js
 - 이벤트: PostToolUse(Edit\|Write\|MultiEdit)
-- 동작: cwd에 WORKLOG.md 존재 시 `## 자동 기록` 섹션에 `- YYYY-MM-DD HH:MM <상대경로>` append
-- 가드: WORKLOG.md self-edit / cwd 밖 / `.git/` prefix → skip
+- 동작: 편집한 파일 위치에서 git 루트까지 올라가며 처음 만나는 WORKLOG.md 의 `## 자동 기록` 섹션에 `- YYYY-MM-DD HH:MM <프로젝트 상대경로>` append (세션 cwd 가 다른 폴더여도 기록)
+- 가드: WORKLOG.md self-edit / `.git/` prefix / git 루트까지 WORKLOG.md 없음 → skip
 - 섹션 없으면: 파일 끝에 자동 생성
 - 비활성: 프로젝트에 WORKLOG.md 미존재 시 자동 무음, 또는 settings.json 엔트리 제거
 
@@ -54,7 +54,7 @@
 - 동작: cwd에 PLAN.md 가 있으면 `## Wave N:`/`### Wave N:` 블록의 완료 기준 체크박스를 세어 현재 Wave + 진척% 출력 (ROADMAP.md 는 선택 — 있으면 다음 단계로 milestone 안내)
 - 출력: `hookSpecificOutput.additionalContext` JSON
 - 가드: 1MB PLAN.md 크기 제한, 루트 cwd 거부
-- 3 파일 중 하나라도 없으면 자동 무음 (비-HIVE 프로젝트에서 무해)
+- PLAN.md 가 없으면 자동 무음 (비-HIVE 프로젝트에서 무해)
 
 ## 6. hive-wave-gate.js
 - 이벤트: PostToolUse(Bash)
@@ -90,3 +90,9 @@ GSD 원본은 `gsd-build/get-shit-done` → [`open-gsd/gsd-core`](https://github
 - 상위 SKILLS 인덱스: [`../SKILLS.md`](../SKILLS.md)
 - CLAUDE.md "## Hooks" 섹션 (프로젝트 루트)
 - Wave 1·2·3 산출물 기록: WORKLOG.md
+
+## 중복 실행 방지 (전역 + 프로젝트 동시 설치)
+
+전역(`~/.claude/hooks`)과 프로젝트(`.claude/settings.json`) 양쪽에 같은 hook 이 등록되면 Claude Code 는 둘 다 실행한다. 모든 `hive-*` hook 은 시작 시 `hive-hook-dedupe.js`를 호출해, **전역 사본이면서 현재 프로젝트 설정에 같은 hook 파일이 등록돼 있으면 스스로 종료**한다 (프로젝트 사본만 실행). 헬퍼는 설치기가 hooks 디렉토리에 함께 복사하며 settings 에 등록하지 않는다.
+
+설치본이 원본과 같은지 확인: `bash install.sh --global --check` (다르면 목록 출력 + exit 1, 아무것도 쓰지 않음).

@@ -103,7 +103,10 @@ echo '{}' | node scripts/hive-status.js
 /hive:
 # 자동완성에 24개 스킬 노출 (discover, plan, execute, ...)
 
-# 3) 진척 대시보드
+# 3) 설치본이 이 소스와 같은지 (원본 수정 후 재설치 필요 여부)
+bash install.sh --global --check     # 다르면 파일 목록 + exit 1
+
+# 4) 진척 대시보드
 /hive:progress
 # ROADMAP.md/PLAN.md 있으면 Milestone·Phase·Wave 진척률 표시
 ```

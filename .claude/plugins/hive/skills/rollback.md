@@ -122,10 +122,12 @@ cp WORKLOG.md WORKLOG.md.backup
 | 전략 | 사용 시점 | 명령어 | 위험도 |
 |------|-----------|--------|--------|
 | **revert** (권장) | 원격에 이미 push된 경우 | `git revert <range>` | 낮음 — 히스토리 보존 |
-| **reset** | 원격 미반영, 로컬 전용 | `git reset --hard <hash>` | 높음 — 히스토리 삭제 |
+| **reset** | 원격 미반영, 로컬 전용 | `git reset --keep <hash>` | 높음 — 히스토리 삭제 (백업 브랜치로 복구 가능) |
 | **cherry-pick 보존** | 중요 commit만 선별 유지 | `git cherry-pick <hash>` | 낮음 |
 
 기본값은 **revert**. 원격 미반영이 확인된 경우에만 reset을 사용자에게 제안한다.
+
+`git reset --hard`는 쓰지 않는다 — HIVE `settings.json`의 `permissions.deny`(`Bash(git reset --hard *)`)가 막는다. 작업 트리가 깨끗하면(CHECK-5) `git reset --keep`이 같은 결과를 내고, 로컬 변경이 날아갈 상황이면 실행을 거부해 더 안전하다.
 
 보안 수정 commit은 무조건 제거하지 않고 cherry-pick 보존 여부를 사용자에게 확인한다.
 
@@ -136,8 +138,8 @@ cp WORKLOG.md WORKLOG.md.backup
 Sonnet 서브에이전트가 선택된 전략으로 적용한다.
 
 - **revert:** `git revert <oldest_hash>^..<HEAD> --no-edit`
-- **reset:** `git reset --hard <target_hash>`
-- **cherry-pick 보존:** reset 후 `git cherry-pick <security_hash>`
+- **reset:** `git reset --keep <target_hash>`
+- **cherry-pick 보존:** reset(`--keep`) 후 `git cherry-pick <security_hash>`
 
 적용 중 충돌 발생 시 즉시 중단하고 사용자에게 충돌 파일을 안내한다. 자동 해결을 시도하지 않는다.
 

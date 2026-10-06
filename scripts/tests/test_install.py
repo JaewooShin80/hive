@@ -274,6 +274,31 @@ class TestGlobalInstall(_Base):
             self.assertEqual(len(_all_hook_commands(settings)), len(HOOK_FILES))
             self.assertIn("hive-status.js", settings["statusLine"]["command"])
 
+    def test_check_reports_up_to_date_then_drift(self):  # H-15
+        with tempfile.TemporaryDirectory() as d:
+            home = Path(d).resolve()
+            self.assertEqual(self._run("--global", home=home).returncode, 0)
+            ok = self._run("--global", "--check", home=home)
+            self.assertEqual(ok.returncode, 0, ok.stdout + ok.stderr)
+            self.assertIn("up to date", ok.stdout)
+            plan = home / ".claude" / "commands" / "hive" / "plan.md"
+            plan.write_text(plan.read_text(encoding="utf-8") + "\nlocal edit\n", encoding="utf-8")
+            (home / ".claude" / "hooks" / "hive-wave-gate.js").unlink()
+            bad = self._run("--global", "--check", home=home)
+            self.assertEqual(bad.returncode, 1)
+            self.assertIn("plan.md", bad.stdout)
+            self.assertIn("hive-wave-gate.js", bad.stdout)
+            self.assertEqual(plan.read_text(encoding="utf-8").count("local edit"), 1, "--check must not write")
+
+    def test_install_writes_version_stamp_and_dedupe_helper(self):  # H-15, H-14
+        with tempfile.TemporaryDirectory() as d:
+            home = Path(d).resolve()
+            self._run("--global", home=home)
+            stamp = (home / ".claude" / "hive" / "INSTALLED").read_text(encoding="utf-8")
+            self.assertIn((REPO_ROOT / "VERSION").read_text(encoding="utf-8").strip(), stamp)
+            self.assertIn("source:", stamp)
+            self.assertTrue((home / ".claude" / "hooks" / "hive-hook-dedupe.js").is_file())
+
     def test_global_refuses_to_write_through_symlink_into_source(self):
         with tempfile.TemporaryDirectory() as d:
             home = Path(d).resolve()

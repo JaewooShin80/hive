@@ -67,7 +67,8 @@ class TestSettingsJson(unittest.TestCase):
 
     def test_all_six_hive_hooks_registered(self):
         blob = json.dumps(self.data["hooks"])
-        for f in sorted((REPO_ROOT / ".claude" / "hooks").glob("hive-*.js")):
+        for f in sorted(p for p in (REPO_ROOT / ".claude" / "hooks").glob("hive-*.js")
+                       if p.name != "hive-hook-dedupe.js"):  # shared helper, not a hook
             with self.subTest(hook=f.name):
                 self.assertEqual(blob.count(f.name), 1)
 
