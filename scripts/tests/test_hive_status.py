@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import re
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -19,6 +20,7 @@ _SRC = _HERE.parent.parent / "hive-status.py"
 def _load_module():
     spec = importlib.util.spec_from_file_location("hive_status", _SRC)
     mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod  # @dataclass resolves annotations via sys.modules
     spec.loader.exec_module(mod)
     return mod
 
@@ -64,19 +66,19 @@ class TestPctLabel(unittest.TestCase):
 class TestGetModel(unittest.TestCase):
     def test_strips_claude_prefix(self):
         data = {"model": {"display_name": "claude-opus-4-7"}}
-        self.assertEqual(hive_status.get_model(data), "opus-4-7")
+        self.assertEqual(hive_status.get_model(data)[0], "opus-4-7")
 
     def test_falls_back_to_id(self):
         data = {"model": {"id": "claude-sonnet-4-6"}}
-        self.assertEqual(hive_status.get_model(data), "sonnet-4-6")
+        self.assertEqual(hive_status.get_model(data)[0], "sonnet-4-6")
 
     def test_strips_control_chars(self):
         data = {"model": {"display_name": "claude-\x01opus\x07"}}
-        self.assertEqual(hive_status.get_model(data), "opus")
+        self.assertEqual(hive_status.get_model(data)[0], "opus")
 
     def test_truncates_to_20_chars(self):
         data = {"model": {"display_name": "x" * 50}}
-        self.assertEqual(len(hive_status.get_model(data)), 20)
+        self.assertEqual(len(hive_status.get_model(data)[0]), 20)
 
 
 class TestGetWaveProgress(unittest.TestCase):
@@ -85,7 +87,7 @@ class TestGetWaveProgress(unittest.TestCase):
             cwd = os.getcwd()
             os.chdir(d)
             try:
-                self.assertEqual(hive_status.get_wave_progress(), (0, 0))
+                self.assertEqual(hive_status.get_wave_progress_fallback({"cwd": d}), (0, 0))
             finally:
                 os.chdir(cwd)
 
@@ -101,7 +103,7 @@ class TestGetWaveProgress(unittest.TestCase):
                     "- [ ] Wave 4: tests\n",
                     encoding="utf-8",
                 )
-                self.assertEqual(hive_status.get_wave_progress(), (2, 4))
+                self.assertEqual(hive_status.get_wave_progress_fallback({"cwd": d}), (2, 4))
             finally:
                 os.chdir(cwd)
 
@@ -128,11 +130,18 @@ class TestGetContextPct(unittest.TestCase):
 
 class TestGetRateLimit(unittest.TestCase):
     def test_missing_returns_none(self):
-        self.assertIsNone(hive_status.get_rate_limit({}, "five_hour"))
+        self.assertIsNone(hive_status.get_rate_limit({}, "five_hour")[0])
 
     def test_returns_used_percentage(self):
         data = {"rate_limits": {"five_hour": {"used_percentage": 42.5}}}
-        self.assertEqual(hive_status.get_rate_limit(data, "five_hour"), 42.5)
+        self.assertEqual(hive_status.get_rate_limit(data, "five_hour")[0], 42.5)
+
+
+class TestGetEffort(unittest.TestCase):
+    def test_dict_effort_uses_level(self):
+        os.environ.pop("HIVE_EFFORT", None)
+        data = {"effort": {"level": "high"}}
+        self.assertEqual(hive_status.get_effort(data)[0], "high")
 
 
 class TestGetCost(unittest.TestCase):

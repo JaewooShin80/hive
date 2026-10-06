@@ -207,6 +207,10 @@ def get_effort(data: dict) -> Optional[Tuple[str, str]]:
     for c in candidates:
         if c is None:
             continue
+        if isinstance(c, dict):
+            c = c.get("level") or c.get("value")
+            if not c:
+                continue
         s = str(c).strip().lower()
         if not s or s in ("default", "normal", "none"):
             continue
