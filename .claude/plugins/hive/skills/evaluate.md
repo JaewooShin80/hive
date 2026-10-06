@@ -84,7 +84,7 @@ CLAUDE.md RULE 5 (70/80%). 70% 초과 시 `/compact` 권장.
 1. Playwright MCP를 통해 `target` URL로 navigation.
 2. 페이지 콘텐츠를 추출 (DOM textContent 또는 HTML source).
 3. `assert` 정규식/substring으로 매칭.
-4. **MCP 미가용 시:** `tests/mock-app/evaluate_harness.py` 같은 stub harness로 대체 실행 (오프라인 검증). 결과 동일 포맷.
+4. **MCP 미가용 시:** 동봉 실행기로 대체한다 — `python3 scripts/hive_evaluate.py [--wave N | --feature ID]` (http(s)는 GET 본문, file://·상대경로는 파일 내용을 `assert`와 매칭, cmd 는 아래 3-3 규칙, 위험 명령 거부). 결과·출력 형식은 4단계와 같다.
 5. 매치 → `passing` / 불일치 → `failing` / 네트워크 오류 → `partial`.
 
 ### 3-3. type = "cmd" (shell)
@@ -132,7 +132,7 @@ CLAUDE.md RULE 5 (70/80%). 70% 초과 시 `/compact` 권장.
 
 ## verify 필드 추가 가이드 (작성 시점)
 
-`/hive:plan` 또는 수동 편집 시 `verify`를 추가하면 자동 검증 가능.
+`/hive:plan`에서 PLAN.md 완료 기준 끝에 ``(verify: `<명령>`)``를 붙이면 `scripts/gen_feature_list.py`가 `verify: {type: "cmd", target: <명령>, assert: "passed"}`로 채운다 (예: ``- [ ] [F1] 업로드 API (verify: `.venv/bin/pytest -q tests/test_api.py`)``). 수동 편집도 가능하다.
 없어도 기존 흐름 유지 (graceful).
 
 ```json

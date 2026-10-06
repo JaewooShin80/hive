@@ -21,7 +21,7 @@ const PLUGIN_SRC = path.join(SRC, ".claude", "plugins", "hive");
 const HOOKS_SRC = path.join(SRC, ".claude", "hooks");
 const WORKFLOWS_SRC = path.join(SRC, ".claude", "workflows");
 const TEMPLATE_SETTINGS = path.join(SRC, ".claude", "settings.json");
-const SCRIPTS = ["hive-status.js", "hive-status.py", "hive_progress.py", "gen_feature_list.py"];
+const SCRIPTS = ["hive-status.js", "hive-status.py", "hive_progress.py", "gen_feature_list.py", "hive_evaluate.py"];
 
 // [event, matcher|null, file] — mirrors _shared/hooks.md
 const HOOKS = [

@@ -147,7 +147,7 @@ class TestProjectInstall(_Base):
         for name in HOOK_FILES:
             with self.subTest(hook=name):
                 self.assertTrue((self.target / ".claude" / "hooks" / name).is_file())
-        for name in ("hive-status.js", "hive-status.py", "hive_progress.py", "gen_feature_list.py"):
+        for name in ("hive-status.js", "hive-status.py", "hive_progress.py", "gen_feature_list.py", "hive_evaluate.py"):
             with self.subTest(script=name):
                 self.assertTrue((self.target / "scripts" / name).is_file())
 

@@ -1,6 +1,6 @@
 ---
 name: hive:progress
-description: Display project progress dashboard — milestone, phase progression, wave completion percentages, current position, and next recommended command. Reads ROADMAP.md and PLAN.md.
+description: Display project progress dashboard — milestone, phase progression, wave completion percentages, current position, and next recommended command. Reads PLAN.md checkboxes (ROADMAP.md optional).
 allowed-tools:
   - Bash
   - Read
@@ -20,8 +20,10 @@ ROADMAP.md와 PLAN.md를 읽어 마일스톤 진행률, Phase별 진척, 현재 
 
 ## 동작
 
-1. `ROADMAP.md` / `PLAN.md` 부재 시 안내 후 중단:
-   > "ROADMAP.md 또는 PLAN.md 없음. `/hive:roadmap init`을 먼저 실행하세요."
+1. `PLAN.md` 부재 시 안내 후 중단:
+   > "PLAN.md 없음. `/hive:plan`으로 Wave 플랜을 먼저 만드세요."
+
+   `ROADMAP.md`는 선택이다. 없으면 Phase 없이 Wave 진척과 기능 검증 수만 보여준다. 진척의 원천은 PLAN.md 각 Wave의 완료 기준 체크박스다.
 
 2. 헬퍼 스크립트 실행:
 
@@ -37,6 +39,7 @@ python3 scripts/hive_progress.py
    - 현재 Phase에 미완료 Wave 있음 → `/hive:execute`
    - 현재 Phase 완료, 다음 Phase 있음 → `/hive:plan phase N`
    - 모든 Phase 완료 → `/hive:milestone audit`
+   - ROADMAP 없이 모든 Wave 완료 → `/hive:playwright` → `/hive:uat`
 
 ---
 

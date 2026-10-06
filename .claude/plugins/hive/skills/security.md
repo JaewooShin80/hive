@@ -1,7 +1,7 @@
 ---
 name: hive:security
-description: 5-domain security review (OWASP/AI-LLM/API/Secrets/Dependencies)
-argument-hint: [wave <N>]
+description: 5-domain security review (OWASP+Availability/AI-LLM/API/Secrets/Dependencies)
+argument-hint: "[wave <N>] [--auto] [--no-commit]"
 allowed-tools:
   - Read
   - Write
@@ -32,15 +32,29 @@ Advisor로서 코드베이스를 OWASP Top 10, AI/LLM 보안, API 보안, 시크
 
 ---
 
+## 0단계: 사전 조건 · 위협 모델 · 적용 도메인
+
+1. 사전 조건 ([`_shared/prerequisites.md`](../_shared/prerequisites.md)): git(CHECK-1), 컨텍스트(CHECK-7). WORKLOG.md·PLAN.md 는 있으면 읽고 없어도 진행한다.
+2. **위협 모델**을 정한다 — `REQUIREMENTS.md`(사용자·비기능 요구)와 `ARCHITECTURE.md`(배포·실행 환경)에서:
+   - 사용자 유형: 단일 사용자 / 다중 사용자 / 외부 공개
+   - 노출 범위: 로컬(127.0.0.1) / 사내망 / 인터넷
+   - 다루는 민감정보 (개인정보·결제·비밀)와 NFR (예: "사내망 단독", "개인정보 로컬 저장")
+3. **스택 감지 → 적용 도메인 결정**. 해당 없는 항목은 검사하지 않고 리포트에 `N/A (사유)`로 적는다:
+   - 로그인/세션/JWT 코드가 없고 위협 모델이 단일 사용자·로컬 → A2·A4·JWT·인증 레이트리밋 = N/A (대신 "바인딩 주소가 127.0.0.1 인가"를 확인)
+   - LLM 호출이 없음 → Domain 2 = N/A
+   - 언어별 패턴만 쓴다: Python(sqlite3 는 `?`, psycopg 는 `%s`), Jinja2/Django 템플릿, React/Vanilla JS, Node 등
+4. 설계상 의도(예: 무인증 단일 사용자 로컬 앱)는 Red Flag 판정 시 그대로 반영한다 — 아래 "Red Flags"의 조건을 따른다.
+
 ## 1단계: 스캔 범위 결정
 
-1. 인수가 `wave N` 형태이면 다음 명령으로 변경 파일 목록을 가져온다:
+1. 인수가 `wave N` 형태이면 그 Wave 커밋들의 변경 파일만 대상으로 한다 (마지막 커밋만 보는 `HEAD~1`은 쓰지 않는다):
    ```bash
-   git diff HEAD~1 --name-only
+   git log --format=%H --grep="^feat(wave-N)" --grep="(wave-N)" | tail -1   # 가장 오래된 Wave N 커밋
+   git diff --name-only <그 커밋>^ HEAD                                        # Wave N 이후 변경 파일
    ```
-   해당 파일만 스캔 대상으로 한다. 스캔 범위를 `Wave N`으로 기록한다.
+   커밋을 못 찾으면 전체 스캔으로 전환하고 그 사실을 리포트에 적는다. 스캔 범위를 `Wave N`으로 기록한다.
 
-2. 인수가 없으면 프로젝트 전체 소스 파일을 스캔 대상으로 한다. 스캔 범위를 `전체`로 기록한다.
+2. 인수가 없으면 프로젝트 전체 소스 파일을 스캔 대상으로 한다 (`git ls-files`; 의존성·빌드 산출물 제외). 스캔 범위를 `전체`로 기록한다.
 
 3. `ARCHITECTURE.md`가 존재하면 읽어 기술 스택과 프레임워크를 파악한다. 프레임워크별 취약점 패턴이 달라지므로 반드시 확인한다.
 
@@ -59,9 +73,9 @@ Advisor로서 코드베이스를 OWASP Top 10, AI/LLM 보안, API 보안, 시크
 
 안전 패턴 (무시):
 ```python
-# GOOD
-cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-user = await prisma.user.findUnique(where={"id": user_id})
+# GOOD — 드라이버별 플레이스홀더: sqlite3 `?`, psycopg/mysql `%s`, SQLAlchemy `:name`
+cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))         # sqlite3
+cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))        # psycopg
 ```
 
 위험 패턴:
@@ -82,8 +96,8 @@ cursor.execute(query)
 # GOOD
 jwt.decode(token, key, algorithms=["HS256"], options={"require": ["exp", "iss"]})
 
-# Session cookie
-cookie: { httpOnly: True, secure: True, sameSite: "lax", maxAge: 86400 }
+# Session cookie (FastAPI/Starlette)
+response.set_cookie("session", token, httponly=True, secure=True, samesite="lax", max_age=86400)
 ```
 
 ### A3. XSS (Cross-Site Scripting)
@@ -100,7 +114,12 @@ return <div>{userInput}</div>;
 // GOOD: DOMPurify sanitize
 import DOMPurify from 'dompurify';
 const clean = DOMPurify.sanitize(userInput);
+
+// GOOD: Vanilla JS — 사용자 데이터는 textContent 로만
+el.textContent = userInput;
 ```
+
+서버 렌더링(Jinja2/Django): autoescape 가 켜져 있는지(`Environment(autoescape=select_autoescape())`, Starlette `Jinja2Templates` 기본 on) 확인하고 `|safe`·`Markup()` 사용처를 전부 검토한다.
 
 ### A4. Broken Access Control (IDOR 포함)
 검색 패턴:
@@ -151,6 +170,25 @@ def sanitize_user(user):
 - 상태 변경 폼(POST/PUT/DELETE)에 CSRF 토큰 없음
 - `Set-Cookie`에 `SameSite` 속성 누락
 - CSRF 미들웨어 부재
+
+위협 모델별 판정:
+- 쿠키 세션 인증이 있음 → 토큰 또는 SameSite=strict/lax 필수, 없으면 ⚠️ 경고 (민감 작업이면 ❌)
+- 무인증 로컬/사내망 앱 → 다른 사이트가 사용자의 브라우저로 `http://127.0.0.1:<port>`에 POST 할 수 있다. `Origin`/`Host` 헤더 검사 미들웨어 또는 JSON 전용 엔드포인트(`Content-Type: application/json` 강제)로 막는다. 없으면 ⚠️ 경고.
+
+### A8. 가용성 · 자원 고갈 (DoS)
+요청 1건으로 서버가 멈추거나 메모리를 다 쓰면 **❌ 치명적**이다.
+검색 패턴:
+- 사용자 입력에 쓰이는 정규식의 중첩 반복: `(a+)+`, `(\d+,?)+`, `(x|xy)*` 류 → 실제로 긴 입력(예: 16KB 반복 문자)으로 시간 측정 (> 0.5s 면 ReDoS)
+- 업로드 크기 제한 없음, ZIP 기반 문서(docx/xlsx/pptx)의 압축 해제 크기·압축비 검사 없음 (zip bomb)
+- 숫자 입력 상·하한 없음 → DB 정수 오버플로(500), 음수 금액 등
+- 문자열 길이 상한 없음, 페이지네이션 없는 전체 조회, 무한 루프 가능한 재귀
+수정 예:
+```python
+amount: int = Field(ge=0, le=10**15)                 # 범위
+title: str = Field(max_length=200)                    # 길이
+text = text[:MAX_LINE]                                # 정규식 입력 길이 제한 + 선형 패턴 사용
+check_zip_safety(data, max_total=50 * 2**20, max_ratio=100)   # 압축폭탄
+```
 
 ---
 
@@ -290,10 +328,15 @@ Node.js 프로젝트:
 npm audit --json 2>/dev/null | head -200
 ```
 
-Python 프로젝트:
+Python 프로젝트 — **프로젝트 환경**을 감사한다 (전역 환경이 아니라):
 ```bash
-pip-audit 2>/dev/null || safety check 2>/dev/null
+# 1) 프로젝트 venv 에 pip-audit 가 있으면
+.venv/bin/pip-audit -r requirements.txt
+# 2) 없으면 설치 없이 일회 실행
+uvx pip-audit -r requirements.txt        # 또는: pipx run pip-audit -r requirements.txt
 ```
+- 도구를 하나도 쓸 수 없으면 "의존성 감사: 미실행 (사유)"로 리포트에 적는다. `2>/dev/null`로 오류를 숨기지 않는다.
+- `requirements.txt`/`package.json`에 버전 고정이 없으면 ⚠️ 경고 (재현 불가능한 빌드, 감사 결과가 설치 시점마다 달라짐).
 
 ### 심각도별 트리아지 기준
 
@@ -323,11 +366,13 @@ pip-audit 2>/dev/null || safety check 2>/dev/null
 
 ## 7단계: 결과 보고
 
-발견 사항을 아래 형식으로 보고한다. 이슈가 없는 섹션도 ✅ 통과로 명시한다.
+발견 사항을 아래 형식으로 보고하고 `docs/security/SECURITY-REVIEW-<YYYY-MM-DD>.md`에 저장한다 (같은 날 재실행이면 덮어쓴다). 이슈가 없는 섹션도 ✅ 통과, 적용하지 않은 섹션은 `N/A (사유)`로 명시한다.
+
+심각도는 [`_shared/output-format.md`](../_shared/output-format.md)와 다음과 같이 대응한다: ❌ 치명적 = CRITICAL/HIGH · ⚠️ 경고 = MEDIUM · ℹ️ 정보 = LOW.
 
 ```markdown
 ## HIVE 보안 검토 결과 — <날짜>
-Wave: <N> | 스캔 범위: <전체/Wave N>
+스캔 범위: <전체 | Wave N (커밋 a1b2c3..d4e5f6)> | 위협 모델: <단일 사용자·로컬 | …>
 
 ### ❌ 치명적 이슈 (즉시 수정 필요)
 - [OWASP-SQL] `app/api/users.py:42` — Raw SQL query without parameterization
@@ -339,6 +384,13 @@ Wave: <N> | 스캔 범위: <전체/Wave N>
 
 ### ℹ️ 정보 (다음 Wave에서 개선 고려)
 - [LLM-RATE] `app/api/chat.py:88` — LLM 엔드포인트에 레이트 리밋 없음 (현재 내부 전용이므로 저위험)
+
+### N/A (적용 안 함)
+- AI/LLM: LLM 호출 없음
+- A2/A4/JWT: 인증 없음 — 설계상 단일 사용자 로컬 (127.0.0.1 바인딩 확인)
+
+### 요구사항 대비 (NFR)
+- NFR-01 사내망 단독: 외부 전송 코드 없음 ✅
 
 ### ✅ 통과 항목
 - OWASP: 전체 SQL 쿼리에 파라미터화 사용
@@ -356,17 +408,16 @@ Wave: <N> | 스캔 범위: <전체/Wave N>
 
 1. **코드 수정:** Advisor가 직접 해당 파일을 수정한다. 수정 전 원본 코드를 보고서에 기록한다.
 
-2. **테스트 실행:** 수정된 파일과 관련된 테스트를 실행한다:
-   ```bash
-   pytest tests/ -k "<관련 모듈명>" -v
-   ```
-   테스트가 실패하면 수정 사항을 재검토하고 다시 수정한다.
+2. **회귀 테스트 추가 후 전체 테스트 실행:** 취약점을 재현하는 테스트(예: 긴 입력 시간 제한, 거대 금액 422)를 먼저 추가하고, PLAN.md 공통 규약의 테스트 명령(없으면 프로젝트 테스트 명령)으로 **전체** 스위트를 실행한다. 실패하면 수정 사항을 재검토한다.
 
-3. **Git 커밋:** 테스트 통과 후 보안 수정을 커밋한다:
+3. **Git 커밋:** `--no-commit`이 아니면 테스트 통과 후 커밋한다 ([`_shared/git-commit.md`](../_shared/git-commit.md)):
    ```bash
-   git add <수정된 파일>
+   git add <수정된 파일> <추가한 테스트>
    git commit -m "fix(security): <수정 내용 한 줄 요약>"
    ```
+   `--no-commit`이면 수정만 하고 커밋은 호출자(Advisor)에게 맡긴다.
+
+4. **설계 결정이 필요한 수정**(예: 인증 체계 도입)은 자동 수정하지 않는다. 리포트에 선택지와 함께 남기고 사용자 확인을 받는다 (`--auto`면 WORKLOG "미결 이슈"에 기록).
 
 ---
 
@@ -381,6 +432,8 @@ Wave: <N> | 스캔 범위: <전체/Wave N>
 
 사용자가 즉시 수정을 요청하면 8단계와 동일한 절차로 처리한다.
 
+`--auto`([`_shared/auto-mode.md`](../_shared/auto-mode.md))면 묻지 않는다: 수정 범위가 작고 테스트로 검증 가능한 경고(입력 상한, 보안 헤더, Origin 검사)는 8단계 절차로 수정하고, 나머지는 WORKLOG.md "미결 이슈"에 `[보안] <항목> — <파일:라인>`으로 남긴다.
+
 ---
 
 ## 10단계: WORKLOG.md 업데이트
@@ -390,11 +443,12 @@ Wave: <N> | 스캔 범위: <전체/Wave N>
 ```markdown
 ## [YYYY-MM-DD] 보안 검토 완료
 - 스캔 범위: <전체/Wave N>
-- 치명적 이슈: <N>건 (모두 즉시 수정 완료)
-- 경고: <N>건
+- 리포트: docs/security/SECURITY-REVIEW-YYYY-MM-DD.md
+- 치명적 이슈: <N>건 (수정 <a>건 / 미수정 <b>건 — 사유)
+- 경고: <N>건 (수정 <c>건 / 보류 <d>건 → 미결 이슈)
 - 정보: <N>건
-- 통과: <N>개 항목
-- 의존성 감사: Critical <N>건 / High <N>건
+- N/A 도메인: <목록>
+- 의존성 감사: Critical <N>건 / High <N>건 (또는 미실행 — 사유)
 ```
 
 ---
@@ -404,8 +458,8 @@ Wave: <N> | 스캔 범위: <전체/Wave N>
 다음 메시지를 출력한다:
 
 > "보안 검토 완료.
-> ❌ 치명적: <N>건 수정됨 | ⚠️ 경고: <N>건 | ✅ 통과: <N>개 항목
-> 자세한 내용은 위 보고서를 참고하세요."
+> ❌ 치명적: <N>건 (수정 <a>) | ⚠️ 경고: <N>건 (수정 <c> / 보류 <d>) | ℹ️ 정보: <N>건 | N/A: <도메인 수>
+> 리포트: docs/security/SECURITY-REVIEW-YYYY-MM-DD.md"
 
 ---
 
@@ -413,7 +467,7 @@ Wave: <N> | 스캔 범위: <전체/Wave N>
 
 | 심각도 | 기준 | 처리 방법 |
 |--------|------|-----------|
-| ❌ 치명적 | 데이터 유출, 인증 우회, RCE 가능성, 하드코딩 시크릿, Critical 의존성 취약점 | 즉시 자동 수정 |
+| ❌ 치명적 | 데이터 유출, 인증 우회, RCE 가능성, 하드코딩 시크릿, Critical 의존성 취약점, **요청 1건으로 서버 정지·메모리 고갈(ReDoS·zip bomb·무제한 입력)** | 즉시 자동 수정 |
 | ⚠️ 경고 | 보안 모범 사례 위반, 잠재적 위험 | 사용자 확인 후 수정 |
 | ℹ️ 정보 | 개선 권장 사항, 저위험 이슈 | 다음 Wave에서 고려 |
 
@@ -423,7 +477,8 @@ Wave: <N> | 스캔 범위: <전체/Wave N>
 
 - 사용자 입력이 DB 쿼리, 셸 명령, HTML 렌더링에 직접 전달됨
 - 소스 코드 또는 커밋 히스토리에 시크릿 존재
-- 인증/인가 없는 API 엔드포인트
+- 인증/인가 없는 API 엔드포인트 — **단, 위협 모델이 "단일 사용자·로컬(127.0.0.1)"로 요구사항에 명시돼 있고 바인딩이 127.0.0.1 이면 ℹ️ 정보**로 기록 (0.0.0.0 바인딩·사내망·인터넷 노출이면 치명적)
+- 사용자 입력에 대한 지수 시간 정규식(ReDoS), 압축 해제 크기 검사 없는 업로드
 - 와일드카드(`*`) CORS 설정
 - 인증 엔드포인트에 레이트 리밋 없음
 - 사용자에게 스택 트레이스 노출

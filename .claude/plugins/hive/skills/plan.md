@@ -222,6 +222,7 @@ python3 scripts/gen_feature_list.py            # milestone 은 ROADMAP.md 에서
 - 각 Wave의 "완료 기준" 체크박스 1개 = feature 1개. `id`는 `W{wave}-F{idx}`, `status`는 `"pending"`(이미 `[x]`면 `"passing"`).
 - `title`·`pass_criteria`는 완료 기준 문장 그대로. REQUIREMENTS.md 기능에서 온 기준은 PLAN 에 미리 `[F3] …`처럼 기능 ID를 붙여 쓴다.
 - 파일이 이미 있으면(다음 Phase) **새 id 만 추가**하고 기존 항목의 `status`·`verify`는 보존한다.
+- 자동 검증할 수 있는 기준은 PLAN.md 에 ``(verify: `<test_cmd> <테스트 파일>`)``를 붙여 쓴다 → `verify` 필드가 생겨 `/hive:evaluate`가 라이브로 확인한다.
 
 ---
 

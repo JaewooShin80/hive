@@ -1,6 +1,6 @@
 ---
 name: hive:milestone
-description: Manage project milestones (semver tags). Subcommands new/complete/audit handle milestone lifecycle from start to git tag. Use new at project start, audit before declaring done, complete to tag.
+description: Manage project milestones (semver tags). Subcommands new/complete/audit handle milestone lifecycle from start to git tag. Use new after /hive:discover (it also creates ROADMAP.md), audit before declaring done, complete to tag.
 argument-hint: [new <semver> | complete | audit]
 allowed-tools:
   - Read

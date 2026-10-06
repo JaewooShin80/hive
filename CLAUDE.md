@@ -79,16 +79,16 @@
 | `/hive:grill-me` | Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test an idea or plan without codebase context. For code-aware sessions with CONTEXT.md updates, use /hive:grill instead. |
 | `/hive:map-codebase` | 4-parallel mappers for codebase analysis |
 | `/hive:migrate` | Dependency/framework migration |
-| `/hive:milestone` | Manage project milestones (semver tags). Subcommands new/complete/audit handle milestone lifecycle from start to git tag. Use new at project start, audit before declaring done, complete to tag. |
+| `/hive:milestone` | Manage project milestones (semver tags). Subcommands new/complete/audit handle milestone lifecycle from start to git tag. Use new after /hive:discover (it also creates ROADMAP.md), audit before declaring done, complete to tag. |
 | `/hive:plan` | Wave-based implementation plan creation |
 | `/hive:playwright` | E2E UI test generation with Playwright |
-| `/hive:progress` | Display project progress dashboard — milestone, phase progression, wave completion percentages, current position, and next recommended command. Reads ROADMAP.md and PLAN.md. |
+| `/hive:progress` | Display project progress dashboard — milestone, phase progression, wave completion percentages, current position, and next recommended command. Reads PLAN.md checkboxes (ROADMAP.md optional). |
 | `/hive:refactor` | Behavior-preserving incremental refactoring |
 | `/hive:roadmap` | Manage project roadmap (Phase-level grouping of Waves) and milestone metadata. Subcommands init/add-phase/update. Generates ROADMAP.md as the index above PLAN.md. |
 | `/hive:rollback` | Safe Wave-level rollback with backup |
-| `/hive:security` | 5-domain security review (OWASP/AI-LLM/API/Secrets/Dependencies) |
+| `/hive:security` | 5-domain security review (OWASP+Availability/AI-LLM/API/Secrets/Dependencies) |
 | `/hive:spec` | Use at the very start of a project or feature, before /hive:discover, to turn the user's description into confirmed requirements — users, feature list (Must/Should/Won't), core user flows, screens with text wireframes, and UI conditions. Writes REQUIREMENTS.md. Triggers on /hive:spec. |
-| `/hive:uat` | UAT scenarios + result collection |
+| `/hive:uat` | UAT scenarios + Playwright evidence capture (screenshots, video, trace) + result collection |
 | `/hive:worklog` | Work log for resumable sessions |
 | `/hive:worktree` | Parallel Wave via git worktrees |
 <!-- AUTO-INDEX:end -->

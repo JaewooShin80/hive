@@ -20,6 +20,8 @@ WAVE_RE = re.compile(r"^#{2,3}\s+Wave\s+(\d+)")
 CRITERIA_RE = re.compile(r"^\*\*완료 기준")
 BOX_RE = re.compile(r"^\s*- \[( |x|X)\]\s+(.+?)\s*$")
 MILESTONE_RE = re.compile(r"^>\s*\*\*마일스톤:\*\*\s+(\S+)", re.MULTILINE)
+# "- [ ] 기준 문장 (verify: `명령`)" → verify {type: cmd, target: 명령, assert: "passed"}
+VERIFY_RE = re.compile(r"\s*\(verify:\s*`([^`]+)`\)\s*$")
 
 
 def parse_criteria(plan_text):
@@ -80,8 +82,13 @@ def main():
         if fid in existing:
             features.append(existing.pop(fid))
             continue
-        features.append({"id": fid, "title": title, "wave": wave, "pass_criteria": title,
-                         "status": "passing" if checked else "pending"})
+        entry = {"id": fid, "title": title, "wave": wave, "pass_criteria": title,
+                 "status": "passing" if checked else "pending"}
+        vm = VERIFY_RE.search(title)
+        if vm:
+            entry["title"] = entry["pass_criteria"] = title[:vm.start()].rstrip()
+            entry["verify"] = {"type": "cmd", "target": vm.group(1), "assert": "passed"}
+        features.append(entry)
         added += 1
     features.extend(existing.values())  # ids no longer in PLAN are kept, never dropped silently
 

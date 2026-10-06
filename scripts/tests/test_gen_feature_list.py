@@ -88,6 +88,16 @@ class TestGenFeatureList(unittest.TestCase):
             self.assertIn("verify", feats[0])
             self.assertIn("added 1", out.stdout)
 
+    def test_verify_annotation_becomes_verify_object(self):  # H-29
+        plan = PLAN_P1.replace("- [ ] [F1] 업로드 API", "- [ ] [F1] 업로드 API (verify: `.venv/bin/pytest -q tests/test_api.py`)")
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, "PLAN.md").write_text(plan, encoding="utf-8")
+            self.run_gen(d)
+            f = self.load(d)["features"][1]
+            self.assertEqual(f["title"], "[F1] 업로드 API")
+            self.assertEqual(f["verify"], {"type": "cmd", "target": ".venv/bin/pytest -q tests/test_api.py",
+                                           "assert": "passed"})
+
     def test_missing_plan_fails(self):
         with tempfile.TemporaryDirectory() as d:
             out = self.run_gen(d)
