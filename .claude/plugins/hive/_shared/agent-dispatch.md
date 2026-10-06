@@ -5,7 +5,7 @@ Advisor(Opus)가 Sonnet/Haiku 서브에이전트를 디스패치할 때 사용�
 ## 핵심 원칙
 
 1. **Fresh context**: 매 호출마다 새 에이전트. 이전 대화 의존 금지.
-2. **Self-contained prompt**: 에이전트가 외부 문서 검색 없이 작업 가능하도록 모든 컨텍스트 포함.
+2. **Context pointers**: 코드·문서 내용을 복사하지 말고 위치(파일 경로·라인 범위, PLAN.md Wave 섹션, 커밋 해시)를 전달한다. 에이전트가 직접 읽는다. 복사본은 Advisor 컨텍스트를 소모하고, 병렬 실행 중 낡는다.
 3. **Explicit success criteria**: WHAT을 정의, HOW는 위임.
 4. **Status protocol**: 표준 응답 포맷 강제 (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED).
 
@@ -23,13 +23,11 @@ Advisor(Opus)가 Sonnet/Haiku 서브에이전트를 디스패치할 때 사용�
 ## Task Specification
 <구체적으로 무엇을 해야 하는지>
 
-## Inputs (필요한 모든 컨텍스트 포함)
-- 관련 파일 내용:
-  ```
-  <file content embedded>
-  ```
+## Inputs (포인터 — 직접 읽을 것)
+- 관련 파일: <경로:라인범위>
+- 플랜: PLAN.md "Wave <N>" 섹션 (Interfaces 블록 포함)
 - 의존성:
-  - <prior task가 만든 결과물 경로 + 주요 시그니처>
+  - <prior task가 만든 결과물 경로 또는 커밋 해시>
 
 ## Constraints
 - 코딩 스타일: <project convention>
