@@ -13,6 +13,13 @@ description: Use when starting a new project or feature and needing to select th
 
 ---
 
+## Step 0: REQUIREMENTS.md 확인
+
+- **있으면:** 읽고 입력으로 사용한다. Step 1~2를 건너뛰고 Step 3으로 간다. Step 3에서 `[핵심 기능]` 질문과 REQUIREMENTS.md에 이미 답이 있는 질문은 생략한다.
+- **없으면:** "요구사항·화면을 먼저 정리하려면 `/hive:spec`을 실행하세요. 바로 진행하려면 계속합니다."를 한 줄 출력하고 Step 1로 간다.
+
+---
+
 ## Step 1: 입력 방식 선택
 
 사용자에게 다음 중 하나를 선택하도록 안내한다. **반드시 이 메시지를 그대로 출력한다:**

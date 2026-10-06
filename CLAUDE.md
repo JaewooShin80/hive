@@ -87,6 +87,7 @@
 | `/hive:roadmap` | Manage project roadmap (Phase-level grouping of Waves) and milestone metadata. Subcommands init/add-phase/update. Generates ROADMAP.md as the index above PLAN.md. |
 | `/hive:rollback` | Safe Wave-level rollback with backup |
 | `/hive:security` | 5-domain security review (OWASP/AI-LLM/API/Secrets/Dependencies) |
+| `/hive:spec` | Use at the very start of a project or feature, before /hive:discover, to turn the user's description into confirmed requirements — users, feature list (Must/Should/Won't), core user flows, screens with text wireframes, and UI conditions. Writes REQUIREMENTS.md. Triggers on /hive:spec. |
 | `/hive:uat` | UAT scenarios + result collection |
 | `/hive:worklog` | Work log for resumable sessions |
 | `/hive:worktree` | Parallel Wave via git worktrees |
@@ -94,7 +95,7 @@
 
 | `/security-audit` | 정부 개발보안 가이드 기반 정적 점검 (웹/API 43항목 + AI/LLM 20항목 + Docker/NGINX) — `.claude/commands/security-audit.md` |
 
-**전체 23 스킬.** 카테고리/의존성 그래프: [`SKILLS.md`](.claude/plugins/hive/SKILLS.md)
+**전체 24 스킬.** 카테고리/의존성 그래프: [`SKILLS.md`](.claude/plugins/hive/SKILLS.md)
 **공통 표준:** [`_shared/`](.claude/plugins/hive/_shared/) (prerequisites, output-format, worklog-update, agent-dispatch, git-commit)
 
 ---

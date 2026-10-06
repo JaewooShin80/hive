@@ -48,7 +48,9 @@ Advisor로서 프로젝트의 기능 목록을 분석하고, 복잡도에 따라
 
 ## 2단계: 기능 목록 수집
 
-사용자에게 다음을 질문한다:
+`REQUIREMENTS.md`(`/hive:spec` 산출물)가 있으면 그 기능 목록(F1…)을 그대로 사용하고 질문하지 않는다. Must 기능은 모두 Wave에 배정하고, Should 기능은 배정 여부를 6단계 승인 때 확인한다.
+
+없으면 사용자에게 다음을 질문한다:
 
 > "개발할 기능 목록을 알려주세요. (직접 나열하거나, 요구사항 문서의 경로를 지정해주세요)"
 
@@ -151,6 +153,7 @@ Wave 3: <제목> [Large] — 예상 2~3일
 
 ### Wave 1: <제목> [Small]
 **목표:** <이 Wave가 달성해야 하는 명확한 목표>
+**담당 기능:** <REQUIREMENTS.md 기능 ID, 예: F1, F3 — 없으면 생략>
 
 **완료 기준 (Success Criteria):**
 - [ ] <구체적이고 검증 가능한 기준 1>
@@ -182,6 +185,17 @@ Wave 3: <제목> [Large] — 예상 2~3일
 ### Wave 2: <제목> [Medium]
 ...
 ```
+
+---
+
+## 7-1단계: feature-list.json 생성
+
+`PLAN.md`와 함께 프로젝트 루트에 `feature-list.json`을 만든다. 형식은 [`_shared/feature-list-schema.md`](../_shared/feature-list-schema.md)를 따른다.
+
+- 각 Wave의 완료 기준 1개 = feature 1개. `id`는 `W{wave}-F{idx}`, `status`는 `"pending"`.
+- `title`은 완료 기준 문장. REQUIREMENTS.md 기능에서 온 것이면 앞에 기능 ID를 붙인다 (예: `"[F3] 로그인 실패 시 오류 문구 표시"`).
+- `pass_criteria`는 예/아니오로 판단 가능한 한 문장.
+- 이미 파일이 있으면 덮어쓰지 말고 사용자에게 확인한다.
 
 ---
 

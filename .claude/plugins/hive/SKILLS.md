@@ -4,7 +4,7 @@ HIVE 워크플로우의 모든 스킬과 의존성 그래프.
 
 ## 스킬 카테고리
 
-### 🗣️ 정렬/언어 (4) — mattpocock 통합
+### 🗣️ 정렬/언어 (3) — mattpocock 통합
 구현 전 요구사항 정렬, 도메인 언어 확립.
 
 | 명령어 | 역할 |
@@ -13,11 +13,12 @@ HIVE 워크플로우의 모든 스킬과 의존성 그래프.
 | `/hive:grill-me` | 코드 무관 아이디어/플랜 인터뷰 |
 | `/hive:diagnose` | 재현→최소화→가설→계측→수정→회귀테스트 디버깅 루프 |
 
-### 🎯 핵심 워크플로우 (7)
+### 🎯 핵심 워크플로우 (8)
 프로젝트 시작부터 완료까지의 표준 흐름.
 
 | 명령어 | 단계 | 역할 |
 |--------|------|------|
+| `/hive:spec` | 요구 | 기능·흐름·화면 확정, REQUIREMENTS.md |
 | `/hive:discover` | 시작 | 아키텍처 결정 (제약 없음, 질문 합성) |
 | `/hive:plan` | 계획 | Wave 분해, PLAN.md 작성 |
 | `/hive:execute` | 구현 | Opus→Sonnet/Haiku 병렬 오케스트레이션 |
@@ -60,8 +61,8 @@ HIVE 워크플로우의 모든 스킬과 의존성 그래프.
 ## 의존성 그래프
 
 ```
-/hive:grill  →  /hive:discover  →  /hive:plan  →  /hive:execute
-(선택적 전처리)
+/hive:grill  →  /hive:spec  →  /hive:discover  →  /hive:plan  →  /hive:execute
+(선택적 전처리)  (REQUIREMENTS.md)
 
                 ┌──────────────────────────┐
                 │    /hive:map-codebase   │ (brownfield 시작)
@@ -123,6 +124,7 @@ HIVE 워크플로우의 모든 스킬과 의존성 그래프.
 
 | 스킬 | Advisor (Opus) | Worker (Sonnet) | Generator (Haiku) |
 |------|:---:|:---:|:---:|
+| spec | ●●● | - | - |
 | discover | ●●● | ○ | - |
 | plan | ●●● | ○ | - |
 | execute | ●● (조정/검토) | ●●● | ●● |
@@ -207,6 +209,7 @@ CLAUDE.md(1,100) + 스킬 1개 평균 사용 시: ~2,700 토큰 (Context의 1.4%
 | `/hive:roadmap` | Manage project roadmap (Phase-level grouping of Waves) and milestone metadata. Subcommands init/add-phase/update. Generates ROADMAP.md as the index above PLAN.md. |
 | `/hive:rollback` | Safe Wave-level rollback with backup |
 | `/hive:security` | 5-domain security review (OWASP/AI-LLM/API/Secrets/Dependencies) |
+| `/hive:spec` | Use at the very start of a project or feature, before /hive:discover, to turn the user's description into confirmed requirements — users, feature list (Must/Should/Won't), core user flows, screens with text wireframes, and UI conditions. Writes REQUIREMENTS.md. Triggers on /hive:spec. |
 | `/hive:uat` | UAT scenarios + result collection |
 | `/hive:worklog` | Work log for resumable sessions |
 | `/hive:worktree` | Parallel Wave via git worktrees |

@@ -2,7 +2,7 @@
 
 > **기준일**: 2026-05-08
 > **버전**: 2.1
-> **하네스**: HIVE v2 — 22 스킬 (16 HIVE + 3 mattpocock + 3 매니지먼트) + 보안 감사 스킬 + 자동 Hook
+> **하네스**: HIVE v2 — 23 스킬 (17 HIVE + 3 mattpocock + 3 매니지먼트) + 보안 감사 스킬 + 자동 Hook
 
 ---
 
@@ -20,9 +20,9 @@
 
 ## 스킬 전체 목록
 
-### HIVE 워크플로우 스킬 (19개)
+### HIVE 워크플로우 스킬 (20개)
 
-#### 정렬/언어 (4개) — mattpocock 통합
+#### 정렬/언어 (3개) — mattpocock 통합
 
 | 명령어 | 설명 |
 |---|---|
@@ -30,10 +30,11 @@
 | `/hive:grill-me` | 코드 무관 아이디어/플랜 인터뷰로 공유된 이해 도달 |
 | `/hive:diagnose` | 재현 우선 디버깅 루프 (재현→최소화→가설→계측→수정→회귀테스트) |
 
-#### 핵심 워크플로우 + 보조 도구 + 코드 조작 + 결정 (16개)
+#### 핵심 워크플로우 + 보조 도구 + 코드 조작 + 결정 (17개)
 
 | 명령어 | 설명 |
 |---|---|
+| `/hive:spec` | 사용자 설명을 듣고 기능 목록·핵심 흐름·화면(텍스트 와이어프레임)·UI 조건을 확정해 REQUIREMENTS.md 작성 |
 | `/hive:discover` | 프로젝트 구조 및 기존 코드베이스를 분석하여 컨텍스트를 수집한다 |
 | `/hive:plan` | 요구사항을 파악하고 구현 웨이브(wave)로 분해한 실행 계획을 생성한다 |
 | `/hive:execute` | 계획된 웨이브를 순서대로 실행하며 기능을 구현한다 |
@@ -88,7 +89,7 @@ Bash 도구로 git commit 실행
 ### 전체 흐름
 
 ```
-milestone new → roadmap init → grill → discover → plan(phase) → [execute → (auto)security] × N
+milestone new → roadmap init → grill → spec → discover → plan(phase) → [execute → (auto)security] × N
   → roadmap update → milestone audit → milestone complete (git tag) → playwright → uat
 ```
 
@@ -365,6 +366,7 @@ discover → map-codebase → grill → security-audit(before)
 |------|--------|
 | 뭘 만들지 모르겠다 | `/hive:grill-me` |
 | 요구사항이 모호하다 | `/hive:grill` |
+| 기능·화면을 먼저 정리 | `/hive:spec` |
 | 새 프로젝트 출발 (구조 결정) | `/hive:discover` |
 | 처음 보는 코드베이스 | `/hive:map-codebase` |
 | 두 옵션 사이 결정 | `/hive:compare` |
