@@ -346,6 +346,56 @@
 
 ---
 
+## 2026-10-06 — 업스트림 하네스 동기화 (GSD / superpowers / caveman / mattpocock / dynamic workflows)
+
+**컨텍스트:** GitHub 최신 하네스 조사 후 HIVE에 반영할 5개 항목을 도출하고 순서대로 처리. 모두 `JaewooShin80/hive` main에 푸시 완료, 로컬=원격.
+
+**처리 내역:**
+| # | 항목 | 결과 | 커밋 |
+|---|---|---|---|
+| 1 | GSD 이전 (`gsd-build/get-shit-done` → `open-gsd/gsd-core`) | HIVE는 GSD 무의존. 문서의 "GSD hook 9종 공존 / 65% 단계 경고" 서술 정정 | `31fe41e` |
+| 2 | superpowers v6.4.2 `writing-plans` | `/hive:plan`: Wave `Interfaces`(Consumes/Produces), 승인 전 자체 검토 4항목, 구현 금지 규칙 | `7ca53c9` |
+| 3 | caveman v3.1.0 | 재측정 절감률 ~3%(기존 "75%" 근거 없음) → `/hive:caveman` 삭제 | `297c2f7` |
+| 4 | mattpocock `implement-spec` | 서브에이전트에 코드 대신 포인터 전달 (`execute.md`, `_shared/agent-dispatch.md`) | `48c2cc8` |
+| 5 | Claude Code dynamic workflows | 저장 workflow `hive-wave` (stub→Red→Green pipeline), `/hive:execute` 4단계 기본 경로 + Agent 도구 대체 경로 | `ecf2a79` |
+
+**추가 작업 (사용자 요청):**
+- `/hive:spec` 신규 — 요구사항·UX/UI(기능 목록·흐름·텍스트 와이어프레임) 확정 → `REQUIREMENTS.md`. discover/plan 연동, plan이 `feature-list.json` 생성 (`012d139`)
+- `/hive:codex-review` — `~/.codex/models_cache.json`에서 최신 모델 목록을 읽어 사용자 선택, 잘못된 `--skip-confirm` 플래그 제거 (`8dc7077`)
+- 컨텍스트 임계 80%(70% 경고)로 통일 — execute 40%, prerequisites/README 50% 정정 (`cacf77f`). 글로벌 `~/.claude/CLAUDE.md`도 동일 수정 (저장소 외부)
+- CI에 ubuntu/macOS/Windows cross-os job 추가 — 단위 테스트 + `install.sh`/`install.ps1` 실제 글로벌 설치 (`1c32644`)
+- `.codex/`, `.agents/` gitignore (`e690dc5`)
+
+**버그 수정:**
+- `hive-status` 테스트 수집 오류 — 로더가 `sys.modules` 미등록 → `@dataclass` 실패로 8개 stale 테스트가 가려져 있었음. 로더 수정 + 현행 API에 맞춤 (`82dd9a5`)
+- `hive-bash-guard` 오탐 — force-push 정규식이 `&&`/`;`/`|`/줄바꿈을 넘어 `[ -f x ]`를 `-f`로 오인. 구분자에서 멈추도록 수정 + 동작 테스트 (`67745bf`)
+- Windows CI 실패 — 테스트의 `bash`가 System32 WSL bash로 해석됨. 테스트가 node 설치기 코어를 직접 호출 (`60c3671`)
+
+**환경 변경 (저장소 외부):**
+- HIVE를 `hive-install.js --global`로 전역 설치 (기존 `~/.claude/commands/hive` 심볼릭 링크 제거 → 복사 방식). 원본 수정 후 재설치 필요.
+- `~/.claude/settings.json` 백업: `settings.json.bak-hive-20261006`
+
+**주요 결정사항:**
+| 결정 | 이유 |
+|---|---|
+| 프로젝트 `.claude/settings.json` hooks 블록 유지 (글로벌과 중복 실행 감수) | 테스트가 고정한 설계, clone 즉시 동작 |
+| `/hive:caveman` 삭제 (갱신 대신) | 현 모델에서 절감 효과 미미, 단순성 우선 |
+| `/hive:spec`을 별도 스킬로 (discover 확장 대신) | 요구사항/아키텍처 책임 분리 |
+| `hive-wave`는 저장 workflow로 고정 (매번 스크립트 작성 대신) | 재현성, 테스트 가능 |
+| `/hive:worktree` 병렬 Wave는 Workflow 미적용 | 병합 충돌·Wave별 보안 게이트와 얽혀 복잡도 과다 |
+
+**검증:** 로컬 테스트 135 passed, skill lint 0/0, CI 6 job 전부 통과 (`60c3671`, Windows `install.ps1` 설치 단계 포함).
+
+**미결 이슈:**
+- [ ] GSD hook 3개 글로벌 등록 해제 — 권한 분류기가 차단, 사용자가 `!` 명령으로 직접 실행 필요
+- [ ] `hive-wave`를 실제 Claude Code 런타임에서 실 프로젝트 Wave로 1회 실행 검증 (현재는 모의 런타임 테스트만)
+- [ ] `~/.codex/config.toml` 기본 모델 `gpt-5.4-mini`가 현재 목록에 없음
+- [ ] VERSION 파일 2.3.1, 최신 태그 v2.2.0 — 이번 변경 묶음의 릴리스 태그 미정 (`/hive:milestone`)
+
+**다음 작업:** 미결 이슈 처리 또는 `/hive:milestone`으로 이번 변경 릴리스 정리
+
+---
+
 ## 자동 기록
 
 - 2026-06-24 10:05 CLAUDE.md
