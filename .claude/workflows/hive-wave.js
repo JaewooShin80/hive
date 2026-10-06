@@ -57,7 +57,10 @@ const header = (t) => [
   `Read these yourself for context: ${(t.context || []).join(', ') || 'none'}`,
 ].join('\n')
 
-const own = (t) => `${args.test_cmd} ${t.test}`
+// Every command carries its own cd: a real run showed an agent executing the suite in
+// the session cwd (another repo) when the prompt only said "cd there first".
+const inRoot = (cmd) => `cd "${args.root}" && ${cmd}`
+const own = (t) => inRoot(`${args.test_cmd} ${t.test}`)
 
 const PROMPTS = {
   stub: (t) => [
@@ -140,8 +143,8 @@ async function runTask(t) {
 const gatePrompt = (i, batch) => [
   GUARD,
   `Batch ${i + 1} of Wave ${args.wave} just finished. Verify it; do not modify any file.`,
-  `1. Run the full suite: \`${args.test_cmd}\` — report pass/fail counts in summary.`,
-  `2. Run \`git status --porcelain\` and list in out_of_scope every changed or new path that is not one of: ${batch.flatMap((t) => [...(t.files || []), t.test]).join(', ')} (ignore caches, virtualenvs and build output).`,
+  `1. Run the full suite exactly as: \`${inRoot(args.test_cmd)}\` — report pass/fail counts in summary.`,
+  `2. Run \`${inRoot('git status --porcelain')}\` and list in out_of_scope every changed or new path that is not one of: ${batch.flatMap((t) => [...(t.files || []), t.test]).join(', ')} (ignore caches, virtualenvs and build output).`,
   'passed = the suite passed AND out_of_scope is empty.',
 ].join('\n')
 

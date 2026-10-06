@@ -172,7 +172,7 @@ class TestHiveWave(unittest.TestCase):
 
     def test_red_runs_only_its_own_test_file_and_checks_the_reason(self):  # H-22, H-23, H-04
         p = self.prompt(self.run_wave(wave([[task("T1")]])), "T1:test")
-        self.assertIn(".venv/bin/pytest -q tests/test_T1.py", p)
+        self.assertIn('cd "/abs/project" && .venv/bin/pytest -q tests/test_T1.py', p)
         self.assertIn("right reason", p)
 
     def test_context_pointers_are_passed(self):
@@ -235,8 +235,10 @@ class TestHiveWave(unittest.TestCase):
         gates = [c for c in r["calls"] if c["label"].startswith("gate:")]
         self.assertEqual([g["label"] for g in gates], ["gate:1", "gate:2"])
         self.assertEqual(gates[0]["model"], "haiku")
-        self.assertIn(".venv/bin/pytest -q", gates[0]["prompt"])
-        self.assertIn("git status --porcelain", gates[0]["prompt"])
+        # commands carry the cd themselves: a smoke run showed the gate agent ran the
+        # suite in the session cwd when only told "cd there first"
+        self.assertIn('cd "/abs/project" && .venv/bin/pytest -q', gates[0]["prompt"])
+        self.assertIn('cd "/abs/project" && git status --porcelain', gates[0]["prompt"])
         self.assertIn("src/T1.py", gates[0]["prompt"])
 
     def test_failed_gate_stops_later_batches(self):
