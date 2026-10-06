@@ -512,3 +512,5 @@
 - 2026-10-07 08:40 scripts/tests/test_gen_feature_list.py
 - 2026-10-07 08:40 scripts/gen_feature_list.py
 - 2026-10-07 08:40 scripts/gen_feature_list.py
+- 2026-10-07 08:44 scripts/tests/test_doc_counts.py
+- 2026-10-07 08:44 scripts/tests/test_doc_counts.py

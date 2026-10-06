@@ -41,8 +41,9 @@ allowed-tools:
 
 2. 인자가 semver 형식인지 검증 (`vN.N.N`)
 
-3. `/hive:roadmap init <semver>` 호출 권장 메시지 출력:
-   > "마일스톤 <semver> 시작 준비. 이제 `/hive:roadmap init <semver>`로 ROADMAP.md를 생성하세요."
+3. 이어서 ROADMAP.md 를 바로 만든다 — `Skill` 도구로 `hive:roadmap`을 인자 `init <semver>`로 호출한다 (별도 명령을 다시 입력하게 하지 않는다).
+   - 권장 순서: `/hive:spec` → `/hive:discover` → **`/hive:milestone new`** → `/hive:plan`. ARCHITECTURE.md(또는 최소한 REQUIREMENTS.md)가 있어야 Phase 를 나눌 수 있다.
+   - 둘 다 없으면 "먼저 `/hive:spec`(요구사항) 또는 `/hive:discover`(아키텍처)를 실행하세요."를 출력하고 중단한다.
 
 ---
 

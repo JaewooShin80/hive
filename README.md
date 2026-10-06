@@ -101,7 +101,7 @@ echo '{}' | node scripts/hive-status.js
 
 # 2) 스킬 인식 — Claude Code 세션에서
 /hive:
-# 자동완성에 23개 스킬 노출 (discover, plan, execute, ...)
+# 자동완성에 24개 스킬 노출 (discover, plan, execute, ...)
 
 # 3) 진척 대시보드
 /hive:progress
@@ -112,21 +112,25 @@ echo '{}' | node scripts/hive-status.js
 
 ## 빠른 시작
 
+출발점에 따라 세 갈래로 시작한다. 모든 질문형 스킬은 `--auto`를 붙이면 묻지 않고 추천안으로 진행하고, 채택한 가정을 산출물의 "가정 (auto)" 섹션에 남긴다.
+
+| 출발점 | 시작 명령 | 다음 |
+|---|---|---|
+| **아이디어**만 있음 | `/hive:spec <한 문단 설명>` | `/hive:discover` → `/hive:plan` |
+| **요구문서**(docx·pdf·md)가 있음 | `/hive:spec <문서 경로>` (docx/hwp 는 변환 후 읽음) | `/hive:discover` → `/hive:plan` |
+| **기존 코드**가 있음 | `/hive:map-codebase` | `/hive:spec <변경 요청>` → `/hive:discover <경로>` (현행 유지/부분 개선/재작성 판정) → `/hive:plan` |
+
 ```text
-[brownfield]  /hive:map-codebase     # 기존 코드베이스 4-병렬 분석
-
-/hive:discover  → /hive:plan  → /hive:execute (반복)
-        │                                  │
-        │                                  ├─ /hive:debug         (테스트 실패 시)
-        │                                  ├─ /hive:worktree      (병렬 Wave)
-        │                                  └─ /hive:security       (Wave 완료 후)
-        │
-        └─ /hive:roadmap init        # 다중 Phase 마일스톤일 때
-                                      # → /hive:milestone new vX.Y.Z
-
-/hive:playwright  → /hive:uat       # 전체 완료 후
-/hive:milestone complete             # 마일스톤 tag + 회고
+spec → discover ─┬─────────────────────────────→ plan → execute (Wave 반복) → playwright → uat
+                 └─ (Phase 여러 개) milestone new ─┘          │
+                                                             ├─ security   (Wave 커밋마다 hook 안내)
+                                                             ├─ debug      (테스트 실패 시)
+                                                             └─ worktree   (병렬 Wave)
+uat 통과 → /hive:milestone audit → /hive:milestone complete (git tag)
 ```
+
+- 진행 상황: `/hive:progress` (PLAN.md 완료 기준 체크박스가 유일한 원천 — ROADMAP 없이도 동작)
+- 실행 환경(설치·테스트·실행 명령)은 discover 가 ARCHITECTURE.md "실행 환경"에 확정하고 plan 이 PLAN.md "공통 규약"으로 옮긴다.
 
 작업 중단 후 재시작: `/hive:worklog resume`.
 

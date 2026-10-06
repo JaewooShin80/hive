@@ -54,7 +54,17 @@ HIVE 워크플로우의 모든 스킬과 의존성 그래프.
 | `/hive:compare` | 옵션 N개 비교 + 추천 |
 | `/hive:adr` | Architecture Decision Records |
 
-**총 20 스킬.**
+### 📈 진행·검증 관리 (4)
+마일스톤·진척·라이브 검증.
+
+| 명령어 | 역할 |
+|--------|------|
+| `/hive:milestone` | 마일스톤 시작(=ROADMAP 생성)·점검·완료(git tag) |
+| `/hive:roadmap` | Phase 단위 ROADMAP.md 관리 |
+| `/hive:progress` | PLAN.md 체크박스 기준 진척 대시보드 |
+| `/hive:evaluate` | feature-list.json `verify` 기반 라이브 검증 |
+
+**총 24 스킬.**
 
 ---
 

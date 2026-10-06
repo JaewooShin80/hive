@@ -10,7 +10,7 @@
 ```
 git rev-parse --git-dir &>/dev/null
 ```
-실패 시: `❌ Git 리포지토리가 아닙니다. 'git init' 후 다시 시도하세요.`
+실패 시: `⚠ Git 리포지토리가 아닙니다.` — spec/discover/map-codebase 는 `git init` 실행을 제안하고(`--auto`면 바로 실행) 계속한다. 그 밖의 스킬은 중단하고 `git init` 후 재시도를 안내한다.
 
 ### CHECK-2: ARCHITECTURE.md 존재
 - 사용처: plan, execute, refactor, migrate

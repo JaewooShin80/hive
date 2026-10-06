@@ -1,6 +1,7 @@
 ---
 name: hive:discover
 description: Use when starting a new project or feature and needing to select the right architecture. Triggers on /hive:discover command. Use when the user has not yet chosen a tech stack, wants to explore options, or needs a structured discovery session before planning.
+argument-hint: "[설명 | 코드 경로 | 요구문서 경로] [--auto]"
 ---
 
 # /hive:discover — 아키텍처 디스커버리 세션
@@ -13,7 +14,10 @@ description: Use when starting a new project or feature and needing to select th
 
 ---
 
-## Step 0: REQUIREMENTS.md 확인
+## Step 0: 사전 준비 · REQUIREMENTS.md 확인
+
+- 질문 방식과 `--auto` 규칙: [`_shared/auto-mode.md`](../_shared/auto-mode.md)
+- git 저장소가 아니면 `git init`을 제안한다 (`--auto`면 바로 실행).
 
 - **있으면:** 읽고 입력으로 사용한다. Step 1~2를 건너뛰고 Step 3으로 간다. Step 3에서 `[핵심 기능]` 질문과 REQUIREMENTS.md에 이미 답이 있는 질문은 생략한다.
 - **없으면:** "요구사항·화면을 먼저 정리하려면 `/hive:spec`을 실행하세요. 바로 진행하려면 계속합니다."를 한 줄 출력하고 Step 1로 간다.
@@ -22,7 +26,8 @@ description: Use when starting a new project or feature and needing to select th
 
 ## Step 1: 입력 방식 선택
 
-사용자에게 다음 중 하나를 선택하도록 안내한다. **반드시 이 메시지를 그대로 출력한다:**
+인자로 입력이 주어졌으면 묻지 않는다: 설명 문장 → (A), 디렉토리 경로 또는 `docs/codebase-map/00-SUMMARY.md` 존재 → (B), 문서 경로 → (C).
+그렇지 않으면 다음 중 하나를 선택하도록 안내한다:
 
 ```
 안녕하세요! 아키텍처 디스커버리 세션을 시작하겠습니다.
@@ -60,7 +65,7 @@ A, B, C 중 하나를 선택해주세요.
 - 파악된 정보를 요약한 후 질문으로 넘어간다
 
 ### (C) 요구사항 문서 파싱
-- `Read` 도구로 문서를 읽는다
+- [`_shared/document-input.md`](../_shared/document-input.md)에 따라 읽는다 (docx/xlsx/pptx/hwp 는 `Read`로 못 읽는다)
 - 다음을 식별한다:
   - 필수(must-have) 기능
   - 명시된 기술 제약
@@ -70,9 +75,9 @@ A, B, C 중 하나를 선택해주세요.
 
 ---
 
-## Step 3: 디스커버리 질문 (한 번에 하나씩)
+## Step 3: 디스커버리 질문 (묶어서, 불명확한 것만)
 
-**중요: 질문은 반드시 한 번에 하나씩만 한다. 답변을 받은 후 다음 질문으로 넘어간다.**
+**서로 독립적인 질문은 `AskUserQuestion` 한 번에 최대 4개씩 묶는다** (첫 선택지 = 추천안). 앞 답에 따라 달라지는 후속 질문만 다음 왕복으로 미룬다. `--auto`면 묻지 않고 추천안을 ARCHITECTURE.md "가정 (auto)"에 기록한다.
 
 입력 분석 결과를 바탕으로 아래 8개 영역에서 맥락에 맞는 질문을 생성한다. 이미 입력에서 명확히 파악된 항목은 건너뛰되, 불명확하면 반드시 질문한다. 총 5~10개 질문을 목표로 한다.
 
@@ -158,6 +163,8 @@ A, B, C 중 하나를 선택해주세요.
 어떤 옵션을 선택하시겠어요? (1, 2, 3 또는 직접 입력)
 ```
 
+`--auto`면 권장 옵션을 선택한 것으로 기록하고 진행한다.
+
 ### 선택 확인
 
 사용자가 선택하면:
@@ -203,16 +210,24 @@ ARCHITECTURE.md에 저장하고 워크로그를 초기화합니다.
 ## 검토된 대안
 [검토했으나 선택되지 않은 옵션들과 이유]
 
+## 실행 환경
+- 환경 준비: [예: uv venv .venv && uv pip install -r requirements.txt / npm ci]
+- 테스트 명령: [예: .venv/bin/pytest -q / npm test --]
+- 앱 실행: [예: .venv/bin/uvicorn app.main:app --port 8000 / npm run dev]
+- E2E: [예: pytest-playwright + chromium / @playwright/test]
+
+## 가정 (auto)
+[--auto 로 추천안을 채택한 질문 → 선택 (근거). --auto 가 아니면 생략]
+
 ## 결정일
 [오늘 날짜]
 ```
 
+`/hive:plan`은 "실행 환경"을 PLAN.md 공통 규약으로 옮기고, `/hive:execute`는 그 테스트 명령을 `test_cmd`로 쓴다.
+
 ### 6-2. 워크로그 초기화
 
-다음 명령을 실행한다:
-```
-/hive:worklog init [프로젝트-이름]
-```
+`Skill` 도구로 `hive:worklog`를 인자 `init [프로젝트-이름]`으로 호출한다. (`Skill` 도구가 없는 환경이면 worklog 스킬의 init 템플릿대로 WORKLOG.md를 직접 작성한다. 슬래시 명령은 모델이 직접 실행할 수 없다.)
 
 프로젝트 이름은 사용자가 설명한 프로젝트에서 추출한 영문 소문자 케밥케이스로 한다 (예: `my-saas-app`, `internal-crm-tool`).
 
@@ -238,6 +253,7 @@ WORKLOG.md에 다음 항목을 추가한다:
 - WORKLOG.md (프로젝트 워크로그 초기화됨)
 
 다음 단계: `/hive:plan`으로 개발 플랜을 작성하세요.
+(Phase 가 여러 개인 큰 마일스톤이면 먼저 `/hive:milestone new vX.Y.Z` — ROADMAP.md 까지 만든다.)
 ```
 
 ---
@@ -247,7 +263,7 @@ WORKLOG.md에 다음 항목을 추가한다:
 | 규칙 | 내용 |
 |------|------|
 | 기술 편향 없음 | Python, TypeScript, Go, Rust, Ruby 등 어떤 언어도 사전에 선호하지 않는다 |
-| 질문은 하나씩 | 여러 질문을 한꺼번에 던지지 않는다. 답변 후 다음 질문으로 넘어간다 |
+| 질문은 묶어서 | 독립 질문은 한 번에 최대 4개. 인자·REQUIREMENTS·코드로 답이 나온 질문은 하지 않는다 |
 | 답변에서 도출 | 아키텍처 옵션은 사용자의 답변에서 합성한다. 미리 정해진 템플릿을 사용하지 않는다 |
 | 구체적 정당화 | 추천에는 반드시 수집된 답변 항목을 인용하여 이유를 설명한다 |
 | 순서 준수 | Step 1 → 2 → 3 → 4 → 5 → 6 순서를 반드시 지킨다 |

@@ -2,7 +2,7 @@
 
 > **기준일**: 2026-05-08
 > **버전**: 2.1
-> **하네스**: HIVE v2 — 23 스킬 (17 HIVE + 3 mattpocock + 3 매니지먼트) + 보안 감사 스킬 + 자동 Hook
+> **하네스**: HIVE v2 — 24 스킬 (카테고리는 SKILLS.md) + 보안 감사 스킬 + 자동 Hook
 
 ---
 
@@ -89,8 +89,8 @@ Bash 도구로 git commit 실행
 ### 전체 흐름
 
 ```
-milestone new → roadmap init → grill → spec → discover → plan(phase) → [execute → (auto)security] × N
-  → roadmap update → milestone audit → milestone complete (git tag) → playwright → uat
+(grill) → spec → discover → milestone new(=roadmap init, Phase 여러 개일 때) → plan(phase) → [execute → security] × N
+  → roadmap update → playwright → uat → milestone audit → milestone complete (git tag)
 ```
 
 ### 단계별 상세

@@ -39,11 +39,11 @@ ROADMAP.md를 생성·갱신하여 PLAN.md의 Wave를 Phase 단위로 그룹핑�
 1. `ROADMAP.md`가 이미 있으면 안내 후 중단:
    > "ROADMAP.md가 이미 존재합니다. 새 마일스톤은 `/hive:milestone new` 사용하세요."
 
-2. `ARCHITECTURE.md` 읽어 도메인 파악
+2. 도메인 파악: `ARCHITECTURE.md`를 읽는다. 없으면 `REQUIREMENTS.md`를 읽는다. 둘 다 없으면 "먼저 `/hive:spec` 또는 `/hive:discover`를 실행하세요."를 출력하고 중단한다 (권장 순서: spec → discover → milestone/roadmap → plan).
 
-3. 사용자 인터뷰로 Phase 분해 (3-5개 권장):
-   - "이 마일스톤을 몇 개의 Phase로 나누시겠습니까?"
-   - 각 Phase의 이름·목표·예상 Wave 범위 결정
+3. Phase 분해 (2-5개 권장) — 질문은 [`_shared/auto-mode.md`](../_shared/auto-mode.md) 규칙으로 묶어서 한 번에 확인받는다 (`--auto`면 추천 분해를 채택):
+   - 각 Phase 의 이름·목표를 정한다. Phase 경계는 선택된 아키텍처의 배포 단위를 따른다 (예: SSR 앱을 "API Phase / UI Phase"로 나누지 않는다).
+   - Wave 범위는 **추정치**로 적는다. `/hive:plan`이 해당 Phase 를 분해할 때 실제 Wave 번호로 고치고 뒤 Phase 범위를 밀어낸다.
 
 4. ROADMAP.md 생성:
 

@@ -1,6 +1,7 @@
 ---
 name: hive:plan
 description: Wave-based implementation plan creation
+argument-hint: "[phase N] [--auto]"
 allowed-tools:
   - Read
   - Write
@@ -48,11 +49,15 @@ Advisor로서 프로젝트의 기능 목록을 분석하고, 복잡도에 따라
    - 헤더 메타는 `> **Phase:** N (이름)` / `> **Wave 범위:** a-b`를 현재 Phase 로 갱신하고, 바로 아래에 `> **이전 Phase:** 1 (Wave 1-2) 완료` 같은 이력을 한 줄씩 남긴다.
    - 새 Wave의 Consumes 는 이전 Phase 의 Produces 이름을 그대로 쓴다.
 
-6. ROADMAP.md를 갱신해야 하는 경우 (Phase 1 완료 후 Phase 2 plan 호출 등) 마지막 단계에서 사용자에게 `/hive:roadmap update` 실행을 안내한다.
+6. ROADMAP.md 가 있으면 이번에 분해한 Phase 헤더의 `(Wave a-b)`를 실제 Wave 번호로 고치고, 뒤 Phase 들의 범위를 그만큼 밀어낸다 (roadmap init 의 범위는 추정치다).
+
+7. ROADMAP.md를 갱신해야 하는 경우 (Phase 1 완료 후 Phase 2 plan 호출 등) 마지막 단계에서 사용자에게 `/hive:roadmap update` 실행을 안내한다.
 
 ---
 
 ## 2단계: 기능 목록 수집
+
+ARCHITECTURE.md 의 "실행 환경"(환경 준비·테스트·실행 명령)을 PLAN.md "공통 규약"으로 그대로 옮긴다. 없으면 프로젝트 파일(requirements.txt, package.json 등)에서 정해 기록한다 — `/hive:execute`가 이 테스트 명령을 `test_cmd`로 쓴다.
 
 `REQUIREMENTS.md`(`/hive:spec` 산출물)가 있으면 그 기능 목록(F1…)을 그대로 사용하고 질문하지 않는다. Must 기능은 모두 Wave에 배정하고, Should 기능은 배정 여부를 6단계 승인 때 확인한다.
 
@@ -134,7 +139,7 @@ Wave 3: <제목> [Large] — 예상 2~3일
 이 구성으로 PLAN.md를 작성할까요? (수정 사항이 있으면 말씀해주세요)
 ```
 
-사용자가 승인하면 7단계로 진행한다. 수정 요청이 있으면 반영 후 재제시한다.
+사용자가 승인하면 7단계로 진행한다. 수정 요청이 있으면 반영 후 재제시한다. `--auto`([`_shared/auto-mode.md`](../_shared/auto-mode.md))면 자동 승인으로 기록하고 진행한다 — Should 기능 포함 여부 같은 판단은 PLAN.md 공통 규약 아래 "가정 (auto)"에 남긴다.
 
 ---
 
