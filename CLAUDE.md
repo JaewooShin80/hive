@@ -49,9 +49,9 @@
 
 | 모델 | 역할 | 담당 업무 |
 |---|---|---|
-| `claude-opus-4-7` | Advisor | 계획 수립, 아키텍처 결정, 작업 분배, 최종 리뷰 |
-| `claude-sonnet-4-6` | Implementer | 일반 기능 구현, 비즈니스 로직, TDD 테스트 작성 |
-| `claude-haiku-4-5` | Generator | 보일러플레이트 생성 (CRUD 엔드포인트, 모델 클래스, 설정 파일) |
+| `opus` | Advisor | 계획 수립, 아키텍처 결정, 작업 분배, 최종 리뷰 |
+| `sonnet` | Implementer | 일반 기능 구현, 비즈니스 로직, TDD 테스트 작성 |
+| `haiku` | Generator | 보일러플레이트 생성 (CRUD 엔드포인트, 모델 클래스, 설정 파일) |
 
 모델은 `settings.json`의 환경 변수를 통해 교체할 수 있다.
 
@@ -102,7 +102,8 @@
 
 ## Hooks (자동 가드 — v2.2.0 Wave 1-3)
 
-`~/.claude/settings.json`에 등록된 6개의 `aifab-*` hook이 모든 세션에서 자동 실행된다.
+설치기(`install.sh` / `install.ps1` → `scripts/aifab-install.js`)가 6개의 `aifab-*` hook을 `settings.json`에
+`node "<절대경로>"` 형식으로 등록한다 (`--global`이면 `~/.claude/settings.json`, 아니면 프로젝트). macOS/Linux/Windows 공통.
 GSD hook 9종과 네임스페이스 분리되어 공존한다.
 
 | Hook | Event | 역할 | Exit 정책 |

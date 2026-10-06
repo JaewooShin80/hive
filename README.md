@@ -21,61 +21,46 @@ Claude Code용 개발 워크플로우 하네스. Andrej Karpathy의 4원칙을 �
 
 ## 설치
 
-세 가지 패턴 중 사용 의도에 맞는 한 가지만 선택.
-
-### A. 새 프로젝트 템플릿 (권장)
-
-```bash
-git clone https://github.com/JaewooShin80/aifab.git my-new-project
-cd my-new-project
-rm -rf .git && git init
-git add . && git commit -m "chore: initial AI-Fab setup"
-claude
-```
-
-세션 시작 후 `/aifab:discover`로 진입.
-
-### B. 기존 프로젝트에 적용
+macOS · Linux · Windows 모두 동일한 설치기(`scripts/aifab-install.js`)를 사용한다.
+`install.sh`(bash)와 `install.ps1`(PowerShell)은 이를 호출하는 얇은 래퍼일 뿐이다.
 
 ```bash
-git clone https://github.com/JaewooShin80/aifab.git /tmp/aifab
-cd my-existing-project
-
-cp -r /tmp/aifab/.claude .
-cp -r /tmp/aifab/scripts .
-chmod +x scripts/aifab-status.sh
-
-[ -f CLAUDE.md ] || cp /tmp/aifab/CLAUDE.md .
-[ -f settings.json ] || cp /tmp/aifab/.claude/settings.json .claude/
-
-rm -rf /tmp/aifab
+# 1) 하네스 받기 (업그레이드 시 git pull 후 설치 명령만 재실행)
+git clone https://github.com/JaewooShin80/aifab.git ~/aifab
 ```
 
-기존 `CLAUDE.md`/`settings.json`이 있으면 수동 머지 필요.
-
-### C. 전역 스킬 (모든 프로젝트에서 `/aifab:*` 사용)
+### A. 전역 설치 (권장 — 모든 프로젝트에서 `/aifab:*`)
 
 ```bash
-git clone https://github.com/JaewooShin80/aifab.git /tmp/aifab
-
-# 스킬 + 공통 표준
-mkdir -p ~/.claude/commands/aifab
-cp /tmp/aifab/.claude/plugins/aifab/skills/*.md ~/.claude/commands/aifab/
-cp -r /tmp/aifab/.claude/plugins/aifab/_shared ~/.claude/commands/aifab/
-
-# 상태바
-mkdir -p ~/.claude/scripts/aifab
-cp /tmp/aifab/scripts/aifab-status.* ~/.claude/scripts/aifab/
-chmod +x ~/.claude/scripts/aifab/aifab-status.sh
-
-# 글로벌 보안 hooks
-mkdir -p ~/.claude/hooks
-cp /tmp/aifab/.claude/hooks/aifab-*.js ~/.claude/hooks/ 2>/dev/null || true
-
-rm -rf /tmp/aifab
+~/aifab/install.sh --global                 # macOS / Linux / Git Bash
+```
+```powershell
+~\aifab\install.ps1 --global                 # Windows PowerShell
+# 실행 정책 차단 시: powershell -ExecutionPolicy Bypass -File ~\aifab\install.ps1 --global
 ```
 
-전역 `~/.claude/settings.json`에 `env`·`statusLine`·`hooks` 블록을 본 저장소의 [`.claude/settings.json`](.claude/settings.json) 참고하여 머지.
+### B. 프로젝트 설치 (새 프로젝트 · 기존 프로젝트 공통)
+
+```bash
+~/aifab/install.sh --target ~/my-project    # macOS / Linux / Git Bash
+```
+```powershell
+~\aifab\install.ps1 --target C:\dev\my-project   # Windows PowerShell
+```
+
+### 설치 결과
+
+| 대상 | 위치 (`<base>` = `~/.claude` 또는 `<project>/.claude`) |
+|---|---|
+| 스킬 → `/aifab:*` 명령 | `<base>/commands/aifab/*.md` |
+| 공통 표준 (`_shared`, `SKILLS.md`) | `<base>/aifab/` — 명령 목록에 섞이지 않도록 commands 밖에 둠 |
+| hooks 6종 | `<base>/hooks/aifab-*.js` + `settings.json`에 `node "<절대경로>"`로 자동 등록 |
+| 상태바 | `node "<scripts>/aifab-status.js"` — Python(`python3`→`python`→`py -3`) 자동 탐색 |
+| 스크립트 | 프로젝트: `<project>/scripts/` · 전역: `~/.claude/scripts/aifab/` |
+
+- `settings.json`은 **덮어쓰지 않고 병합**한다 (기존 값 우선, 재실행해도 중복 없음). `CLAUDE.md`는 이미 있으면 보존.
+- hook·상태바 명령이 `node "<경로>"` 형태라 Windows에서 Claude Code가 Git Bash/PowerShell 어느 쪽으로 실행해도 동작한다.
+- `--dry-run`으로 변경 내용을 미리 확인할 수 있다. 설치 후 Claude Code를 재시작하고 `/aifab:discover`로 진입.
 
 ---
 
@@ -85,9 +70,8 @@ rm -rf /tmp/aifab
 |------|------|----------|
 | Claude Code CLI | 모든 명령 실행 | 필수 |
 | `git` | 버전 관리 / worktree | 필수 |
-| `bash` | 상태바 + 일부 hooks | 필수 |
-| `python3` | 진척/사용량 파싱, gen_skills_index | 필수 (없으면 진척 대시보드 미표시) |
-| `node` | hooks(`aifab-*.js`) + Playwright | 권장 |
+| `node` | 설치기 + hooks(`aifab-*.js`) + 상태바 런처 + Playwright | 필수 |
+| Python 3 (`python3`/`python`/`py -3`) | 상태바·진척 파싱, gen_skills_index | 필수 (없으면 상태바/진척 대시보드 미표시) |
 | `@openai/codex` | 교차 AI 검증 | 선택 (`/aifab:codex-review`) |
 
 ```bash
@@ -110,7 +94,7 @@ npm install -g @openai/codex && codex login
 
 ```bash
 # 1) 상태바
-bash scripts/aifab-status.sh
+echo '{}' | node scripts/aifab-status.js
 # 2-line Powerline 출력 확인 (모델·git·ctx·5h·7d)
 
 # 2) 스킬 인식 — Claude Code 세션에서
@@ -197,9 +181,9 @@ export PYTHONIOENCODING=utf-8
 
 | 모델 | 역할 | env 변수 |
 |------|------|---------|
-| `claude-opus-4-7` | Advisor — 플랜·아키텍처·검토 | `AIFAB_ADVISOR_MODEL` |
-| `claude-sonnet-4-6` | Worker — 로직·테스트 | `AIFAB_WORKER_MODEL` |
-| `claude-haiku-4-5` | Generator — 보일러플레이트 | `AIFAB_BOILERPLATE_MODEL` |
+| `opus` | Advisor — 플랜·아키텍처·검토 | `AIFAB_ADVISOR_MODEL` |
+| `sonnet` | Worker — 로직·테스트 | `AIFAB_WORKER_MODEL` |
+| `haiku` | Generator — 보일러플레이트 | `AIFAB_BOILERPLATE_MODEL` |
 
 교체는 `settings.json`의 env만 수정. 스킬별 모델 사용 강도는 [`SKILLS.md` "모델 사용 매트릭스"](.claude/plugins/aifab/SKILLS.md#모델-사용-매트릭스) 참조.
 
@@ -215,7 +199,9 @@ aifab/
 │   WORKLOG.md
 ├── scripts/
 │   ├── aifab-status.py           # 2-line Powerline 상태바
-│   ├── aifab-status.sh           # 상태바 진입점
+│   ├── aifab-status.js           # 상태바 진입점 (크로스플랫폼, Python 자동 탐색)
+│   ├── aifab-status.sh           # 레거시 bash 진입점
+│   ├── aifab-install.js          # 설치기 코어 (install.sh / install.ps1 공용)
 │   ├── aifab_progress.py         # ROADMAP/PLAN 파서 + Phase/Wave 진척
 │   ├── codex-usage-status.py     # Codex CLI 사용량
 │   ├── gen_skills_index.py       # CLAUDE.md/SKILLS.md 자동 인덱스 갱신
@@ -264,7 +250,7 @@ aifab/
 | 상태바 글리프 깨짐 | 터미널 폰트를 Nerd Font (JetBrains Mono NF, Sarasa Mono K 등)로 변경, 또는 `AIFAB_STATUS_STYLE=plain` |
 | `/aifab:` 자동완성에 스킬 없음 | 글로벌 설치: `~/.claude/commands/aifab/` 경로 확인. 프로젝트 설치: `.claude/commands/aifab/` 확인 |
 | `/aifab:progress` 빈 출력 | `ROADMAP.md`/`PLAN.md` 둘 다 없으면 정상. `/aifab:roadmap init`으로 생성 |
-| hooks가 동작하지 않음 | `settings.json` `hooks` 블록 등록 여부, hook 파일 실행 권한(`chmod +x`), `node`/`bash` 경로 확인 |
+| hooks가 동작하지 않음 | `settings.json` `hooks` 블록 등록 여부, `node` 설치/PATH 확인 (hook 명령은 `node "<경로>"` 형식) |
 | 컨텍스트 hook 경고 미발생 | `aifab-status.py`가 `/tmp/aifab-ctx-<session_id>.json` 작성 중인지, 또는 GSD 브릿지 fallback 확인 |
 | GitLab/GitHub push 인증 실패 | `git credential-manager configure`로 GCM 설정. Personal Access Token은 만료 전 회수 |
 

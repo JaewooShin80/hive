@@ -26,8 +26,10 @@ ROADMAP.md와 PLAN.md를 읽어 마일스톤 진행률, Phase별 진척, 현재 
 2. 헬퍼 스크립트 실행:
 
 ```bash
-python3 scripts/aifab-progress.py
+python3 scripts/aifab_progress.py
 ```
+
+> Windows에서 `python3`가 없으면 `python` 또는 `py -3`로 실행한다.
 
 3. 출력 결과를 그대로 사용자에게 표시.
 

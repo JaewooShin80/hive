@@ -14,7 +14,7 @@ allowed-tools:
 
 # `/aifab:execute` — Wave 멀티에이전트 실행
 
-**담당 모델:** Advisor (claude-opus-4-7) — 전체 오케스트레이션 및 검토  
+**담당 모델:** Advisor (opus) — 전체 오케스트레이션 및 검토  
 **서브에이전트:** Haiku (보일러플레이트), Sonnet (로직/테스트)
 
 ---

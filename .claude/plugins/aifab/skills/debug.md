@@ -14,7 +14,7 @@ allowed-tools:
 
 # `/aifab:debug` — 체계적 디버깅 (4단계 RCA)
 
-**담당 모델:** Advisor (claude-opus-4-7) — 가설 수립 및 분석
+**담당 모델:** Advisor (opus) — 가설 수립 및 분석
 **서브에이전트:** Sonnet — 가설 검증, 코드 수정
 
 ---

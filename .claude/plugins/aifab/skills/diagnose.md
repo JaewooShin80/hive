@@ -14,7 +14,7 @@ allowed-tools:
 
 # `/aifab:diagnose` — 재현 우선 디버깅 루프
 
-**담당 모델:** Sonnet (claude-sonnet-4-6) — 재현·계측·수정
+**담당 모델:** Sonnet (sonnet) — 재현·계측·수정
 
 ---
 

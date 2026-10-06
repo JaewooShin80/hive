@@ -14,7 +14,7 @@ allowed-tools:
 
 # `/aifab:codex-review` — 교차 AI 검증 (OpenAI Codex)
 
-**담당 모델:** Advisor (claude-opus-4-7) — 검토 요청 작성 및 결과 종합
+**담당 모델:** Advisor (opus) — 검토 요청 작성 및 결과 종합
 **외부 도구:** OpenAI Codex CLI (`codex`) — 독립적 코드 분석
 
 ---

@@ -13,7 +13,7 @@ allowed-tools:
 
 # `/aifab:evaluate` — Trajectory Evaluator
 
-**담당 모델:** Advisor (claude-opus-4-7) — Anthropic 3-agent 패턴의 **Evaluator** 역할.
+**담당 모델:** Advisor (opus) — Anthropic 3-agent 패턴의 **Evaluator** 역할.
 
 ---
 

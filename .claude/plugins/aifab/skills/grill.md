@@ -13,7 +13,7 @@ allowed-tools:
 
 # `/aifab:grill` — 요구사항 정렬 인터뷰
 
-**담당 모델:** Advisor (claude-opus-4-7) — 도메인 이해 및 용어 정제
+**담당 모델:** Advisor (opus) — 도메인 이해 및 용어 정제
 
 ---
 

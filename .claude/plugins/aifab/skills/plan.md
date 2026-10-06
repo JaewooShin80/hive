@@ -13,7 +13,7 @@ allowed-tools:
 
 # `/aifab:plan` — Wave 기반 구현 플랜 생성
 
-**담당 모델:** Advisor (claude-opus-4-7) — 높은 판단력이 요구되는 작업
+**담당 모델:** Advisor (opus) — 높은 판단력이 요구되는 작업
 
 ---
 

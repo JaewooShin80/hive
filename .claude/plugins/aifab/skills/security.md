@@ -14,7 +14,7 @@ allowed-tools:
 
 # `/aifab:security` — 5개 도메인 보안 검토
 
-**담당 모델:** Advisor (claude-opus-4-7) — 보안 판단은 높은 정확성이 요구되는 작업
+**담당 모델:** Advisor (opus) — 보안 판단은 높은 정확성이 요구되는 작업
 
 ---
 

@@ -13,7 +13,7 @@ allowed-tools:
 
 # `/aifab:roadmap` — Phase 인덱스 + 마일스톤 메타 관리
 
-**담당 모델:** Advisor (claude-opus-4-7) — 도메인 분해 판단 필요
+**담당 모델:** Advisor (opus) — 도메인 분해 판단 필요
 
 ---
 

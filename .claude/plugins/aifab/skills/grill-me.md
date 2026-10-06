@@ -11,7 +11,7 @@ allowed-tools:
 
 # `/aifab:grill-me` — 아이디어 인터뷰
 
-**담당 모델:** Advisor (claude-opus-4-7)
+**담당 모델:** Advisor (opus)
 
 ---
 

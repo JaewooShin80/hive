@@ -14,7 +14,7 @@ allowed-tools:
 
 # `/aifab:map-codebase` — 4-병렬 매퍼 코드베이스 분석
 
-**담당 모델:** Advisor (claude-opus-4-7) — 매퍼 조정 및 종합
+**담당 모델:** Advisor (opus) — 매퍼 조정 및 종합
 **서브에이전트:** Sonnet × 4 — 병렬 매퍼 (각자 독립 영역 분석)
 
 ---

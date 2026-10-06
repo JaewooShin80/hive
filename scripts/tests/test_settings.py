@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -51,6 +52,33 @@ class TestSettingsJson(unittest.TestCase):
         # 'Bash' or 'Bash(*)' alone would defeat the deny rules
         self.assertNotIn("Bash", allow)
         self.assertNotIn("Bash(*)", allow)
+
+    def test_hook_and_status_commands_are_shell_neutral(self):
+        # Windows runs these in Git Bash or PowerShell — only plain `node <file>` works in both
+        cmds = [self.data["statusLine"]["command"]]
+        for entries in self.data["hooks"].values():
+            for entry in entries:
+                cmds += [h["command"] for h in entry["hooks"]]
+        for cmd in cmds:
+            with self.subTest(cmd=cmd):
+                self.assertTrue(cmd.startswith("node "), cmd)
+                self.assertNotIn("python3", cmd)
+                self.assertNotIn("$", cmd)
+
+    def test_all_six_aifab_hooks_registered(self):
+        blob = json.dumps(self.data["hooks"])
+        for f in sorted((REPO_ROOT / ".claude" / "hooks").glob("aifab-*.js")):
+            with self.subTest(hook=f.name):
+                self.assertEqual(blob.count(f.name), 1)
+
+    def test_models_use_aliases_not_pinned_ids(self):
+        # aliases (opus/sonnet/haiku) auto-track the latest release
+        pinned = re.compile(r"claude-(opus|sonnet|haiku|fable)-\d")
+        files = [SETTINGS_FILE, REPO_ROOT / "CLAUDE.md"]
+        files += list((REPO_ROOT / ".claude" / "plugins" / "aifab").rglob("*.md"))
+        for f in files:
+            with self.subTest(file=str(f.relative_to(REPO_ROOT))):
+                self.assertIsNone(pinned.search(f.read_text(encoding="utf-8")))
 
 
 if __name__ == "__main__":

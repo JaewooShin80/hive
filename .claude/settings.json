@@ -1,16 +1,16 @@
 {
-  "model": "claude-opus-4-7",
+  "model": "opus",
   "env": {
-    "AIFAB_MODEL": "claude-opus-4-7",
-    "AIFAB_ADVISOR_MODEL": "claude-opus-4-7",
-    "AIFAB_WORKER_MODEL": "claude-sonnet-4-6",
-    "AIFAB_BOILERPLATE_MODEL": "claude-haiku-4-5",
+    "AIFAB_MODEL": "opus",
+    "AIFAB_ADVISOR_MODEL": "opus",
+    "AIFAB_WORKER_MODEL": "sonnet",
+    "AIFAB_BOILERPLATE_MODEL": "haiku",
     "AIFAB_STATUS_STYLE": "color",
     "LC_ALL": "en_US.UTF-8"
   },
   "statusLine": {
     "type": "command",
-    "command": "scripts/aifab-status.sh"
+    "command": "node scripts/aifab-status.js"
   },
   "permissions": {
     "allow": [
@@ -47,15 +47,61 @@
     ]
   },
   "hooks": {
-    "PostToolUse": [
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/aifab-secret-guard.js"
+          }
+        ]
+      },
       {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "input=$(cat); cmd=$(echo \"$input\" | python3 -c \"import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('command',''))\"); if echo \"$cmd\" | grep -qiE 'git commit'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"[자동알림] git commit 감지됨. CLAUDE.md 개발 기본값 규칙: Wave 완료 후 /aifab:security 실행이 필요합니다. 보안 검토를 지금 수행하세요.\"}}'; fi",
-            "timeout": 10,
-            "statusMessage": "Wave 커밋 감지 확인 중..."
+            "command": "node .claude/hooks/aifab-bash-guard.js"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/aifab-ctx-guard.js"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/aifab-worklog-auto.js"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/aifab-wave-gate.js"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/aifab-session-start.js"
           }
         ]
       }

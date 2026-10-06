@@ -13,7 +13,7 @@ allowed-tools:
 
 # `/aifab:milestone` — 마일스톤 라이프사이클
 
-**담당 모델:** Advisor (claude-opus-4-7) — `complete`/`audit`는 판단 필요
+**담당 모델:** Advisor (opus) — `complete`/`audit`는 판단 필요
 
 ---
 
