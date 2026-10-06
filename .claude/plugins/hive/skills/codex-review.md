@@ -10,6 +10,7 @@ allowed-tools:
   - Grep
   - Glob
   - Task
+  - AskUserQuestion
 ---
 
 # `/hive:codex-review` — 교차 AI 검증 (OpenAI Codex)
@@ -76,6 +77,19 @@ codex --version
 ---
 
 ## 프로세스
+
+### Step 0: 모델 선택 (매 실행마다)
+
+모델명은 하드코딩하지 않는다. Codex CLI가 실행 시 갱신하는 모델 캐시에서 최신 목록을 읽는다:
+
+```bash
+python3 -c 'import json,os;d=json.load(open(os.path.expanduser("~/.codex/models_cache.json")));print("fetched_at:",d["fetched_at"]);[print(m["slug"],"|",m.get("display_name"),"|",m.get("description","")) for m in sorted(d["models"],key=lambda m:m.get("priority",99)) if m.get("visibility")=="list"]'
+grep -m1 '^model' ~/.codex/config.toml   # 현재 기본 모델
+```
+
+1. 목록(priority 순)에서 최대 3개 + 현재 기본 모델을 `AskUserQuestion`으로 제시하고 사용자가 고르게 한다. 각 옵션 설명에는 캐시의 `description`을 쓴다. 목록에 없는 모델은 "Other"로 직접 입력받는다.
+2. 캐시가 없거나 `fetched_at`이 7일보다 오래되었으면 그 사실을 알리고 `codex update` 후 재실행을 권한다. 캐시를 읽을 수 없으면 모델명을 직접 입력받는다.
+3. 선택한 slug를 Step 3의 `-m`에 전달하고, Step 5 보고서에 기록한다.
 
 ### Step 1: 검토 대상 식별
 
@@ -149,16 +163,11 @@ APPROVE / APPROVE_WITH_NITS / REQUEST_CHANGES / REJECT
 ### Step 3: Codex 호출
 
 ```bash
-# Codex CLI 호출 (non-interactive 모드)
-codex exec --skip-confirm "$(cat /tmp/hive-codex-prompt.md)"
+# Codex CLI 호출 (non-interactive, 읽기 전용 샌드박스, 프롬프트는 stdin)
+codex exec -m <Step 0에서 선택한 slug> -s read-only -o /tmp/hive-codex-response.md - < /tmp/hive-codex-prompt.md
 ```
 
-또는 stdin 파이프:
-```bash
-cat /tmp/hive-codex-prompt.md | codex exec --skip-confirm
-```
-
-응답을 `/tmp/hive-codex-response.md`에 저장.
+최종 응답이 `/tmp/hive-codex-response.md`에 저장된다.
 
 ### Step 4: 응답 파싱 및 종합
 
@@ -179,7 +188,7 @@ Advisor가 Codex 응답을 분석:
 
 ```markdown
 # Codex Cross-Review Report
-일자: YYYY-MM-DD | 검토 범위: Wave <N> (commit <hash>)
+일자: YYYY-MM-DD | 검토 범위: Wave <N> (commit <hash>) | 모델: <slug>
 Codex Verdict: APPROVE_WITH_NITS
 
 ## Codex 의견 요약
@@ -216,7 +225,7 @@ Codex 호출은 OpenAI API 비용 발생. 절약 전략:
 
 1. **선택적 사용**: 모든 commit이 아닌 Wave 단위로 호출
 2. **diff만 전달**: 전체 파일 대신 변경된 부분만
-3. **모델 선택**: `codex --model gpt-5-mini` 같은 옵션으로 가벼운 모델 사용
+3. **모델 선택**: Step 0에서 가벼운 모델(캐시 설명이 "Fast and affordable" 류)을 고른다
 4. **HIVE_CODEX_AUTO 환경변수**:
    - `auto`: 모든 Wave 자동 실행
    - `wave`: Wave 완료 시 묻기 (기본값)
