@@ -94,7 +94,7 @@
 
 | `/security-audit` | 정부 개발보안 가이드 기반 정적 점검 (웹/API 43항목 + AI/LLM 20항목 + Docker/NGINX) — `.claude/commands/security-audit.md` |
 
-**전체 17 스킬.** 카테고리/의존성 그래프: [`SKILLS.md`](.claude/plugins/hive/SKILLS.md)
+**전체 23 스킬.** 카테고리/의존성 그래프: [`SKILLS.md`](.claude/plugins/hive/SKILLS.md)
 **공통 표준:** [`_shared/`](.claude/plugins/hive/_shared/) (prerequisites, output-format, worklog-update, agent-dispatch, git-commit)
 
 ---
