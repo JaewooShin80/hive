@@ -109,7 +109,7 @@ HIVE는 GSD에 의존하지 않는다 (컨텍스트 경고는 `hive-ctx-guard.js
 |---|---|---|---|
 | `hive-secret-guard.js` | PreToolUse(Write\|Edit) | 시크릿 패턴/금지 경로 차단 | exit 2 = block |
 | `hive-bash-guard.js` | PreToolUse(Bash) | `rm -rf /` 등 위험 명령 차단 | exit 2 = block |
-| `hive-ctx-guard.js` | PostToolUse(*) | 컨텍스트 50% RULE 5 가드 | advisory only |
+| `hive-ctx-guard.js` | PostToolUse(*) | 컨텍스트 80% RULE 5 가드 (70% 경고) | advisory only |
 | `hive-worklog-auto.js` | PostToolUse(Edit\|Write\|MultiEdit) | WORKLOG.md "## 자동 기록" append | advisory |
 | `hive-session-start.js` | SessionStart | 현재 Wave + 진척% 출력 | advisory |
 | `hive-wave-gate.js` | PostToolUse(Bash) | `feat(wave-N)` 커밋 후 `/hive:security` 안내 | advisory |

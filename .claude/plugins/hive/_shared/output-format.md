@@ -97,7 +97,7 @@ ERROR_CODE 네이밍:
 - `MISSING_FILE`: 필수 파일 없음
 - `INVALID_STATE`: 비정상 상태
 - `UNMET_DEPENDENCY`: 의존성 미충족
-- `CONTEXT_OVERFLOW`: Context 50% 초과
+- `CONTEXT_OVERFLOW`: Context 80% 이상
 - `TOOL_NOT_FOUND`: 외부 도구 미설치
 - `BRANCH_PROTECTED`: 보호된 브랜치 직접 작업
 - `DIRTY_WORKTREE`: 미커밋 변경 존재

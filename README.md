@@ -14,7 +14,7 @@ Claude Code용 개발 워크플로우 하네스. Andrej Karpathy의 4원칙을 �
 | **Multi-Agent 역할** | Opus(Advisor) → Sonnet(Worker) → Haiku(Generator). `settings.json`의 env로 모델 교체 가능 |
 | **계층 진척 모델** | Milestone(semver) → Phase(목적 그룹) → Wave(0.5~3일 작업 단위) |
 | **계획 트리플** | `ROADMAP.md`(Phase 인덱스) + `PLAN.md`(Wave 상세) + `WORKLOG.md`(작업일지) |
-| **컨텍스트 50% 규칙** | 사용률 50% 초과 시 새 태스크 시작 전 반드시 `/compact` (CLAUDE.md RULE 5) |
+| **컨텍스트 80% 규칙** | 사용률 80% 이상이면 새 태스크 시작 전 반드시 `/compact`, 70%부터 경고 (CLAUDE.md RULE 5) |
 | **결정론 가드** | hooks가 시크릿/위험 bash/컨텍스트 임계치를 자동 차단·경고 |
 
 ---
@@ -140,7 +140,7 @@ echo '{}' | node scripts/hive-status.js
 |---|---|---|
 | `hive-secret-guard.js` | PreToolUse(Write/Edit) | 시크릿 패턴/시크릿 파일 경로 Write 차단 (exit 2) |
 | `hive-bash-guard.js` | PreToolUse(Bash) | `rm -rf /`, `git push --force`, `curl \| sh` 등 차단 |
-| `hive-ctx-guard.js` | PostToolUse | 컨텍스트 50%↑ 시 `/compact` 권고, 70%↑ 시 강한 경고 |
+| `hive-ctx-guard.js` | PostToolUse | 컨텍스트 70%↑ 시 `/compact` 권고, 80%↑ 시 강한 경고 |
 
 설치된 hooks는 `~/.claude/settings.json` 또는 프로젝트 `.claude/settings.json`의 `hooks` 블록에서 등록한다. 자세한 구성: [`.claude/plugins/hive/_shared/hooks.md`](.claude/plugins/hive/_shared/hooks.md) (v2.2.0 추가).
 

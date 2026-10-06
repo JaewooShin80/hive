@@ -38,8 +38,8 @@ git diff --quiet && git diff --cached --quiet
 
 ### CHECK-7: Context 사용량
 - 사용처: 모든 스킬 시작 시
-- 50% 초과 시: `⚠ Context 50% 초과. /compact 후 다시 시도하세요.`
-- 35-49%: 경고만 표시하고 진행
+- 80% 이상 시: `⚠ Context 80% 이상. /compact 후 다시 시도하세요.` (CLAUDE.md RULE 5)
+- 70-79%: 경고만 표시하고 진행
 
 ### CHECK-8: 도구 가용성
 스킬별 필요 도구 점검:
