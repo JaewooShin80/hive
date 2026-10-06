@@ -14,9 +14,10 @@ const DANGER = [
   { re: /\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)[a-zA-Z]*\s+\/(\s|$)/, msg: "rm -rf / (root filesystem deletion)" },
   { re: /\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)[a-zA-Z]*\s+(~|\$HOME)(\s|$|\/)/, msg: "rm -rf $HOME" },
   { re: /\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)[a-zA-Z]*\s+\/\*/, msg: "rm -rf /*" },
-  // Force push (allows --force-with-lease as safer alternative)
-  { re: /\bgit\s+push\s+(?:[^\s]+\s+)*--force(?!-with-lease)(\s|$)/, msg: "git push --force (use --force-with-lease for safer overwrite)" },
-  { re: /\bgit\s+push\s+(?:[^\s]+\s+)*-f(\s|$)/, msg: "git push -f (use --force-with-lease for safer overwrite)" },
+  // Force push (allows --force-with-lease as safer alternative).
+  // Args stop at shell separators/newlines so a later `[ -f x ]` is not read as a push flag.
+  { re: /\bgit\s+push\s+(?:[^\s;&|]+[ \t]+)*--force(?!-with-lease)(\s|$)/, msg: "git push --force (use --force-with-lease for safer overwrite)" },
+  { re: /\bgit\s+push\s+(?:[^\s;&|]+[ \t]+)*-f(\s|$)/, msg: "git push -f (use --force-with-lease for safer overwrite)" },
   // World-writable
   { re: /\bchmod\s+-?R?\s*777\b/, msg: "chmod 777 (world-writable permission)" },
   // Pipe-to-shell from network
