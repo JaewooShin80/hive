@@ -126,6 +126,9 @@ class TestProjectInstall(_Base):
         self.assertTrue(script.is_file())
         self.assertIn(_posix(script), text)
 
+    def test_saved_workflow_is_copied(self):
+        self.assertTrue((self.target / ".claude" / "workflows" / "hive-wave.js").is_file())
+
     def test_hooks_and_scripts_are_copied(self):
         for name in HOOK_FILES:
             with self.subTest(hook=name):
@@ -252,6 +255,7 @@ class TestGlobalInstall(_Base):
             self.assertTrue((base / "hive" / "_shared" / "prerequisites.md").is_file())
             self.assertTrue((base / "hooks" / "hive-bash-guard.js").is_file())
             self.assertTrue((base / "scripts" / "hive" / "hive-status.js").is_file())
+            self.assertTrue((base / "workflows" / "hive-wave.js").is_file())
             settings = json.loads((base / "settings.json").read_text(encoding="utf-8"))
             self.assertEqual(len(_all_hook_commands(settings)), len(HOOK_FILES))
             self.assertIn("hive-status.js", settings["statusLine"]["command"])

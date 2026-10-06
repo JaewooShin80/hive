@@ -55,11 +55,13 @@ git clone https://github.com/JaewooShin80/hive.git ~/hive
 | 스킬 → `/hive:*` 명령 | `<base>/commands/hive/*.md` |
 | 공통 표준 (`_shared`, `SKILLS.md`) | `<base>/hive/` — 명령 목록에 섞이지 않도록 commands 밖에 둠 |
 | hooks 6종 | `<base>/hooks/hive-*.js` + `settings.json`에 `node "<절대경로>"`로 자동 등록 |
+| 저장된 Workflow | `<base>/workflows/hive-wave.js` — `/hive:execute` 4단계 병렬 디스패치 (Claude Code 전용, 없으면 Agent 도구로 대체) |
 | 상태바 | `node "<scripts>/hive-status.js"` — Python(`python3`→`python`→`py -3`) 자동 탐색 |
 | 스크립트 | 프로젝트: `<project>/scripts/` · 전역: `~/.claude/scripts/hive/` |
 
 - `settings.json`은 **덮어쓰지 않고 병합**한다 (기존 값 우선, 재실행해도 중복 없음). `CLAUDE.md`는 이미 있으면 보존.
 - hook·상태바 명령이 `node "<경로>"` 형태라 Windows에서 Claude Code가 Git Bash/PowerShell 어느 쪽으로 실행해도 동작한다.
+- CI가 ubuntu·macOS·Windows에서 단위 테스트와 `install.sh`/`install.ps1` 글로벌 설치를 매 push마다 검증한다.
 - `--dry-run`으로 변경 내용을 미리 확인할 수 있다. 설치 후 Claude Code를 재시작하고 `/hive:discover`로 진입.
 
 ---
@@ -210,6 +212,7 @@ hive/
     ├── settings.json             # env + statusLine + permissions + hooks
     ├── commands/                 # 프로젝트 슬래시 명령
     ├── hooks/                    # 결정론 가드 (hive-*.js)
+    ├── workflows/                # 저장된 Claude Code workflow (hive-wave.js)
     └── plugins/hive/
         ├── SKILLS.md             # 스킬 인덱스 + 의존성 그래프
         ├── _shared/              # 공통 표준 (prereq/output/worklog/dispatch/commit/hooks)

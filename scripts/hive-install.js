@@ -7,6 +7,7 @@
 //   hive/_shared/*.md    shared standards (outside commands/ so they are not loaded as commands)
 //   hive/SKILLS.md
 //   hooks/hive-*.js
+//   workflows/*.js        saved Claude Code workflows (e.g. hive-wave, used by /hive:execute)
 //   settings.json         additive merge: env, hooks, statusLine (`node "<abs>"` = shell-neutral)
 // Scripts go to <target>/scripts (project) or ~/.claude/scripts/hive (global).
 
@@ -18,6 +19,7 @@ const { spawnSync } = require("child_process");
 const SRC = path.resolve(__dirname, "..");
 const PLUGIN_SRC = path.join(SRC, ".claude", "plugins", "hive");
 const HOOKS_SRC = path.join(SRC, ".claude", "hooks");
+const WORKFLOWS_SRC = path.join(SRC, ".claude", "workflows");
 const TEMPLATE_SETTINGS = path.join(SRC, ".claude", "settings.json");
 const SCRIPTS = ["hive-status.js", "hive-status.py", "hive_progress.py"];
 
@@ -136,9 +138,10 @@ function main() {
   const cmdDir = path.join(base, "commands", "hive");
   const sharedRoot = path.join(base, "hive");
   const hooksDir = path.join(base, "hooks");
+  const workflowsDir = path.join(base, "workflows");
   const settingsPath = path.join(base, "settings.json");
 
-  for (const p of [cmdDir, sharedRoot, hooksDir, scriptsDir, settingsPath]) {
+  for (const p of [cmdDir, sharedRoot, hooksDir, workflowsDir, scriptsDir, settingsPath]) {
     if (insideSource(p)) {
       fail(
         `${p} resolves into the harness source (${SRC}), e.g. via a symlink. ` +
@@ -187,6 +190,12 @@ function main() {
   mkdir(hooksDir);
   for (const [, , file] of HOOKS) copy(path.join(HOOKS_SRC, file), path.join(hooksDir, file));
   say(`  ${HOOKS.length} hooks → ${hooksDir}`);
+
+  // 4b. saved workflows (Claude Code reads <base>/workflows/*.js)
+  mkdir(workflowsDir);
+  const workflows = fs.readdirSync(WORKFLOWS_SRC).filter((f) => f.endsWith(".js"));
+  for (const f of workflows) copy(path.join(WORKFLOWS_SRC, f), path.join(workflowsDir, f));
+  say(`  ${workflows.length} workflows → ${workflowsDir}`);
 
   // 5. CLAUDE.md (project only, never overwritten)
   if (target) {

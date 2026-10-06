@@ -10,6 +10,7 @@ allowed-tools:
   - Grep
   - Glob
   - Task
+  - Workflow
 ---
 
 # `/hive:execute` — Wave 멀티에이전트 실행
@@ -130,6 +131,29 @@ Wave의 목표와 작업 분해 항목을 기반으로 각 작업을 **원자 �
 ---
 
 ## 4단계: 병렬 디스패치 단계
+
+### 4-A. Workflow 도구가 있으면 (Claude Code) — 기본 경로
+
+이 스킬의 실행이 Workflow 사용에 대한 사용자 동의다. 저장된 workflow `hive-wave`(`.claude/workflows/hive-wave.js`)를 호출한다:
+
+```
+Workflow({ name: "hive-wave", args: {
+  wave: N,
+  batches: [                       // 배치는 순서대로, 배치 안 작업은 동시에
+    [ { id: "T1", title: "...", files: ["src/a.py"], stub: true,
+        test: "tests/test_a.py", context: ["PLAN.md Wave N 섹션", "src/db.py:1-40"] } ],
+    [ { id: "T2", ... } ]          // T1 결과에 의존하는 작업
+  ]
+}})
+```
+
+- 2단계 분해를 그대로 옮긴다. 같은 파일을 건드리는 작업은 하나로 합친다. `context`에는 포인터만 넣는다.
+- 작업마다 stub(haiku, `stub: true`일 때만) → Red(sonnet) → Green(sonnet) 순으로 실행된다.
+- 반환값 `{wave, results, blocked, skipped}`를 5단계 검토의 입력으로 쓴다. `blocked`가 있으면 사유를 보고 직접 해결하거나 사용자에게 알린다.
+- 중단되면 같은 args로 `resumeFromRunId`를 지정해 재개한다.
+- 작업이 4개를 넘으면 에이전트가 10개를 넘을 수 있다. Wave 분할을 고려한다.
+
+### 4-B. Workflow 도구가 없으면 (Codex 등) — 대체 경로
 
 Agent 도구를 사용하여 작업을 병렬로 디스패치한다.  
 **각 서브에이전트 프롬프트에는 반드시 다음 내용을 포함해야 한다:**
