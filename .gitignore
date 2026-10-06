@@ -3,3 +3,7 @@
 .claude/settings.local.json
 __pycache__/
 *.pyc
+
+# Codex local config (generated, not part of the harness)
+.codex/
+.agents/
