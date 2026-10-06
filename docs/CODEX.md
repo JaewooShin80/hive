@@ -87,7 +87,7 @@ Codex gpt-5.5 | in 13.1k cached 11.6k | out 14 r 0 | total 13.1k
 tmux 하단바에 붙이려면 `~/.tmux.conf`에 추가한다.
 
 ```tmux
-set -g status-right "#(python3 /Users/jaybee/lab/HIVE-harness/scripts/codex-usage-status.py)"
+set -g status-right "#(python3 /Users/jaybee/lab/HIVE/scripts/codex-usage-status.py)"
 set -g status-interval 5
 ```
 
@@ -100,5 +100,5 @@ tmux source-file ~/.tmux.conf
 tmux를 쓰지 않는 경우에는 별도 터미널에서 watch로 볼 수 있다.
 
 ```bash
-watch -n 5 python3 /Users/jaybee/lab/HIVE-harness/scripts/codex-usage-status.py
+watch -n 5 python3 /Users/jaybee/lab/HIVE/scripts/codex-usage-status.py
 ```
