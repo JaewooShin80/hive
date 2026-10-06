@@ -104,7 +104,7 @@
 
 설치기(`install.sh` / `install.ps1` → `scripts/hive-install.js`)가 6개의 `hive-*` hook을 `settings.json`에
 `node "<절대경로>"` 형식으로 등록한다 (`--global`이면 `~/.claude/settings.json`, 아니면 프로젝트). macOS/Linux/Windows 공통.
-GSD hook 9종과 네임스페이스 분리되어 공존한다.
+HIVE는 GSD에 의존하지 않는다 (컨텍스트 경고는 `hive-ctx-guard.js` 단독 담당).
 
 | Hook | Event | 역할 | Exit 정책 |
 |---|---|---|---|

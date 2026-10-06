@@ -1,7 +1,7 @@
 # HIVE Hooks — 표준 참조
 
 > HIVE 하네스가 강제하는 글로벌(보안) + 프로젝트(워크플로우) hooks 6종 정의.
-> GSD hooks(9종)와 네임스페이스(`hive-*` vs `gsd-*`)로 분리되어 공존한다.
+> GSD에 의존하지 않는다 (아래 "GSD와의 관계" 참조).
 
 ---
 
@@ -39,7 +39,7 @@
 - 임계: 70% used → warning, 80% used → critical
 - 출력: `hookSpecificOutput.additionalContext` JSON (advisory)
 - Debounce: 8 calls per (session, level), stale 60s
-- GSD 브릿지(/tmp/claude-ctx-*)도 fallback으로 read
+- GSD 브릿지(/tmp/claude-ctx-*)도 fallback으로 read (레거시 호환 — statusLine이 hive-status일 때는 생성되지 않아 미사용)
 - 비활성: settings.json에서 엔트리 제거 또는 `/tmp/hive-ctx-*.json` 미작성 시 자동 무음
 
 ## 4. hive-worklog-auto.js
@@ -65,18 +65,14 @@
 
 ---
 
-## GSD hooks와의 공존
+## GSD와의 관계
 
-hive-*는 `hive-*` 파일명 + `/tmp/hive-ctx-*` 네임스페이스로 GSD(`gsd-*` / `/tmp/claude-ctx-*`)와 완전 분리된다. 동일 hook 이벤트에 둘 다 등록되면 Claude Code 런타임이 순차 실행하며, exit code 2가 하나라도 발생하면 차단된다.
-
-임계값 충돌 시 정책:
-- hive-ctx-guard: 70%/80% used에서 fire (CLAUDE.md RULE 5)
-- gsd-context-monitor: 35% remaining(=65% used)에서 fire
-- → GSD가 먼저(65%) fire하여 조기 경고, hive(70%/80%)가 강제 단계 — 단계적 에스컬레이션 관계
+HIVE는 GSD hook을 사용하지도, 전제하지도 않는다. 컨텍스트 경고는 `hive-ctx-guard`(70%/80% used, CLAUDE.md RULE 5)가 단독 담당한다.
+GSD 원본은 `gsd-build/get-shit-done` → [`open-gsd/gsd-core`](https://github.com/open-gsd/gsd-core) (npm `@opengsd/gsd-core`)로 이전되었다. 병행 설치 시에도 `hive-*` / `/tmp/hive-ctx-*` 네임스페이스로 충돌하지 않는다.
 
 ## 일괄 비활성 (개발/디버깅)
 
-`~/.claude/settings.json`의 hooks 블록에서 hive-* 엔트리만 일괄 주석/삭제하면 GSD는 영향 없이 보존된다. 글로벌 + 프로젝트(`.claude/hooks/`) 양쪽 파일은 그대로 두고 settings.json 등록만 해제하면 충분.
+`settings.json`(프로젝트 또는 `--global` 설치 시 `~/.claude/settings.json`)의 hooks 블록에서 hive-* 엔트리만 삭제하면 된다. `.claude/hooks/` 파일은 그대로 두고 settings.json 등록만 해제하면 충분.
 
 ## 트러블슈팅
 

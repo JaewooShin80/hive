@@ -251,7 +251,7 @@ hive/
 | `/hive:` 자동완성에 스킬 없음 | 글로벌 설치: `~/.claude/commands/hive/` 경로 확인. 프로젝트 설치: `.claude/commands/hive/` 확인 |
 | `/hive:progress` 빈 출력 | `ROADMAP.md`/`PLAN.md` 둘 다 없으면 정상. `/hive:roadmap init`으로 생성 |
 | hooks가 동작하지 않음 | `settings.json` `hooks` 블록 등록 여부, `node` 설치/PATH 확인 (hook 명령은 `node "<경로>"` 형식) |
-| 컨텍스트 hook 경고 미발생 | `hive-status.py`가 `/tmp/hive-ctx-<session_id>.json` 작성 중인지, 또는 GSD 브릿지 fallback 확인 |
+| 컨텍스트 hook 경고 미발생 | `hive-status.py`가 `/tmp/hive-ctx-<session_id>.json` 작성 중인지 (statusLine이 `hive-status` 스크립트로 설정됐는지) 확인 |
 | GitLab/GitHub push 인증 실패 | `git credential-manager configure`로 GCM 설정. Personal Access Token은 만료 전 회수 |
 
 ---
