@@ -31,7 +31,7 @@ Advisor로서 프로젝트의 기능 목록을 분석하고, 복잡도에 따라
 2. `ARCHITECTURE.md`를 읽어 기술 스택, 아키텍처 결정사항, 프로젝트 구조를 파악한다.
 3. `WORKLOG.md`가 존재하면 읽어 현재 진행 맥락을 파악한다.
 
-3. `ROADMAP.md` 존재 여부 확인 (선택적):
+4. `ROADMAP.md` 존재 여부 확인 (선택적):
    - **있으면:**
      - 인자에 `phase N`이 있으면 해당 Phase의 Wave 범위만 분해 대상으로 한다.
      - 인자가 없으면 첫 `🟡 in_progress` 또는 `⬜ pending` Phase의 Wave 범위만 분해.
@@ -42,7 +42,13 @@ Advisor로서 프로젝트의 기능 목록을 분석하고, 복잡도에 따라
        ```
    - **없으면:** 기존 동작 (전체 기능을 단일 Phase로 분해, 메타 추가 없음). 역호환 유지.
 
-4. ROADMAP.md를 갱신해야 하는 경우 (Phase 1 완료 후 Phase 2 plan 호출 등) 마지막 단계에서 사용자에게 `/hive:roadmap update` 실행을 안내한다.
+5. `PLAN.md`가 이미 있으면 (다음 Phase 플랜 등) **덮어쓰지 않는다**:
+   - 기존 Wave 섹션·Interfaces·체크박스는 그대로 두고, 새 Wave를 기존 마지막 번호 다음부터 `## Wave 상세` 끝에 추가한다.
+   - `## 전체 Wave 목록` 표에 새 행을 추가한다.
+   - 헤더 메타는 `> **Phase:** N (이름)` / `> **Wave 범위:** a-b`를 현재 Phase 로 갱신하고, 바로 아래에 `> **이전 Phase:** 1 (Wave 1-2) 완료` 같은 이력을 한 줄씩 남긴다.
+   - 새 Wave의 Consumes 는 이전 Phase 의 Produces 이름을 그대로 쓴다.
+
+6. ROADMAP.md를 갱신해야 하는 경우 (Phase 1 완료 후 Phase 2 plan 호출 등) 마지막 단계에서 사용자에게 `/hive:roadmap update` 실행을 안내한다.
 
 ---
 
@@ -140,6 +146,13 @@ Wave 3: <제목> [Large] — 예상 2~3일
 # HIVE 개발 플랜 — <프로젝트명>
 생성일: YYYY-MM-DD | 아키텍처: <ARCHITECTURE.md에서 추출한 아키텍처>
 
+## 공통 규약
+- 프로젝트 루트: <git rev-parse --show-toplevel>
+- 환경 준비: <예: uv venv .venv && uv pip install -r requirements.txt / npm ci — ARCHITECTURE.md "실행 환경"에서>
+- 테스트 명령 (`test_cmd`): <예: .venv/bin/pytest -q / npm test -->
+- 앱 실행: <예: .venv/bin/uvicorn app.main:app --port 8000 / npm run dev>
+- 공통 제약: <설정 경로·환경변수·금액 단위 등 모든 Wave 가 지킬 것>
+
 ## 전체 Wave 목록
 | Wave | 제목 | 크기 | 예상 기간 | 담당 에이전트 |
 |------|------|------|----------|--------------|
@@ -192,16 +205,23 @@ Wave 3: <제목> [Large] — 예상 2~3일
 
 `PLAN.md`와 함께 프로젝트 루트에 `feature-list.json`을 만든다. 형식은 [`_shared/feature-list-schema.md`](../_shared/feature-list-schema.md)를 따른다.
 
-- 각 Wave의 완료 기준 1개 = feature 1개. `id`는 `W{wave}-F{idx}`, `status`는 `"pending"`.
-- `title`은 완료 기준 문장. REQUIREMENTS.md 기능에서 온 것이면 앞에 기능 ID를 붙인다 (예: `"[F3] 로그인 실패 시 오류 문구 표시"`).
-- `pass_criteria`는 예/아니오로 판단 가능한 한 문장.
-- 이미 파일이 있으면 덮어쓰지 말고 사용자에게 확인한다.
+직접 추출하지 말고 생성 스크립트를 실행한다:
+
+```bash
+python3 scripts/gen_feature_list.py            # milestone 은 ROADMAP.md 에서, 없으면 --milestone vX.Y.Z
+```
+
+- 각 Wave의 "완료 기준" 체크박스 1개 = feature 1개. `id`는 `W{wave}-F{idx}`, `status`는 `"pending"`(이미 `[x]`면 `"passing"`).
+- `title`·`pass_criteria`는 완료 기준 문장 그대로. REQUIREMENTS.md 기능에서 온 기준은 PLAN 에 미리 `[F3] …`처럼 기능 ID를 붙여 쓴다.
+- 파일이 이미 있으면(다음 Phase) **새 id 만 추가**하고 기존 항목의 `status`·`verify`는 보존한다.
 
 ---
 
 ## 8단계: WORKLOG.md 업데이트
 
-`WORKLOG.md`에 다음 내용을 추가한다:
+진행 상태(어느 Wave가 끝났는지)는 **PLAN.md 완료 기준 체크박스만** 원천으로 쓴다. WORKLOG.md에 별도 Wave 체크리스트를 만들지 않는다 (`/hive:execute`, session-start hook, `/hive:progress`, `/hive:roadmap update`가 모두 PLAN.md를 읽는다).
+
+`WORKLOG.md`에 다음 기록만 추가한다:
 
 ```markdown
 ## [YYYY-MM-DD] 플랜 생성 완료

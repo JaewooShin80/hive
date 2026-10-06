@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // hive-wave-gate.js — PostToolUse hook (Bash matcher)
-// Detects `git commit -m "feat(wave-N): ..."` messages and emits an advisory
+// Detects Wave commits (`feat(wave-N): ...`, any -m/-qm/-am/--message/heredoc form) and emits an advisory
 // to run `/hive:security wave N` after a successful Wave commit.
 //
 // Advisory only — exit code 0 always. Never blocks execution.
@@ -39,30 +39,11 @@ process.stdin.on("end", () => {
       process.exit(0);
     }
 
-    // Extract commit message from first -m "..." or -m '...' occurrence
-    let message = null;
-
-    // Match: -m "..." (double-quoted, possibly heredoc)
-    const dqMatch = cmd.match(/-m\s+"([\s\S]*?)(?:"(?:\s|$|-m))/);
-    // Match: -m '...' (single-quoted)
-    const sqMatch = cmd.match(/-m\s+'([^']*)'/);
-
-    if (dqMatch) {
-      const raw = dqMatch[1];
-      // Split on real newlines or literal \n escapes; find first line matching feat(wave-N).
-      // Plain messages hit on the first line; heredoc bodies may have a preamble line first.
-      const lines = raw.split(/\r?\n|\\n/).map((l) => l.trim()).filter(Boolean);
-      message = lines.find((l) => /^feat\(wave-\d+\)/.test(l)) || lines[0] || null;
-    } else if (sqMatch) {
-      message = sqMatch[1].trim();
-    }
-
-    if (!message) {
-      process.exit(0);
-    }
-
-    // Check if message starts with feat(wave-N)
-    const waveMatch = message.match(/^feat\(wave-(\d+)\)/);
+    // Find `feat(wave-N)` at the start of a commit message anywhere after `git commit`.
+    // Covers -m, -qm/-am (combined flags), --message=, single/double quotes and
+    // heredoc bodies (-F - <<EOF) where the subject sits at a line start.
+    const afterCommit = cmd.slice(cmd.search(/\bgit\s+commit\b/));
+    const waveMatch = afterCommit.match(/(?:^|["'\s=])feat\(wave-(\d+)\)/m);
     if (!waveMatch) {
       process.exit(0);
     }

@@ -21,7 +21,7 @@ const PLUGIN_SRC = path.join(SRC, ".claude", "plugins", "hive");
 const HOOKS_SRC = path.join(SRC, ".claude", "hooks");
 const WORKFLOWS_SRC = path.join(SRC, ".claude", "workflows");
 const TEMPLATE_SETTINGS = path.join(SRC, ".claude", "settings.json");
-const SCRIPTS = ["hive-status.js", "hive-status.py", "hive_progress.py"];
+const SCRIPTS = ["hive-status.js", "hive-status.py", "hive_progress.py", "gen_feature_list.py"];
 
 // [event, matcher|null, file] — mirrors _shared/hooks.md
 const HOOKS = [
@@ -175,13 +175,16 @@ function main() {
   // 3. skills as commands, with links/paths rewritten to the installed locations
   const python = detectPython();
   if (!python) say("  ! python3/python/py not found — statusline and /hive:progress need Python 3");
-  const progressPath = posix(path.join(scriptsDir, "hive_progress.py"));
   mkdir(cmdDir);
   const skills = fs.readdirSync(path.join(PLUGIN_SRC, "skills")).filter((f) => f.endsWith(".md"));
   for (const f of skills) {
     let text = fs.readFileSync(path.join(PLUGIN_SRC, "skills", f), "utf8");
     text = text.split("](../_shared/").join(`](${posix(sharedDir)}/`);
-    text = text.split("python3 scripts/hive_progress.py").join(`${python || "python3"} "${progressPath}"`);
+    text = text.split("](../SKILLS.md)").join(`](${posix(path.join(sharedRoot, "SKILLS.md"))})`);
+    for (const name of SCRIPTS.filter((n) => n.endsWith(".py"))) {
+      const installed = posix(path.join(scriptsDir, name));
+      text = text.split(`python3 scripts/${name}`).join(`${python || "python3"} "${installed}"`);
+    }
     write(path.join(cmdDir, f), text);
   }
   say(`  ${skills.length} skills → ${cmdDir}`);

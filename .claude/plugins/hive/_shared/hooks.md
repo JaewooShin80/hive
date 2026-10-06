@@ -51,7 +51,7 @@
 
 ## 5. hive-session-start.js
 - 이벤트: SessionStart
-- 동작: cwd에 ROADMAP.md + PLAN.md + WORKLOG.md 3개 모두 존재 시 PLAN.md를 파싱해 현재 Wave + 진척% 출력
+- 동작: cwd에 PLAN.md 가 있으면 `## Wave N:`/`### Wave N:` 블록의 완료 기준 체크박스를 세어 현재 Wave + 진척% 출력 (ROADMAP.md 는 선택 — 있으면 다음 단계로 milestone 안내)
 - 출력: `hookSpecificOutput.additionalContext` JSON
 - 가드: 1MB PLAN.md 크기 제한, 루트 cwd 거부
 - 3 파일 중 하나라도 없으면 자동 무음 (비-HIVE 프로젝트에서 무해)
@@ -81,8 +81,8 @@ GSD 원본은 `gsd-build/get-shit-done` → [`open-gsd/gsd-core`](https://github
 | 합법 `.env.example` 차단 | secret-guard allowlist 누락 | 파일명에 `example/sample/template` 포함 확인 |
 | ctx-guard 무음 | 브릿지 파일 미작성 | `/tmp/hive-ctx-{session_id}.json` 존재 + timestamp < 60s 확인 |
 | WORKLOG.md append 누락 | cwd 외부 경로 / self-edit | tool_input.file_path가 cwd 하위인지 확인 |
-| session-start 무음 | 3 sentinel 파일 부재 | ROADMAP.md, PLAN.md, WORKLOG.md 모두 존재 확인 |
-| wave-gate 미발화 | commit 메시지가 `feat(wave-N)` 시작 아님 | 첫 라인 prefix 확인 |
+| session-start 무음 | PLAN.md 부재 또는 Wave 헤더/체크박스 없음 | PLAN.md 와 `### Wave N:` 아래 완료 기준 `- [ ]` 확인 |
+| wave-gate 미발화 | commit 메시지가 `feat(wave-N)` 시작 아님 | 메시지 첫 줄 prefix 확인 (-m/-qm/-am/--message/heredoc 모두 지원) |
 
 ---
 

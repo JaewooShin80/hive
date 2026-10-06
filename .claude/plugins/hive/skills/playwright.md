@@ -29,7 +29,7 @@ allowed-tools:
 
 **1. Wave 완료 여부 확인**
 
-`WORKLOG.md`를 읽어 PLAN.md의 모든 Wave가 `[x]`로 표시되어 있는지 확인한다.
+`PLAN.md`의 모든 Wave 완료 기준 체크박스가 `[x]`인지 확인한다 (`python3 scripts/hive_progress.py --json`의 `completed_waves == total_waves`).
 - 완료되지 않은 Wave가 있으면 즉시 중단하고 다음 메시지를 출력한다:
   > "아직 완료되지 않은 Wave가 있습니다. `/hive:execute`로 남은 Wave를 먼저 완료해주세요."
 

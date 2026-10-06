@@ -78,11 +78,11 @@ ROADMAP.md를 생성·갱신하여 PLAN.md의 Wave를 Phase 단위로 그룹핑�
 
 ## update 동작
 
-1. `PLAN.md` 읽어 각 Wave의 `[x]` / `[ ]` 상태 파싱
-2. 각 Phase의 Wave 항목 체크박스 갱신
+1. `PLAN.md`의 각 Wave 블록(`## Wave N:` 또는 `### Wave N:`)에서 **완료 기준 체크박스**를 센다. Wave는 체크박스가 1개 이상이고 `[ ]`가 하나도 없을 때 완료다 (`python3 scripts/hive_progress.py --json`과 같은 기준 — `/hive:execute` 6-2가 이 체크박스를 갱신한다).
+2. 각 Phase의 Wave 범위 안에서 완료 Wave 수를 집계한다.
 3. Phase 상태 자동 결정:
-   - 모든 Wave `[x]` → `✅ complete`
-   - 일부 `[x]` → `🟡 in_progress`
+   - 범위의 모든 Wave 완료 → `✅ complete`
+   - 일부 Wave 완료 또는 진행 중 → `🟡 in_progress`
    - 모두 `[ ]` → `⬜ pending`
 4. 갱신 결과 요약:
    > "Phase 1: complete, Phase 2: in_progress (2/4 Wave), Phase 3: pending"

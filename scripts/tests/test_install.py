@@ -128,6 +128,18 @@ class TestProjectInstall(_Base):
         self.assertTrue(script.is_file())
         self.assertIn(_posix(script), text)
 
+    def test_plan_skill_points_to_installed_feature_list_generator(self):
+        text = (self.target / ".claude" / "commands" / "hive" / "plan.md").read_text(encoding="utf-8")
+        script = self.target / "scripts" / "gen_feature_list.py"
+        self.assertTrue(script.is_file())
+        self.assertIn(_posix(script), text)
+        self.assertNotIn("python3 scripts/gen_feature_list.py", text)
+
+    def test_skills_index_link_is_rewritten(self):
+        text = (self.target / ".claude" / "commands" / "hive" / "spec.md").read_text(encoding="utf-8")
+        self.assertNotIn("](../SKILLS.md)", text)
+        self.assertIn(f"]({_posix(self.target / '.claude' / 'hive' / 'SKILLS.md')})", text)
+
     def test_saved_workflow_is_copied(self):
         self.assertTrue((self.target / ".claude" / "workflows" / "hive-wave.js").is_file())
 
@@ -135,7 +147,7 @@ class TestProjectInstall(_Base):
         for name in HOOK_FILES:
             with self.subTest(hook=name):
                 self.assertTrue((self.target / ".claude" / "hooks" / name).is_file())
-        for name in ("hive-status.js", "hive-status.py", "hive_progress.py"):
+        for name in ("hive-status.js", "hive-status.py", "hive_progress.py", "gen_feature_list.py"):
             with self.subTest(script=name):
                 self.assertTrue((self.target / "scripts" / name).is_file())
 

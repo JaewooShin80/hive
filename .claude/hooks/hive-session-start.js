@@ -34,10 +34,10 @@ process.stdin.on("end", () => {
       process.exit(0);
     }
 
-    // Check 3 sentinel files; if any missing, not an HIVE project
-    for (const f of ["ROADMAP.md", "PLAN.md", "WORKLOG.md"]) {
-      if (!fs.existsSync(path.join(raw, f))) process.exit(0);
-    }
+    // PLAN.md is the progress source of truth; ROADMAP.md is optional
+    // (the short spec → discover → plan path has no roadmap).
+    if (!fs.existsSync(path.join(raw, "PLAN.md"))) process.exit(0);
+    const hasRoadmap = fs.existsSync(path.join(raw, "ROADMAP.md"));
 
     // File size guard on PLAN.md
     const planPath = path.join(raw, "PLAN.md");
@@ -46,7 +46,8 @@ process.stdin.on("end", () => {
     const planText = fs.readFileSync(planPath, "utf8");
 
     // Find all Wave header positions
-    const headerMatches = allMatches(/^## Wave (\d+):\s*(.+)$/gm, planText);
+    // `## Wave N:` or `### Wave N:` — the plan template nests waves under `## Wave 상세`.
+    const headerMatches = allMatches(/^#{2,3} Wave (\d+):\s*(.+)$/gm, planText);
     if (headerMatches.length === 0) process.exit(0);
 
     const waves = headerMatches.map((m) => ({
@@ -61,8 +62,8 @@ process.stdin.on("end", () => {
         waves[i].start,
         i + 1 < waves.length ? waves[i + 1].start : planText.length
       );
-      waves[i].checked = (block.match(/^- \[x\] /gm) || []).length;
-      waves[i].unchecked = (block.match(/^- \[ \] /gm) || []).length;
+      waves[i].checked = (block.match(/^\s*- \[[xX]\] /gm) || []).length;
+      waves[i].unchecked = (block.match(/^\s*- \[ \] /gm) || []).length;
     }
 
     const totalWaves = waves.length;
@@ -74,7 +75,7 @@ process.stdin.on("end", () => {
     let msg;
     if (!cur) {
       msg = "[HIVE] 모든 Wave 완료 (" + totalWaves + "/" + totalWaves + ", 100%). "
-           + "다음: /hive:milestone complete";
+           + (hasRoadmap ? "다음: /hive:milestone audit → /hive:milestone complete" : "다음: /hive:playwright → /hive:uat");
     } else {
       const waveTotal = cur.checked + cur.unchecked;
       const wavePct = Math.floor((cur.checked / waveTotal) * 100);

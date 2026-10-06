@@ -29,7 +29,8 @@ PHASE_HEADER_RE = re.compile(
 MILESTONE_RE = re.compile(r"^>\s*\*\*마일스톤:\*\*\s+(\S+)", re.MULTILINE)
 START_DATE_RE = re.compile(r"^>\s*\*\*시작일:\*\*\s+(\S+)", re.MULTILINE)
 STATUS_RE = re.compile(r"^>\s*\*\*상태:\*\*\s+(\S+)", re.MULTILINE)
-WAVE_HEADER_RE = re.compile(r"^##\s+Wave\s+(\d+)", re.MULTILINE)
+# `## Wave N` or `### Wave N` (the plan template nests waves under `## Wave 상세`).
+WAVE_HEADER_RE = re.compile(r"^#{2,3}\s+Wave\s+(\d+)", re.MULTILINE)
 
 
 @dataclass
@@ -131,18 +132,27 @@ def parse_feature_list(text: str) -> Optional[FeatureList]:
 
 
 def parse_plan(text: str) -> Plan:
-    completed = []
-    total = 0
+    """A wave is complete when it has at least one checkbox and none unchecked."""
+    boxes = {}
+    order = []
     current_wave = None
     for line in text.splitlines():
         wm = WAVE_HEADER_RE.match(line)
         if wm:
             current_wave = int(wm.group(1))
-            total += 1
-        elif current_wave is not None and "[x]" in line.lower():
-            if current_wave not in completed:
-                completed.append(current_wave)
-    return Plan(completed_waves=sorted(completed), total_waves=total)
+            if current_wave not in boxes:
+                boxes[current_wave] = [0, 0]
+                order.append(current_wave)
+            continue
+        if current_wave is None:
+            continue
+        stripped = line.lstrip()
+        if stripped.lower().startswith("- [x]"):
+            boxes[current_wave][0] += 1
+        elif stripped.startswith("- [ ]"):
+            boxes[current_wave][1] += 1
+    completed = [w for w in order if boxes[w][0] > 0 and boxes[w][1] == 0]
+    return Plan(completed_waves=sorted(completed), total_waves=len(order))
 
 
 def compute_progress(roadmap: Roadmap, plan: Plan) -> Progress:
@@ -230,9 +240,12 @@ def main():
     args = parser.parse_args()
 
     rm, plan, features = _load_files()
-    if rm is None or plan is None:
-        print("ROADMAP.md 또는 PLAN.md 없음. /hive:roadmap init 먼저 실행하세요.", file=sys.stderr)
+    if plan is None:
+        print("PLAN.md 없음. /hive:plan 으로 Wave 플랜을 먼저 만드세요.", file=sys.stderr)
         sys.exit(2)
+    if rm is None:
+        # PLAN-only project (spec → discover → plan without /hive:roadmap): no phases.
+        rm = Roadmap(milestone=None, start_date=None, status=None, phases=[])
 
     prog = compute_progress(rm, plan)
     prog.features = features

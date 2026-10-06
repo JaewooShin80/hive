@@ -57,8 +57,7 @@ allowed-tools:
 - 마지막 업데이트: YYYY-MM-DD
 
 ## Wave 진행 현황
-- [ ] Wave 1: <제목>
-- [ ] Wave 2: <제목>
+진행 상태의 원천은 PLAN.md 각 Wave의 완료 기준 체크박스다 (`/hive:progress`로 확인). 여기에는 체크리스트를 두지 않는다.
 
 ## 완료된 Wave 기록
 | Wave | 제목 | 완료일 | Git Commit |
@@ -69,7 +68,7 @@ allowed-tools:
 |------|----------|------|
 
 ## 미결 이슈
-- [ ] <이슈 내용>
+(없음)
 
 ## UAT 결과
 - 날짜: 
@@ -88,8 +87,7 @@ allowed-tools:
    - `마지막 완료 Wave` 값 갱신
    - `다음 작업` 값 갱신
    - `마지막 업데이트` 날짜 갱신 (오늘 날짜)
-4. Wave가 완료된 경우:
-   - "Wave 진행 현황"의 해당 항목을 `[ ]` → `[x]`로 변경한다
+4. Wave가 완료된 경우 (PLAN.md 해당 Wave 완료 기준이 모두 `[x]`):
    - "완료된 Wave 기록" 테이블에 행을 추가한다 (Wave 번호, 제목, 완료일, Git 커밋 해시)
 5. 중요한 새 결정사항이 있으면 "주요 결정사항" 테이블에 추가한다
 
@@ -105,7 +103,7 @@ allowed-tools:
 2. `git log --oneline -10`을 실행하여 실제 Git 상태를 확인한다
 3. `feature-list.json`이 존재하면 읽고 JSON 파싱한다 (graceful: 부재·malformed → 무시하고 4단계로 진행 — Wave 4 규약).
 4. 교차 검증한다:
-   - WORKLOG.md에 "Wave N 완료"라고 되어 있으면, 해당 커밋이 git log에 존재하는지 확인한다
+   - PLAN.md에서 완료 기준이 모두 `[x]`인 마지막 Wave N 을 찾고, `feat(wave-N)` 커밋이 git log에 존재하는지 확인한다
    - 불일치가 있으면 git log를 우선 기준으로 삼는다
    - feature-list.json이 있으면 마지막 완료 Wave N의 feature entry 상태를 확인한다
 5. **분기 안내** (feature-list.json 존재 시 우선 적용):
