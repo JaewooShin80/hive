@@ -96,10 +96,13 @@ Brownfield 프로젝트(기존 코드베이스)에 진입할 때, 4개 매퍼 �
 
 ### Step 1: 사전 점검
 
-1. 현재 디렉토리가 git 리포지토리인지 확인
-2. 디렉토리 크기 추정 (`find . -type f | wc -l`)
+1. 현재 디렉토리가 git 리포지토리인지 확인 (아니면 `git init` 후 현재 파일을 첫 커밋으로 남길지 제안 — `--auto`면 실행)
+2. 분석 대상 크기 추정 — 의존성·빌드 산출물은 세지 않는다:
+   - git 저장소: `git ls-files | wc -l`
+   - 아니면: `find . -type f -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/.venv/*' -not -path '*/venv/*' -not -path '*/dist/*' -not -path '*/build/*' -not -path '*/__pycache__/*' | wc -l`
 3. 1000개 이상이면 사용자에게 알림: "분석에 시간이 소요될 수 있습니다."
 4. `docs/codebase-map/` 디렉토리 생성
+5. 기존 테스트 기준선 기록: 테스트 명령을 찾아 한 번 실행하고 통과/실패 수를 SUMMARY 에 남긴다 (이후 plan 의 "회귀 금지" 기준).
 
 ### Step 2: 병렬 매퍼 실행
 
@@ -117,6 +120,9 @@ Agent 4 (Sonnet) → Mapper 4: Concerns
 - 자신의 영역에 한정한 조사 항목
 - 산출 파일 경로
 - "다른 영역은 다루지 말 것" 명시
+- 제외 경로: `.git`, `node_modules`, `.venv`/`venv`, `dist`, `build`, `__pycache__`, 데이터·캐시 디렉토리 (`.gitignore` 대상 전체)
+- "산출 파일 외에는 수정하지 말고 git commit 하지 말 것" (커밋은 Advisor 가 Step 3 에서)
+- 위험·이슈는 `file:line` 과 심각도(HIGH/MEDIUM/LOW)로 적을 것
 
 ### Step 3: SUMMARY 생성
 
@@ -140,12 +146,17 @@ Agent 4 (Sonnet) → Mapper 4: Concerns
 - 리팩토링 우선순위: <순서>
 - 위험 영역 (조심해서 만질 것): <목록>
 
+## 테스트 기준선
+- 명령: <test_cmd> / 결과: <N passed, M failed> (YYYY-MM-DD)
+
 ## 상세 보고서
 - [기술 스택](01-TECH.md)
 - [아키텍처](02-ARCH.md)
 - [품질](03-QUALITY.md)
 - [위험/이슈](04-CONCERNS.md)
 ```
+
+SUMMARY 작성 후 5개 문서를 커밋한다: `git add docs/codebase-map && git commit -m "docs: codebase map (hive:map-codebase)"`
 
 ### Step 4: 후속 단계 안내
 
@@ -154,9 +165,9 @@ Agent 4 (Sonnet) → Mapper 4: Concerns
 ✅ Codebase 분석 완료. 4개 보고서가 docs/codebase-map/에 생성됨.
 
 다음 단계:
-- 새 기능 추가: /hive:discover (이 분석 결과를 컨텍스트로 사용)
-- 리팩토링 계획: /hive:plan
-- 보안 검토: /hive:security (CONCERNS.md 기반)
+- 무엇을 바꿀지 정리: /hive:spec <변경 요청>   (변경 요구 모드 — 현행 기능을 기준선으로)
+- 그 다음: /hive:discover   (B 경로가 이 SUMMARY 를 그대로 사용, 현행 유지/부분 재구성/재작성 판정)
+- 보안 검토만 필요하면: /hive:security (CONCERNS.md 기반)
 ```
 
 ---

@@ -157,6 +157,9 @@ Wave 3: <제목> [Large] — 예상 2~3일
 - 테스트 명령 (`test_cmd`): <예: .venv/bin/pytest -q / npm test -->
 - 앱 실행: <예: .venv/bin/uvicorn app.main:app --port 8000 / npm run dev>
 - 공통 제약: <설정 경로·환경변수·금액 단위 등 모든 Wave 가 지킬 것>
+- (기존 코드일 때) 회귀 금지: <docs/codebase-map/00-SUMMARY.md 테스트 기준선, 예: 기존 136 tests 전부 통과 유지>
+- (기존 코드일 때) 호환 유지: <ARCHITECTURE.md "변경 범위"의 바뀌면 안 되는 것 — 공개 API 응답 필드, DB 스키마/해시 규칙 등은 추가만 허용>
+- (기존 코드일 때) 참조: docs/codebase-map/00-SUMMARY.md, 04-CONCERNS.md, REQUIREMENTS.md `현행 기능 (유지)`
 
 ## 전체 Wave 목록
 | Wave | 제목 | 크기 | 예상 기간 | 담당 에이전트 |
