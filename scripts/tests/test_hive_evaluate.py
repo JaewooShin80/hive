@@ -39,7 +39,7 @@ class TestHiveEvaluate(unittest.TestCase):
     def run_eval(self, d, features, *extra):
         Path(d, "feature-list.json").write_text(json.dumps(
             {"schema_version": "1.0", "milestone": "v0", "features": features}), encoding="utf-8")
-        out = subprocess.run([sys.executable, str(SCRIPT), *extra], cwd=d, capture_output=True, text=True)
+        out = subprocess.run([sys.executable, str(SCRIPT), *extra], cwd=d, capture_output=True, text=True, encoding="utf-8")
         data = json.loads(Path(d, "feature-list.json").read_text(encoding="utf-8"))
         return out, {f["id"]: f["status"] for f in data["features"]}
 

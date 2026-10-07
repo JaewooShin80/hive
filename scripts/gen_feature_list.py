@@ -49,6 +49,12 @@ def parse_criteria(plan_text):
 
 
 def main():
+    # Korean/emoji output must not crash on a cp1252 (Windows) console.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser()
     ap.add_argument("--plan", default="PLAN.md")
     ap.add_argument("--out", default="feature-list.json")

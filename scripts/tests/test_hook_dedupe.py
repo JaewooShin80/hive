@@ -34,7 +34,7 @@ class TestHookDedupe(unittest.TestCase):
         payload = dict(WAVE_COMMIT, cwd=str(self.project))
         env = dict(os.environ, HOME=str(self.home), USERPROFILE=str(self.home))
         out = subprocess.run([shutil.which("node"), str(hook_path)], input=json.dumps(payload), capture_output=True,
-                             text=True, env=env)
+                             text=True, encoding="utf-8", env=env)
         self.assertEqual(out.returncode, 0, out.stderr)
         return out.stdout
 

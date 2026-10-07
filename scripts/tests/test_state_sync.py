@@ -59,7 +59,7 @@ class TestSessionStartHook(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             Path(d, "PLAN.md").write_text(PLAN, encoding="utf-8")
             out = subprocess.run(["node", str(REPO / ".claude/hooks/hive-session-start.js")],
-                                 input=json.dumps({"cwd": d}), capture_output=True, text=True)
+                                 input=json.dumps({"cwd": d}), capture_output=True, text=True, encoding="utf-8")
             self.assertEqual(out.returncode, 0, out.stderr)
             msg = json.loads(out.stdout)["hookSpecificOutput"]["additionalContext"]
             self.assertIn("현재 Wave: 2 / 3", msg)
@@ -69,7 +69,7 @@ class TestSessionStartHook(unittest.TestCase):
 class TestProgressWithoutRoadmap(unittest.TestCase):
     def run_progress(self, d, *flags):
         return subprocess.run([sys.executable, str(REPO / "scripts/hive_progress.py"), *flags],
-                              cwd=d, capture_output=True, text=True)
+                              cwd=d, capture_output=True, text=True, encoding="utf-8")
 
     def test_plan_only_project_gets_a_dashboard(self):  # H-12
         with tempfile.TemporaryDirectory() as d:
@@ -98,7 +98,7 @@ class TestWaveGateHook(unittest.TestCase):
     def fire(self, cmd):
         payload = {"tool_name": "Bash", "tool_input": {"command": cmd}, "tool_response": {"exit_code": 0}}
         out = subprocess.run(["node", str(REPO / ".claude/hooks/hive-wave-gate.js")],
-                             input=json.dumps(payload), capture_output=True, text=True)
+                             input=json.dumps(payload), capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(out.returncode, 0, out.stderr)
         return out.stdout
 

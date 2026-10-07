@@ -28,7 +28,7 @@ class TestWorklogAuto(unittest.TestCase):
 
     def fire(self, file_path, cwd):
         payload = {"tool_name": "Write", "tool_input": {"file_path": str(file_path)}, "cwd": str(cwd)}
-        out = subprocess.run(["node", str(HOOK)], input=json.dumps(payload), capture_output=True, text=True)
+        out = subprocess.run(["node", str(HOOK)], input=json.dumps(payload), capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(out.returncode, 0, out.stderr)
 
     def entries(self):

@@ -82,7 +82,7 @@ class TestHiveWave(unittest.TestCase):
             cfg = Path(d) / "cfg.json"
             cfg.write_text(json.dumps({"args": args, "statuses": statuses or {}}), encoding="utf-8")
             out = subprocess.run(["node", str(harness), str(SCRIPT), str(cfg)],
-                                 capture_output=True, text=True)
+                                 capture_output=True, text=True, encoding="utf-8")
             self.assertEqual(out.returncode, 0, out.stderr)
             return json.loads(out.stdout)
 

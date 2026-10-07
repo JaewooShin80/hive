@@ -38,7 +38,7 @@ PLAN_P2 = PLAN_P1 + dedent("""\
 
 class TestGenFeatureList(unittest.TestCase):
     def run_gen(self, d, *extra):
-        return subprocess.run([sys.executable, str(SCRIPT), *extra], cwd=d, capture_output=True, text=True)
+        return subprocess.run([sys.executable, str(SCRIPT), *extra], cwd=d, capture_output=True, text=True, encoding="utf-8")
 
     def load(self, d):
         return json.loads(Path(d, "feature-list.json").read_text(encoding="utf-8"))

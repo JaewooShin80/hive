@@ -63,6 +63,12 @@ def check_url(target, pattern, root, timeout):
 
 
 def main():
+    # Korean/emoji output must not crash on a cp1252 (Windows) console.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser()
     ap.add_argument("--file", default="feature-list.json")
     ap.add_argument("--wave", type=int)

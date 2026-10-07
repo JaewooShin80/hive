@@ -234,6 +234,12 @@ def _load_files() -> Tuple[Optional[Roadmap], Optional[Plan], Optional[FeatureLi
 
 
 def main():
+    # Korean/emoji output must not crash on a cp1252 (Windows) console.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            pass
     parser = argparse.ArgumentParser()
     parser.add_argument("--short", action="store_true")
     parser.add_argument("--json", action="store_true")
